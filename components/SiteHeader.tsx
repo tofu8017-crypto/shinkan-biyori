@@ -1,62 +1,129 @@
+"use client";
+import { usePathname } from "next/navigation";
 import { GENRES } from "@/types/book";
 
 export default function SiteHeader() {
+  const pathname = usePathname();
+
   return (
     <header
       className="sticky top-0 z-50 border-b"
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+      style={{
+        background: "rgba(250,246,241,0.92)",
+        backdropFilter: "blur(12px)",
+        borderColor: "var(--border)",
+      }}
     >
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <a href="/" className="flex items-baseline gap-2">
-          <span
-            className="text-xl"
-            style={{ fontFamily: "var(--font-serif)", color: "var(--text-main)" }}
+      {/* トップバー */}
+      <div
+        className="max-w-6xl mx-auto px-4 flex items-center justify-between"
+        style={{ height: "86px" }}
+      >
+        <div className="flex items-end gap-6">
+          <a
+            href="/"
+            className="leading-none"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "42px",
+              fontWeight: 500,
+              letterSpacing: "0.18em",
+              color: "var(--text-main)",
+              textDecoration: "none",
+            }}
           >
             新刊日和
-          </span>
-          <span className="text-xs hidden sm:inline" style={{ color: "var(--text-muted)" }}>
+          </a>
+          <span
+            className="mb-1 text-sm font-bold hidden sm:block"
+            style={{ color: "var(--text-main)" }}
+          >
             文芸書の新刊カレンダー
           </span>
-        </a>
+        </div>
+        <div className="hidden sm:flex gap-7 font-bold text-sm" style={{ color: "var(--text-main)" }}>
+          <span>♡ お気に入り</span>
+          <span>⌕ 検索</span>
+        </div>
       </div>
 
-      {/* ジャンルタブ（猫キャラはスロット確保済み） */}
-      <div
+      {/* ジャンルタブ */}
+      <nav
         className="border-t overflow-x-auto"
-        style={{ borderColor: "var(--border)", background: "var(--bg-subtle)" }}
+        style={{ borderColor: "rgba(232,221,214,0.7)" }}
       >
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex gap-1 py-2">
-            <a
-              href="/"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
-              style={{ background: "var(--highlight)", color: "#fff" }}
+        <div
+          className="max-w-6xl mx-auto px-4 flex items-center gap-11"
+          style={{ height: "112px" }}
+        >
+          {/* すべて */}
+          <a
+            href="/"
+            className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 pb-7 pt-6"
+            style={{
+              color: "var(--text-main)",
+              textDecoration: "none",
+            }}
+          >
+            <div
+              className="rounded-full flex items-center justify-center border text-2xl"
+              style={{
+                width: "58px",
+                height: "58px",
+                background: "#fff6ef",
+                borderColor: "var(--border)",
+                boxShadow: "inset 0 0 0 8px rgba(255,255,255,0.35)",
+              }}
             >
-              すべて
-            </a>
-            {GENRES.map((g) => (
+              全
+            </div>
+            すべて
+            {pathname === "/" && (
+              <span
+                className="absolute left-0 right-0 bottom-0 rounded-full"
+                style={{ height: "5px", background: "var(--highlight)" }}
+              />
+            )}
+          </a>
+
+          {GENRES.map((g) => {
+            const isActive = pathname === `/genre/${g.id}`;
+            return (
               <a
                 key={g.id}
                 href={`/genre/${g.id}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border"
-                style={{
-                  color: "var(--text-sub)",
-                  borderColor: "var(--border)",
-                  background: "var(--bg-card)",
-                }}
+                className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 pb-7 pt-6"
+                style={{ color: "var(--text-main)", textDecoration: "none" }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/cats/${g.id}.png`}
-                  alt={g.label}
-                  className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                />
+                <div
+                  className="rounded-full overflow-hidden border flex-shrink-0"
+                  style={{
+                    width: "58px",
+                    height: "58px",
+                    borderColor: "var(--border)",
+                    background: g.color + "55",
+                    boxShadow: "inset 0 0 0 8px rgba(255,255,255,0.35)",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/cats/${g.id}.png`}
+                    alt={g.label}
+                    className="w-full h-full object-cover object-center"
+                  />
+                </div>
                 {g.label}
+                {isActive && (
+                  <span
+                    className="absolute left-0 right-0 bottom-0 rounded-full"
+                    style={{ height: "5px", background: "var(--highlight)" }}
+                  />
+                )}
               </a>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </div>
+      </nav>
     </header>
   );
 }

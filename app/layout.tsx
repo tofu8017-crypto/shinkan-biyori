@@ -5,7 +5,7 @@ import "./globals.css";
 const notoSerifJP = Noto_Serif_JP({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "700", "900"],
 });
 
 const mPlusRounded = M_PLUS_Rounded_1c({
