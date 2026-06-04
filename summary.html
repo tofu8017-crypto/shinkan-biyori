@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新刊日和 — プロジェクトサマリー</title>
+<style>
+  :root{
+    --cream:#FBF7F0; --card:#FEFCF8; --ink:#5A4B40; --ink-soft:#9A8A7B;
+    --beige:#E7D8C3; --milk:#D9C3A6; --sage:#A9BFA3; --rose:#E6B5AC;
+    --lav:#CBBDDD; --line:rgba(150,120,90,.18); --shadow:0 10px 34px rgba(120,100,80,.10);
+    --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"MS PMincho",serif;
+    --sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--sans); color:var(--ink); line-height:1.85;
+    background:
+      radial-gradient(1100px 500px at 12% -8%, rgba(230,181,172,.18), transparent 60%),
+      radial-gradient(1000px 520px at 92% 4%, rgba(203,189,221,.20), transparent 60%),
+      radial-gradient(900px 600px at 50% 110%, rgba(169,191,163,.16), transparent 60%),
+      var(--cream);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:46px 22px 70px;}
+
+  /* header */
+  header{text-align:center; padding:30px 18px 18px;}
+  .kicker{display:inline-block; font-size:12.5px; letter-spacing:.18em; color:var(--ink-soft);
+    background:rgba(255,255,255,.7); border:1px solid var(--line); border-radius:999px; padding:6px 16px; margin-bottom:20px;}
+  h1.title{font-family:var(--serif); font-size:52px; letter-spacing:.06em; margin:6px 0 8px; font-weight:600; color:#574436;}
+  .ruby{font-size:14px; color:var(--ink-soft); letter-spacing:.3em;}
+  .tagline{font-family:var(--serif); font-size:19px; color:#6b5a4c; margin-top:14px; letter-spacing:.04em;}
+  .meta{margin-top:18px; display:flex; gap:9px; justify-content:center; flex-wrap:wrap;}
+  .meta span{font-size:12px; color:var(--ink-soft); background:rgba(255,255,255,.66);
+    border:1px solid var(--line); border-radius:999px; padding:5px 13px;}
+
+  /* sections */
+  section{background:var(--card); border:1px solid var(--line); border-radius:26px;
+    box-shadow:var(--shadow); padding:30px 30px 28px; margin-top:24px;}
+  h2{font-family:var(--serif); font-size:23px; letter-spacing:.04em; margin:0 0 16px; color:#5d4a3b;
+    display:flex; align-items:center; gap:11px; font-weight:600;}
+  h2 .dot{width:11px; height:11px; border-radius:50%; flex:none;
+    background:linear-gradient(135deg,var(--rose),var(--milk));}
+  p{margin:0 0 12px;}
+  .lead{font-size:17px;}
+  .soft{color:var(--ink-soft); font-size:14px;}
+  b,strong{color:#4f3f33;}
+
+  /* feature cards */
+  .grid{display:grid; gap:14px;}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .card{background:#fff; border:1px solid var(--line); border-radius:18px; padding:17px 16px;}
+  .card .ico{font-size:24px;}
+  .card h3{margin:8px 0 6px; font-size:15.5px; color:#54453a; font-family:var(--sans);}
+  .card p{font-size:13.5px; color:#6f6052; margin:0; line-height:1.7;}
+
+  /* flow diagram */
+  .flow{display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; margin:8px 0 4px;}
+  .node{background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:13px 16px;
+    text-align:center; min-width:118px; box-shadow:0 4px 14px rgba(120,100,80,.06);}
+  .node .t{font-size:14px; font-weight:600; color:#56473b;}
+  .node .s{font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+  .node.rose{background:#FBEEEB; border-color:rgba(230,181,172,.55);}
+  .node.sage{background:#EEF3EC; border-color:rgba(169,191,163,.55);}
+  .node.lav{background:#F1EDF6; border-color:rgba(203,189,221,.6);}
+  .node.milk{background:#F6EEE1; border-color:rgba(217,195,166,.6);}
+  .arrow{font-size:22px; color:var(--rose); font-weight:700;}
+
+  .scatter{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:300px;}
+  .chip{font-size:12.5px; color:#6f6052; background:#fff; border:1px dashed rgba(150,120,90,.4);
+    border-radius:999px; padding:6px 12px;}
+  .chip:nth-child(2){transform:translateY(6px);} .chip:nth-child(3){transform:translateY(-4px);}
+  .chip:nth-child(5){transform:translateY(5px);}
+
+  /* loop */
+  .loop{display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px;}
+  .step{background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:10px 13px; font-size:13px; text-align:center; color:#56473b;}
+  .step .e{display:block; font-size:18px; margin-bottom:2px;}
+  .step.human{background:#FBEEEB; border-color:var(--rose); color:#a35a4e; font-weight:600;}
+  .loopnote{text-align:center; margin-top:12px; font-size:13px; color:var(--ink-soft);}
+
+  /* highlight box */
+  .hl{background:linear-gradient(180deg,#FBF0EC,#F7EFE6); border:1px solid rgba(230,181,172,.5);
+    border-radius:18px; padding:18px 20px; margin:6px 0 2px;}
+  .hl .q{font-family:var(--serif); font-size:18px; color:#6a5446; letter-spacing:.03em;}
+
+  /* badges */
+  .badges{display:flex; flex-wrap:wrap; gap:10px;}
+  .badge{background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 15px; font-size:13.5px; color:#5b4c40;}
+  .badge b{display:block; font-size:11px; color:var(--ink-soft); font-weight:500; letter-spacing:.05em;}
+
+  /* axis */
+  .axis .card{border-top:3px solid var(--sage);}
+  .axis .card:nth-child(2){border-top-color:var(--milk);}
+  .axis .card:nth-child(3){border-top-color:var(--rose);}
+  .axis .tag{font-size:11px; color:var(--ink-soft); letter-spacing:.1em;}
+
+  /* revenue */
+  .rev .card{text-align:center;}
+  .rev .amt{font-family:var(--serif); font-size:20px; color:#7a5a4a; margin-top:4px;}
+  .star{display:inline-block; background:var(--rose); color:#fff; font-size:10.5px; border-radius:999px; padding:2px 9px; margin-top:8px;}
+
+  /* timeline */
+  .tl{position:relative;}
+  .tl .bar{height:6px; border-radius:999px; margin:6px 0 16px;
+    background:linear-gradient(90deg,var(--sage),var(--milk),var(--rose),var(--lav));}
+  .week{position:relative;}
+  .week .wk{font-family:var(--serif); font-size:15px; color:#7a5a4a;}
+  .week h3{font-size:14px; margin:5px 0 7px; color:#54453a;}
+  .week ul{margin:0; padding-left:17px;} .week li{font-size:12.8px; color:#6f6052; margin-bottom:4px; line-height:1.6;}
+
+  /* palette */
+  .sw{display:flex; gap:10px; flex-wrap:wrap; margin:4px 0 12px;}
+  .sw div{width:64px; text-align:center; font-size:10.5px; color:var(--ink-soft);}
+  .sw i{display:block; height:46px; border-radius:13px; border:1px solid var(--line); margin-bottom:5px;}
+  .keys{display:flex; gap:8px; flex-wrap:wrap;}
+  .keys span{font-size:12.5px; color:#6b5a4c; background:#fff; border:1px solid var(--line); border-radius:999px; padding:5px 13px;}
+
+  /* steps next */
+  .next{display:flex; gap:12px; flex-wrap:wrap;}
+  .next .s{flex:1 1 150px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:15px;}
+  .next .n{display:inline-block; width:24px; height:24px; border-radius:50%; background:var(--sage); color:#fff;
+    text-align:center; line-height:24px; font-size:13px; font-weight:700; margin-bottom:8px;}
+  .next h3{font-size:14px; margin:0 0 5px; color:#54453a;} .next p{font-size:12.8px; color:#6f6052; margin:0;}
+
+  footer{text-align:center; color:var(--ink-soft); font-size:12px; margin-top:34px; padding-top:14px;}
+  .leaf{font-size:20px;}
+
+  @media(max-width:720px){
+    h1.title{font-size:40px;} .g3,.g4,.axis.grid{grid-template-columns:1fr 1fr;}
+    .rev.grid{grid-template-columns:1fr;} .wrap{padding:26px 14px 50px;}
+    section{padding:24px 18px;}
+  }
+  @media(max-width:480px){ .g3,.g4{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="kicker">📖 コミュ発表用サマリー ・ 2026.06.03</span>
+    <h1 class="title">新刊日和</h1>
+    <div class="ruby">し ん か ん び よ り</div>
+    <p class="tagline">散らばる文芸の新刊情報を、毎日ひとつの本棚に。</p>
+    <div class="meta">
+      <span>📚 文芸書キュレーション</span>
+      <span>🤖 AI自律編集メディア</span>
+      <span>🏆 コンテスト挑戦中（〜7月初旬）</span>
+    </div>
+  </header>
+
+  <!-- WHAT -->
+  <section>
+    <h2><span class="dot"></span>ひとことで言うと</h2>
+    <p class="lead">各出版社・書店・ストアにバラバラな「今日発売の文芸書」を毎日まとめ、<b>AIが“今日の一冊”を選んで紹介文まで書く</b>、カレンダー型のキュレーションサイトです。読みたい本に、買えるリンク付きで出会えます。</p>
+    <div class="grid g3" style="margin-top:14px;">
+      <div class="card"><div class="ico">🗓️</div><h3>毎日まるごと網羅</h3><p>当日＋近刊の新刊をカレンダーで一覧。日付をめくって探せる。</p></div>
+      <div class="card"><div class="ico">✨</div><h3>注目作をピック</h3><p>網羅だけで終わらせず、編集視点（AI＋人）で“今日の一冊”を選ぶ。</p></div>
+      <div class="card"><div class="ico">📕</div><h3>文芸を広めに</h3><p>小説・エッセイ・ノンフィクションまで。読み物好きの女性に向けて。</p></div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section>
+    <h2><span class="dot"></span>解決したい課題</h2>
+    <p class="lead">文芸の新刊情報は、<b>あちこちに散らばっています。</b>「今日どんな本が出たの？」が、一目では分からない。</p>
+    <div class="flow" style="margin-top:18px;">
+      <div class="scatter">
+        <span class="chip">出版社サイト</span>
+        <span class="chip">書店</span>
+        <span class="chip">SNS</span>
+        <span class="chip">書評</span>
+        <span class="chip">電子ストア</span>
+        <span class="chip">ランキング</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node rose"><div class="t">新刊日和</div><div class="s">毎日ひとつの本棚に集約</div></div>
+    </div>
+    <p class="soft" style="text-align:center; margin-top:10px;">バラバラの情報を、一か所で・毎日・やさしく。</p>
+  </section>
+
+  <!-- CONCEPT -->
+  <section>
+    <h2><span class="dot"></span>コンセプト（ここが差別化）</h2>
+    <div class="hl">
+      <p class="q">「ただ集める網羅サイト」ではなく、<br><b>AIが毎日“今日の一冊”を選書し、オリジナルの紹介文を書く、人手ゼロの自律編集メディア。」</b></p>
+    </div>
+    <p class="soft" style="margin-top:12px;">※ 新刊“情報”を並べるだけのサイトは既にたくさんあります。新刊日和の価値は <b>集約 ＋ 選書 ＋ オリジナルの語り ＋ 自動運用</b>。だから埋もれない。</p>
+  </section>
+
+  <!-- HOW -->
+  <section>
+    <h2><span class="dot"></span>仕組み（データの流れ）</h2>
+    <div class="flow">
+      <div class="node sage"><div class="t">楽天ブックスAPI<br>＋ openBD</div><div class="s">新刊・書影・書誌を取得</div></div>
+      <div class="arrow">→</div>
+      <div class="node milk"><div class="t">ISBNで名寄せ</div><div class="s">同じ本としてまとめる</div></div>
+      <div class="arrow">→</div>
+      <div class="node lav"><div class="t">Supabase</div><div class="s">データベースに保存</div></div>
+      <div class="arrow">→</div>
+      <div class="node rose"><div class="t">新刊日和サイト</div><div class="s">一覧・カレンダー・詳細</div></div>
+    </div>
+    <p class="soft" style="text-align:center;">公式APIだけを使用（スクレイピングなし＝安全・安定）。取得は <b>毎日自動</b>（GitHub Actions）。</p>
+
+    <h2 style="margin-top:26px;"><span class="dot"></span>自律ループ（“人手を減らす”の中身）</h2>
+    <div class="loop">
+      <div class="step"><span class="e">🔎</span>収集</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="e">🤖</span>選書(AI)</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="e">✍️</span>紹介文(AI)</div>
+      <div class="arrow">→</div>
+      <div class="step human"><span class="e">👤</span>承認（人）</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="e">🌐</span>公開</div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="e">📣</span>SNS下書き</div>
+    </div>
+    <p class="loopnote">↻ これを毎日くりかえす。人がやるのは <b>最後の「承認」ひと押し</b>だけ（品質とAIっぽさのチェック）。</p>
+  </section>
+
+  <!-- STACK -->
+  <section>
+    <h2><span class="dot"></span>技術スタック</h2>
+    <div class="badges">
+      <div class="badge"><b>サイト本体</b>Next.js</div>
+      <div class="badge"><b>データベース</b>Supabase</div>
+      <div class="badge"><b>公開</b>Vercel</div>
+      <div class="badge"><b>毎日の自動実行</b>GitHub Actions</div>
+      <div class="badge"><b>データ取得</b>楽天ブックスAPI / openBD</div>
+      <div class="badge"><b>運用コスト</b>ほぼ ¥0（無料枠）</div>
+    </div>
+  </section>
+
+  <!-- CONTEST -->
+  <section>
+    <h2><span class="dot"></span>コンテストでの戦い方（3つの軸）</h2>
+    <div class="grid g3 axis">
+      <div class="card"><div class="tag">① AUTONOMY</div><h3>自律性</h3><p>収集→選書→紹介文→SNS下書きまで無人で稼働。人は承認だけ。</p></div>
+      <div class="card"><div class="tag">② BUSINESS</div><h3>事業性</h3><p>「散らばる文芸情報」という実課題を解決。将来は出版社・作家向けへ拡張。</p></div>
+      <div class="card"><div class="tag">③ TRACTION</div><h3>売上反応</h3><p>自分の発信（note・SNS）で集客し、実際に「1円以上」の成果を出して証明。</p></div>
+    </div>
+  </section>
+
+  <!-- REVENUE -->
+  <section>
+    <h2><span class="dot"></span>収益モデル</h2>
+    <div class="grid g3 rev">
+      <div class="card"><div class="ico">🛒</div><h3>楽天アフィリエイト</h3><div class="amt">初日〜</div><p class="soft">登録すぐ収益化。収益の起点。</p></div>
+      <div class="card"><div class="ico">📦</div><h3>もしも経由 Amazon</h3><div class="amt">かんたんリンク</div><p class="soft">Amazon・楽天をまとめて掲載。</p></div>
+      <div class="card"><div class="ico">📖</div><h3>Kindle Unlimited 登録</h3><div class="amt">約 ¥500 / 件</div><span class="star">★ 単価が高い本命</span><p class="soft" style="margin-top:6px;">「今日読み放題で読める新刊」導線。</p></div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section>
+    <h2><span class="dot"></span>4週間ロードマップ</h2>
+    <div class="tl"><div class="bar"></div>
+      <div class="grid g4">
+        <div class="week"><div class="wk">Week 1</div><h3>基盤</h3><ul>
+          <li>ドメイン取得・デザイン</li><li>サイトの土台を構築</li><li>新刊データを毎日取得</li><li>一覧・カレンダー</li></ul></div>
+        <div class="week"><div class="wk">Week 2</div><h3>自律化 ★</h3><ul>
+          <li>AIが“今日の一冊”選書</li><li>オリジナル紹介文を生成</li><li>読み放題（KU）導線</li><li>購入リンク設置</li></ul></div>
+        <div class="week"><div class="wk">Week 3</div><h3>集客・実証</h3><ul>
+          <li>note記事を公開</li><li>SNSで告知</li><li>「1円以上」を達成＆記録</li><li>SNS下書き自動化</li></ul></div>
+        <div class="week"><div class="wk">Week 4</div><h3>仕上げ</h3><ul>
+          <li>デモ動画（3〜5分）</li><li>リポジトリ整備</li><li>事業性の発表資料</li><li>提出 🎉</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESIGN -->
+  <section>
+    <h2><span class="dot"></span>サイトの雰囲気</h2>
+    <p class="soft">30〜40代の女性に向けた、<b>ゆるふわ・淡い系</b>。「本屋さんのカフェ」のような、やわらかい紙の質感。</p>
+    <div class="sw">
+      <div><i style="background:#FBF7F0"></i>生成り</div>
+      <div><i style="background:#D9C3A6"></i>ミルクティー</div>
+      <div><i style="background:#A9BFA3"></i>セージ</div>
+      <div><i style="background:#E6B5AC"></i>くすみローズ</div>
+      <div><i style="background:#CBBDDD"></i>ラベンダー</div>
+    </div>
+    <div class="keys">
+      <span>明朝 × 丸ゴシック</span><span>角丸・余白たっぷり</span><span>手描き風の小装飾</span><span>書影が主役</span><span>読みやすさ重視</span>
+    </div>
+  </section>
+
+  <!-- NEXT -->
+  <section>
+    <h2><span class="dot"></span>いま動いていること（次の一歩）</h2>
+    <div class="next">
+      <div class="s"><span class="n">1</span><h3>ドメイン取得</h3><p>shinkanbiyori.com を取得（個人情報は非公開設定）。</p></div>
+      <div class="s"><span class="n">2</span><h3>デザイン作成</h3><p>淡い系のデザインをAIで設計 → そのまま実装。</p></div>
+      <div class="s"><span class="n">3</span><h3>実装スタート</h3><p>「今日の文芸新刊が画面に出る」MVPから着手。</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="leaf">🌿</div>
+    新刊日和 — 散らばる文芸情報を、毎日ひとつの本棚に。<br>
+    要件定義・戦略 検証済み（DAP）／ 運用は無料枠 ／ 公式APIのみ使用
+  </footer>
+
+</div>
+</body>
+</html>

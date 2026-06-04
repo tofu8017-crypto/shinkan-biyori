@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新刊日和 — デザインプレビュー</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== カラー変数 ===== */
+  :root {
+    --bg-base:    #FAF6F1;
+    --bg-card:    #FFFFFF;
+    --bg-subtle:  #F3EDE5;
+    --accent-rose: #E8C4B8;
+    --accent-sage: #B8D4C4;
+    --highlight:  #C4956A;
+    --text-main:  #3D3530;
+    --text-sub:   #7A6E68;
+    --text-muted: #A89E98;
+    --border:     #E8DDD6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-base);
+    color: var(--text-main);
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ===== レイアウト ===== */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  /* ===== ヘッダー（サイトロゴ） ===== */
+  .site-header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 100%;
+  }
+  .site-logo {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 22px;
+    color: var(--text-main);
+    letter-spacing: 0.05em;
+  }
+  .site-logo span {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: 8px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-weight: 400;
+  }
+  .header-nav {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+
+  /* ===== カラーパレット ===== */
+  .color-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .color-chip {
+    width: 140px;
+  }
+  .color-swatch {
+    height: 64px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .color-name { font-size: 12px; font-weight: 500; }
+  .color-code { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+
+  /* ===== タイポグラフィ ===== */
+  .typo-h1 { font-family: 'Noto Serif JP', serif; font-size: 32px; line-height: 1.4; margin-bottom: 12px; }
+  .typo-h2 { font-family: 'Noto Serif JP', serif; font-size: 24px; line-height: 1.5; margin-bottom: 12px; }
+  .typo-h3 { font-family: 'Noto Serif JP', serif; font-size: 18px; line-height: 1.5; margin-bottom: 12px; }
+  .typo-body { font-size: 15px; line-height: 1.8; color: var(--text-main); margin-bottom: 12px; }
+  .typo-sub  { font-size: 13px; color: var(--text-sub); margin-bottom: 12px; }
+  .typo-muted { font-size: 12px; color: var(--text-muted); }
+
+  /* ===== ボタン ===== */
+  .button-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--highlight);
+    color: #fff;
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-main);
+    border: 1.5px solid var(--accent-rose);
+  }
+  .btn-rakuten {
+    background: #3D3530;
+    color: #fff;
+    font-size: 12px;
+    padding: 7px 14px;
+  }
+  .btn-amazon {
+    background: #FF9900;
+    color: #111;
+    font-size: 12px;
+    padding: 7px 14px;
+  }
+  .tag {
+    display: inline-block;
+    background: var(--bg-subtle);
+    color: var(--text-sub);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-rose);
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: 9999px;
+  }
+  .badge-today {
+    background: var(--highlight);
+    color: #fff;
+  }
+
+  /* ===== 書籍カード ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+  }
+  .book-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .book-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+  }
+  .book-cover {
+    width: 100%;
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  /* 各カードで書影の代わりに異なる背景色 */
+  .cover-1 { background: linear-gradient(135deg, #F0E6D8 0%, #E8D8CC 100%); }
+  .cover-2 { background: linear-gradient(135deg, #D8E8E0 0%, #C8DADA 100%); }
+  .cover-3 { background: linear-gradient(135deg, #E8D8E8 0%, #D8CCDC 100%); }
+  .cover-4 { background: linear-gradient(135deg, #F0E0D0 0%, #E8D0C0 100%); }
+  .cover-5 { background: linear-gradient(135deg, #D8E4EC 0%, #C8D8E8 100%); }
+
+  .book-info {
+    padding: 10px 12px 12px;
+  }
+  .book-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .book-author {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .book-buy {
+    display: flex;
+    gap: 6px;
+  }
+
+  /* ===== 今日の一冊（ヒーローカード） ===== */
+  .hero-pick {
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 2px solid var(--accent-rose);
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    box-shadow: 0 4px 16px rgba(196,149,106,0.12);
+    position: relative;
+  }
+  .hero-badge {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: var(--highlight);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 9999px;
+    letter-spacing: 0.1em;
+  }
+  .hero-cover {
+    width: 100px;
+    flex-shrink: 0;
+    aspect-ratio: 3/4;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .hero-text h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 18px;
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+  .hero-text .author {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+  }
+  .hero-text .comment {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-sub);
+    margin-bottom: 16px;
+  }
+
+  /* ===== カレンダー（ミニ） ===== */
+  .mini-calendar {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    max-width: 400px;
+  }
+  .cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .cal-month {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+  }
+  .cal-day-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 4px 0;
+  }
+  .cal-day {
+    font-size: 13px;
+    padding: 6px 4px;
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .cal-day:hover { background: var(--bg-subtle); }
+  .cal-day.today {
+    background: var(--highlight);
+    color: #fff;
+    font-weight: 700;
+  }
+  .cal-day.has-books .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-rose);
+  }
+  .cal-day.today .dot { background: rgba(255,255,255,0.8); }
+  .cal-day.empty { color: transparent; cursor: default; }
+  .cal-day.other-month { color: var(--text-muted); }
+
+  /* ===== ジャンルタブ ===== */
+  .genre-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .genre-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 9999px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .genre-chip:hover {
+    border-color: var(--accent-rose);
+    background: var(--bg-subtle);
+  }
+  .genre-chip.active {
+    background: var(--highlight);
+    border-color: var(--highlight);
+    color: #fff;
+  }
+  .genre-cat-slot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    border: 1.5px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .genre-chip.active .genre-cat-slot {
+    background: rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.4);
+  }
+
+  /* ===== ジャンルカード（大きめ） ===== */
+  .genre-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .genre-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .genre-card:hover {
+    border-color: var(--accent-rose);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  }
+  .genre-cat-big {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    border: 2px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 0 auto 12px;
+  }
+  .genre-card-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+  .genre-card-count {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  /* ジャンルごとのアクセントカラー */
+  .genre-card.junbungaku { border-top: 3px solid #B8D4C4; }
+  .genre-card.mystery    { border-top: 3px solid #C8B8D4; }
+  .genre-card.sf-horror  { border-top: 3px solid #B8C8D4; }
+  .genre-card.essay      { border-top: 3px solid #E8C4B8; }
+
+  /* ===== 背景バリエーション比較 ===== */
+  .bg-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .bg-sample {
+    padding: 24px 20px;
+    font-size: 14px;
+  }
+  .bg-sample h4 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+  .bg-sample p { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
+  .bg-sample code { font-size: 10px; color: var(--text-muted); font-family: monospace; }
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="site-header">
+  <div class="site-logo">新刊日和<span>文芸書の新刊カレンダー</span></div>
+  <nav class="header-nav">
+    <span>カレンダー</span>
+    <span>今日の一冊</span>
+    <span>ジャンル</span>
+  </nav>
+</header>
+
+<!-- 0a. ジャンルタブ型 -->
+<div class="section">
+  <div class="section-title">00a / Genre Navigation — タブ型（ヘッダー下に並ぶ）</div>
+  <div class="genre-nav">
+    <div class="genre-chip active">
+      <div class="genre-cat-slot">🐱</div>
+      すべて
+    </div>
+    <div class="genre-chip">
+      <div class="genre-cat-slot">猫待ち</div>
+      小説（日本）
+    </div>
+    <div class="genre-chip">
+      <div class="genre-cat-slot">猫待ち</div>
+      小説（海外）
+    </div>
+    <div class="genre-chip">
+      <div class="genre-cat-slot">猫待ち</div>
+      ミステリー
+    </div>
+    <div class="genre-chip">
+      <div class="genre-cat-slot">猫待ち</div>
+      SF・ホラー
+    </div>
+    <div class="genre-chip">
+      <div class="genre-cat-slot">猫待ち</div>
+      エッセイ
+    </div>
+  </div>
+  <p style="font-size:11px; color:var(--text-muted); margin-top:12px;">「猫待ち」の丸枠に猫キャラ画像が入ります。ジャンル追加はここに1つ足すだけ。</p>
+</div>
+
+<!-- 0b. ジャンルカード型 -->
+<div class="section">
+  <div class="section-title">00b / Genre Cards — トップページ用カード型（大きめ）</div>
+  <div class="genre-cards">
+    <div class="genre-card junbungaku">
+      <div class="genre-cat-big">猫<br>待ち</div>
+      <div class="genre-card-name">小説（日本）</div>
+      <div class="genre-card-count">今月 42冊</div>
+    </div>
+    <div class="genre-card" style="border-top:3px solid #D4C8B8;">
+      <div class="genre-cat-big">猫<br>待ち</div>
+      <div class="genre-card-name">小説（海外）</div>
+      <div class="genre-card-count">今月 18冊</div>
+    </div>
+    <div class="genre-card mystery">
+      <div class="genre-cat-big">猫<br>待ち</div>
+      <div class="genre-card-name">ミステリー</div>
+      <div class="genre-card-count">今月 38冊</div>
+    </div>
+    <div class="genre-card sf-horror">
+      <div class="genre-cat-big">猫<br>待ち</div>
+      <div class="genre-card-name">SF・ホラー</div>
+      <div class="genre-card-count">今月 21冊</div>
+    </div>
+    <div class="genre-card essay">
+      <div class="genre-cat-big">猫<br>待ち</div>
+      <div class="genre-card-name">エッセイ</div>
+      <div class="genre-card-count">今月 29冊</div>
+    </div>
+  </div>
+  <p style="font-size:11px; color:var(--text-muted); margin-top:12px;">カード上の丸枠に猫キャラが入ります。ジャンルを増やすときはカードを追加するだけ。</p>
+</div>
+
+<!-- 1. カラーパレット -->
+<div class="section">
+  <div class="section-title">01 / Color Palette</div>
+  <div class="color-grid">
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#FAF6F1"></div>
+      <div class="color-name">bg-base</div>
+      <div class="color-code">#FAF6F1 — ページ背景</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#F3EDE5"></div>
+      <div class="color-name">bg-subtle</div>
+      <div class="color-code">#F3EDE5 — サブ背景</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#FFFFFF; border:1px solid #E8DDD6"></div>
+      <div class="color-name">bg-card</div>
+      <div class="color-code">#FFFFFF — カード背景</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#E8C4B8"></div>
+      <div class="color-name">accent-rose</div>
+      <div class="color-code">#E8C4B8 — くすみピンク</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#B8D4C4"></div>
+      <div class="color-name">accent-sage</div>
+      <div class="color-code">#B8D4C4 — セージグリーン</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#C4956A"></div>
+      <div class="color-name">highlight</div>
+      <div class="color-code">#C4956A — 今日の一冊</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#3D3530"></div>
+      <div class="color-name">text-main</div>
+      <div class="color-code">#3D3530 — 本文テキスト</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#7A6E68"></div>
+      <div class="color-name">text-sub</div>
+      <div class="color-code">#7A6E68 — 補足テキスト</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-swatch" style="background:#A89E98"></div>
+      <div class="color-name">text-muted</div>
+      <div class="color-code">#A89E98 — 薄いテキスト</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. 背景バリエーション比較 -->
+<div class="section">
+  <div class="section-title">02 / Background Comparison（3パターン）</div>
+  <div class="bg-compare">
+    <div class="bg-sample" style="background:#FAF6F1; color:#3D3530;">
+      <h4>生成りホワイト</h4>
+      <p>今日の文芸書を一覧で</p>
+      <p style="font-size:13px; line-height:1.8; color:#7A6E68;">6月4日（水）の新刊から<br>気になる一冊を見つけよう。</p>
+      <code>#FAF6F1 ← 現在の提案</code>
+    </div>
+    <div class="bg-sample" style="background:#F5EFE8; color:#3D3530;">
+      <h4>少し濃い生成り</h4>
+      <p>今日の文芸書を一覧で</p>
+      <p style="font-size:13px; line-height:1.8; color:#7A6E68;">6月4日（水）の新刊から<br>気になる一冊を見つけよう。</p>
+      <code>#F5EFE8 ← やや温かみ強め</code>
+    </div>
+    <div class="bg-sample" style="background:#FDFAF7; color:#3D3530;">
+      <h4>ほぼホワイト</h4>
+      <p>今日の文芸書を一覧で</p>
+      <p style="font-size:13px; line-height:1.8; color:#7A6E68;">6月4日（水）の新刊から<br>気になる一冊を見つけよう。</p>
+      <code>#FDFAF7 ← すっきり白寄り</code>
+    </div>
+  </div>
+</div>
+
+<!-- 3. タイポグラフィ -->
+<div class="section">
+  <div class="section-title">03 / Typography</div>
+  <p class="typo-h1">新刊日和</p>
+  <p class="typo-h2">6月の文芸新刊</p>
+  <p class="typo-h3">今日の一冊「春の庭」</p>
+  <p class="typo-body">毎日更新の文芸書新刊カレンダー。小説・エッセイ・ノンフィクションを中心に、今日発売の本をまとめています。Amazon・楽天からすぐ購入できます。</p>
+  <p class="typo-sub">著者名 / 出版社名 / 2026年6月4日発売</p>
+  <p class="typo-muted">※ 楽天ブックスAPIのデータをもとに自動取得しています</p>
+</div>
+
+<!-- 4. ボタン・バッジ -->
+<div class="section">
+  <div class="section-title">04 / Buttons &amp; Badges</div>
+  <div class="button-row" style="margin-bottom:20px;">
+    <button class="btn btn-primary">今日の一冊を見る</button>
+    <button class="btn btn-secondary">詳細を見る</button>
+    <button class="btn btn-rakuten">楽天で買う</button>
+    <button class="btn btn-amazon">Amazonで買う</button>
+  </div>
+  <div class="button-row">
+    <span class="tag">小説</span>
+    <span class="tag">エッセイ</span>
+    <span class="tag">ノンフィクション</span>
+    <span class="badge">5</span>
+    <span class="badge badge-today">今日</span>
+    <span class="badge" style="background:var(--accent-sage);">近刊</span>
+  </div>
+</div>
+
+<!-- 5. 書籍カード -->
+<div class="section">
+  <div class="section-title">05 / Book Cards</div>
+  <div class="card-grid">
+    <div class="book-card">
+      <div class="book-cover cover-1">表紙</div>
+      <div class="book-info">
+        <div class="book-title">春の庭にきみを待つ</div>
+        <div class="book-author">柴崎友香</div>
+        <div class="book-buy">
+          <button class="btn btn-rakuten">楽天</button>
+          <button class="btn btn-amazon">Amazon</button>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover cover-2">表紙</div>
+      <div class="book-info">
+        <div class="book-title">記憶の地図</div>
+        <div class="book-author">小川洋子</div>
+        <div class="book-buy">
+          <button class="btn btn-rakuten">楽天</button>
+          <button class="btn btn-amazon">Amazon</button>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover cover-3">表紙</div>
+      <div class="book-info">
+        <div class="book-title">日々のかけら、すこし</div>
+        <div class="book-author">岸本佐知子</div>
+        <div class="book-buy">
+          <button class="btn btn-rakuten">楽天</button>
+          <button class="btn btn-amazon">Amazon</button>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover cover-4">表紙</div>
+      <div class="book-info">
+        <div class="book-title">ゆうべの月</div>
+        <div class="book-author">川上弘美</div>
+        <div class="book-buy">
+          <button class="btn btn-rakuten">楽天</button>
+          <button class="btn btn-amazon">Amazon</button>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover cover-5">表紙</div>
+      <div class="book-info">
+        <div class="book-title">言葉の森をあるく</div>
+        <div class="book-author">三浦しをん</div>
+        <div class="book-buy">
+          <button class="btn btn-rakuten">楽天</button>
+          <button class="btn btn-amazon">Amazon</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. 今日の一冊（ヒーローカード） -->
+<div class="section">
+  <div class="section-title">06 / 今日の一冊（ヒーローカード）</div>
+  <div class="hero-pick">
+    <div class="hero-badge">✦ 今日の一冊</div>
+    <div class="hero-cover cover-1">表紙</div>
+    <div class="hero-text">
+      <h3>春の庭にきみを待つ</h3>
+      <div class="author">柴崎友香 著 ／ 河出書房新社</div>
+      <div class="comment">
+        日常の細部を丁寧に掬いとる柴崎友香の新作。
+        ある春の午後、小さな庭で繰り広げられる静かな時間の物語。
+        読み終わると、窓の外の光が少し変わって見える一冊です。
+      </div>
+      <div class="button-row">
+        <button class="btn btn-rakuten">楽天で買う</button>
+        <button class="btn btn-amazon">Amazonで買う</button>
+        <button class="btn btn-secondary">詳細を見る</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. カレンダー -->
+<div class="section">
+  <div class="section-title">07 / Calendar（ミニプレビュー）</div>
+  <div class="mini-calendar">
+    <div class="cal-header">
+      <span style="font-size:18px; color:var(--text-sub);">‹</span>
+      <span class="cal-month">2026年 6月</span>
+      <span style="font-size:18px; color:var(--text-sub);">›</span>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-day-label">日</div>
+      <div class="cal-day-label">月</div>
+      <div class="cal-day-label">火</div>
+      <div class="cal-day-label">水</div>
+      <div class="cal-day-label">木</div>
+      <div class="cal-day-label">金</div>
+      <div class="cal-day-label">土</div>
+      <!-- 空白 -->
+      <div class="cal-day empty">×</div>
+      <div class="cal-day has-books">2<div class="dot"></div></div>
+      <div class="cal-day has-books">3<div class="dot"></div></div>
+      <div class="cal-day today">4<div class="dot"></div></div>
+      <div class="cal-day has-books">5<div class="dot"></div></div>
+      <div class="cal-day has-books">6<div class="dot"></div></div>
+      <div class="cal-day">7</div>
+      <div class="cal-day">8</div>
+      <div class="cal-day has-books">9<div class="dot"></div></div>
+      <div class="cal-day has-books">10<div class="dot"></div></div>
+      <div class="cal-day has-books">11<div class="dot"></div></div>
+      <div class="cal-day has-books">12<div class="dot"></div></div>
+      <div class="cal-day has-books">13<div class="dot"></div></div>
+      <div class="cal-day">14</div>
+      <div class="cal-day">15</div>
+      <div class="cal-day has-books">16<div class="dot"></div></div>
+      <div class="cal-day has-books">17<div class="dot"></div></div>
+      <div class="cal-day has-books">18<div class="dot"></div></div>
+      <div class="cal-day has-books">19<div class="dot"></div></div>
+      <div class="cal-day has-books">20<div class="dot"></div></div>
+      <div class="cal-day">21</div>
+      <div class="cal-day">22</div>
+      <div class="cal-day has-books">23<div class="dot"></div></div>
+      <div class="cal-day has-books">24<div class="dot"></div></div>
+      <div class="cal-day has-books">25<div class="dot"></div></div>
+      <div class="cal-day has-books">26<div class="dot"></div></div>
+      <div class="cal-day other-month">27</div>
+      <div class="cal-day other-month">28</div>
+      <div class="cal-day other-month">29</div>
+    </div>
+  </div>
+  <p style="font-size:12px; color:var(--text-muted); margin-top:12px;">● のある日 = 文芸新刊あり。日付クリックで当日の新刊一覧へ。</p>
+</div>
+
+<!-- フッター -->
+<div style="text-align:center; padding:48px 24px; background:var(--bg-subtle); color:var(--text-muted); font-size:12px;">
+  新刊日和 — 毎日更新の文芸書新刊カレンダー<br>
+  <span style="font-size:11px;">※ これはデザインプレビュー用のモックアップです</span>
+</div>
+
+</body>
+</html>
