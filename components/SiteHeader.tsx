@@ -45,10 +45,11 @@ export default function SiteHeader() {
                   background: "var(--bg-card)",
                 }}
               >
-                {/* 猫キャラスロット：画像が来たら <img src={`/cats/${g.id}.png`} /> に差し替え */}
-                <span
-                  className="w-4 h-4 rounded-full border border-dashed flex-shrink-0"
-                  style={{ borderColor: "var(--text-muted)" }}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/cats/${g.id}.png`}
+                  alt={g.label}
+                  className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                 />
                 {g.label}
               </a>
