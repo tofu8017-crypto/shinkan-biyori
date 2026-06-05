@@ -34,6 +34,9 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
     .from("books")
     .select("*")
     .eq("published_date", date)
+    .not("title", "ilike", "%写真集%")
+    .not("title", "ilike", "%グラビア%")
+    .not("title", "ilike", "%アイドル%")
     .order("title");
 
   if (error) throw new Error(error.message);
@@ -56,6 +59,9 @@ export async function getBooksByDateRange(
     .select("*")
     .gte("published_date", from)
     .lte("published_date", to)
+    .not("title", "ilike", "%写真集%")
+    .not("title", "ilike", "%グラビア%")
+    .not("title", "ilike", "%アイドル%")
     .order("published_date");
 
   if (error) throw new Error(error.message);
