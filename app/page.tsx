@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
