@@ -2,7 +2,7 @@
 /**
  * 日次バッチ: 楽天ブックスAPIから文芸新刊を取得してSupabaseに保存する
  * 実行: node scripts/fetch-books.js
- * 必要な環境変数: RAKUTEN_APP_ID, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+ * 必要な環境変数: RAKUTEN_APP_ID, RAKUTEN_ACCESS_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  */
 
 const { createClient } = require("@supabase/supabase-js");
@@ -10,6 +10,7 @@ const { createClient } = require("@supabase/supabase-js");
 // ===== 設定 =====
 
 const RAKUTEN_APP_ID       = process.env.RAKUTEN_APP_ID;
+const RAKUTEN_ACCESS_KEY   = process.env.RAKUTEN_ACCESS_KEY;
 const RAKUTEN_AFFILIATE_ID = process.env.RAKUTEN_AFFILIATE_ID ?? "";
 const SUPABASE_URL         = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY         = process.env.SUPABASE_SERVICE_ROLE_KEY; // バッチはservice_role
@@ -86,18 +87,21 @@ function parseISBN(isbn) {
 async function fetchGenrePage(genreId, salesDateFrom, salesDateTo, page) {
   const params = new URLSearchParams({
     applicationId:  RAKUTEN_APP_ID,
+    accessKey:      RAKUTEN_ACCESS_KEY,
     affiliateId:    RAKUTEN_AFFILIATE_ID,
     booksGenreId:   genreId,
     salesDate:      `${salesDateFrom}TO${salesDateTo}`,
     hits:           "30",
     page:           String(page),
-    sort:           "salesDate",
+    sort:           "-releaseDate",
     outOfStockFlag: "1",
     formatVersion:  "2",
   });
 
-  const url = `https://app.rakuten.co.jp/services/api/BooksBook/Search/20170404?${params}`;
-  const res = await fetch(url);
+  const url = `https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?${params}`;
+  const res = await fetch(url, {
+    headers: { Referer: "https://shinkanbiyori.com" },
+  });
 
   if (!res.ok) {
     const text = await res.text();
@@ -116,7 +120,7 @@ async function fetchAllBooksForGenre(genreId, label, from, to) {
     const data = await fetchGenrePage(genreId, from, to, page);
     const items = data.Items ?? [];
 
-    for (const { Item } of items) {
+    for (const Item of items) {
       const { isbn13, isbn10 } = parseISBN(Item.isbn ?? "");
       const publishedDate = parseSalesDate(Item.salesDate ?? "");
       if (!isbn13 || !publishedDate) continue;
@@ -173,8 +177,8 @@ async function upsertBooks(supabase, books) {
 
 async function main() {
   // 環境変数チェック
-  if (!RAKUTEN_APP_ID) {
-    console.error("❌ RAKUTEN_APP_ID が設定されていません");
+  if (!RAKUTEN_APP_ID || !RAKUTEN_ACCESS_KEY) {
+    console.error("❌ RAKUTEN_APP_ID または RAKUTEN_ACCESS_KEY が設定されていません");
     process.exit(1);
   }
   if (!SUPABASE_URL || !SUPABASE_KEY) {
