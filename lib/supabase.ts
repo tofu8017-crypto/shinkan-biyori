@@ -1,9 +1,17 @@
 import type { Book } from "@/types/book";
 import { MOCK_BOOKS } from "./mock-data";
 
-const useMock =
-  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL === "https://xxxxxx.supabase.co";
+function isValidSupabaseUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return (u.protocol === "http:" || u.protocol === "https:") && url !== "https://xxxxxx.supabase.co";
+  } catch {
+    return false;
+  }
+}
+
+const useMock = !isValidSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 async function getClient() {
   if (useMock) return null;
