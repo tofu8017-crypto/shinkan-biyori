@@ -1,5 +1,6 @@
 import type { Book } from "@/types/book";
 import { GENRES } from "@/types/book";
+import { amazonUrl } from "@/lib/amazon";
 
 type Props = { book: Book; featured?: boolean };
 
@@ -9,6 +10,7 @@ const COVER_GRADIENTS: Record<string, string> = {
   "001004001": "linear-gradient(145deg,#eee5f4,#b9a6c9)",
   "001004002": "linear-gradient(145deg,#dfeef5,#9fc0d1)",
   "001004003": "linear-gradient(145deg,#f7e1d8,#e7b49f)",
+  "001006": "linear-gradient(145deg,#efe7cf,#cdbb8e)",
 };
 
 function CoverPlaceholder({ book, genre, large = false }: { book: Book; genre: typeof GENRES[0] | undefined; large?: boolean }) {
@@ -59,7 +61,8 @@ function CoverPlaceholder({ book, genre, large = false }: { book: Book; genre: t
 
 export default function BookCard({ book, featured = false }: Props) {
   const genre = GENRES.find((g) => g.id === book.genre_id);
-  const href = book.rakuten_url ?? book.amazon_url ?? "#";
+  const azUrl = amazonUrl(book);
+  const href = book.rakuten_url ?? azUrl;
   const borderColor = genre?.color ?? "var(--border)";
 
   if (featured) {
@@ -142,13 +145,11 @@ export default function BookCard({ book, featured = false }: Props) {
                 楽天
               </a>
             )}
-            {book.amazon_url && (
-              <a href={book.amazon_url} target="_blank" rel="noopener noreferrer"
-                className="text-sm font-bold rounded-full px-5 py-2 transition-opacity hover:opacity-80"
-                style={{ background: "#ED8A22", color: "#fff", textDecoration: "none" }}>
-                Amazon
-              </a>
-            )}
+            <a href={azUrl} target="_blank" rel="noopener noreferrer"
+              className="text-sm font-bold rounded-full px-5 py-2 transition-opacity hover:opacity-80"
+              style={{ background: "#ED8A22", color: "#fff", textDecoration: "none" }}>
+              Amazon
+            </a>
           </div>
         </div>
       </article>
@@ -209,13 +210,11 @@ export default function BookCard({ book, featured = false }: Props) {
             楽天
           </a>
         )}
-        {book.amazon_url && (
-          <a href={book.amazon_url} target="_blank" rel="noopener noreferrer"
-            className="text-xs font-bold rounded-full px-3 py-1 transition-opacity hover:opacity-80"
-            style={{ background: "#ED8A22", color: "#fff", textDecoration: "none" }}>
-            Amazon
-          </a>
-        )}
+        <a href={azUrl} target="_blank" rel="noopener noreferrer"
+          className="text-xs font-bold rounded-full px-3 py-1 transition-opacity hover:opacity-80"
+          style={{ background: "#ED8A22", color: "#fff", textDecoration: "none" }}>
+          Amazon
+        </a>
       </div>
     </article>
   );

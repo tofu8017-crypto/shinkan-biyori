@@ -32,3 +32,43 @@ body {
   background: var(--bg-base);
   color: var(--text-main);
 }
+
+/* ===== レスポンシブ・レイアウト ===== */
+
+/* 今日の新刊グリッド */
+.today-grid {
+  display: grid;
+  grid-template-columns: 1.15fr repeat(4, 1fr);
+  gap: 18px;
+}
+.today-grid .featured-cell { grid-column: span 2; }
+
+/* 直近7日間グリッド */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 16px;
+}
+
+/* タブレット以下 */
+@media (max-width: 900px) {
+  .today-grid { grid-template-columns: repeat(2, 1fr); }
+  .today-grid .featured-cell { grid-column: span 2; }
+}
+
+@media (max-width: 768px) {
+  .week-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+}
+
+/* スマホ */
+@media (max-width: 640px) {
+  .hero-section { height: 360px !important; }
+  .topbar { height: 64px !important; }
+  .site-logo { font-size: 30px !important; letter-spacing: 0.1em !important; }
+  .genre-nav-inner { height: 84px !important; gap: 22px !important; }
+  .genre-circle { width: 46px !important; height: 46px !important; }
+}
+
+@media (max-width: 480px) {
+  .week-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+}

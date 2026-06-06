@@ -1,10 +1,7 @@
 import type { Book } from "@/types/book";
 
-const today = new Date(
-  new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" })
-)
-  .toISOString()
-  .slice(0, 10);
+// en-CAロケールは "YYYY-MM-DD" 形式。timeZone指定で日本の暦日を正しく取得する
+const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
 
 const yesterday = new Date(
   new Date(today).getTime() - 24 * 60 * 60 * 1000

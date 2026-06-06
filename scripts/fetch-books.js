@@ -21,11 +21,17 @@ const GENRES = [
   { id: "001004001", label: "ミステリー"  },
   { id: "001004002", label: "SF・ホラー"  },
   { id: "001004003", label: "エッセイ"    },
+  { id: "001004004", label: "ノンフィクション" },
+  { id: "001004016", label: "ロマンス"    },
+  { id: "001019",    label: "文庫"        },
+  { id: "001006",    label: "ビジネス・実用書" },
 ];
 
-// 過去7日〜今後30日を取得ウィンドウとする
-const WINDOW_PAST_DAYS   = 7;
-const WINDOW_FUTURE_DAYS = 30;
+// 楽天APIには発売日の絞り込み入力パラメータが無い（salesDateは出力専用）。
+// そこで -releaseDate（発売日の新しい順）で取得し、こちら側で「直近〜近刊」の窓だけ保存する。
+const WINDOW_PAST_DAYS   = 14;   // 何日前まで保存するか
+const WINDOW_FUTURE_DAYS = 45;   // 何日先（近刊）まで保存するか
+const FAR_FUTURE_DAYS    = 120;  // これより先は「発売日未定」のプレースホルダ(例:2225年)とみなし除外
 
 // ===== ユーティリティ =====
 
@@ -33,25 +39,25 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// en-CAロケールは "YYYY-MM-DD" 形式。timeZone指定で日本の暦日を正しく取得する
 function todayJST() {
-  return new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" })
-  )
-    .toISOString()
-    .slice(0, 10);
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
 }
 
-function dateRange() {
-  const today = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" })
-  );
-  const from = new Date(today);
-  from.setDate(from.getDate() - WINDOW_PAST_DAYS);
-  const to = new Date(today);
-  to.setDate(to.getDate() + WINDOW_FUTURE_DAYS);
-  // 楽天API形式: YYYYMMDD
-  const fmt = (d) => d.toISOString().slice(0, 10).replace(/-/g, "");
-  return { from: fmt(from), to: fmt(to) };
+function addDays(isoDate, n) {
+  const d = new Date(isoDate + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// 保存対象の日付窓（"YYYY-MM-DD"文字列で比較。この形式は辞書順=日付順なのでそのまま大小比較できる）
+function dateWindow() {
+  const today = todayJST();
+  return {
+    start:     addDays(today, -WINDOW_PAST_DAYS),
+    end:       addDays(today,  WINDOW_FUTURE_DAYS),
+    farFuture: addDays(today,  FAR_FUTURE_DAYS),
+  };
 }
 
 function parseSalesDate(salesDate) {
@@ -84,13 +90,14 @@ function parseISBN(isbn) {
 
 // ===== 楽天API =====
 
-async function fetchGenrePage(genreId, salesDateFrom, salesDateTo, page) {
+async function fetchGenrePage(genreId, page) {
   const params = new URLSearchParams({
     applicationId:  RAKUTEN_APP_ID,
     accessKey:      RAKUTEN_ACCESS_KEY,
     affiliateId:    RAKUTEN_AFFILIATE_ID,
     booksGenreId:   genreId,
-    salesDate:      `${salesDateFrom}TO${salesDateTo}`,
+    // salesDateは入力フィルタとして機能しない（出力専用）ため指定しない。
+    // 発売日の新しい順で取得し、保存対象は呼び出し側が日付窓で絞る。
     hits:           "30",
     page:           String(page),
     sort:           "-releaseDate",
@@ -99,54 +106,75 @@ async function fetchGenrePage(genreId, salesDateFrom, salesDateTo, page) {
   });
 
   const url = `https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?${params}`;
-  const res = await fetch(url, {
-    headers: { Referer: "https://shinkanbiyori.com" },
-  });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Rakuten API error ${res.status}: ${text.slice(0, 200)}`);
+  // 一時的な "fetch failed" やサーバー側の不調に備えて最大3回リトライ（バックオフ付き）
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url, { headers: { Referer: "https://shinkanbiyori.com" } });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Rakuten API error ${res.status}: ${text.slice(0, 200)}`);
+      }
+      return res.json();
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 3) await sleep(2000 * attempt); // 2秒, 4秒とバックオフ
+    }
   }
-
-  return res.json();
+  throw lastErr;
 }
 
-async function fetchAllBooksForGenre(genreId, label, from, to) {
+async function fetchAllBooksForGenre(genreId, label, win) {
   const books = [];
   let page = 1;
+  const MAX_PAGE = 100; // 楽天APIのページ上限
 
-  while (true) {
-    console.log(`  📖 ${label} — ページ ${page} 取得中...`);
-    const data = await fetchGenrePage(genreId, from, to, page);
+  while (page <= MAX_PAGE) {
+    const data = await fetchGenrePage(genreId, page);
     const items = data.Items ?? [];
+    if (items.length === 0) break;
+
+    let minRealDate = null; // このページで見た「未定でない最古の発売日」
 
     for (const Item of items) {
       const { isbn13, isbn10 } = parseISBN(Item.isbn ?? "");
       const publishedDate = parseSalesDate(Item.salesDate ?? "");
       if (!isbn13 || !publishedDate) continue;
 
-      books.push({
-        isbn13,
-        isbn10:         isbn10 ?? null,
-        title:          Item.title,
-        author:         Item.author ?? "",
-        publisher:      Item.publisherName ?? "",
-        published_date: publishedDate,
-        genre_id:       genreId,
-        image_url:      Item.largeImageUrl ?? Item.mediumImageUrl ?? null,
-        rakuten_url:    Item.affiliateUrl || Item.itemUrl || null,
-        amazon_url:     isbn10 ? `https://www.amazon.co.jp/dp/${isbn10}` : null,
-        description:    null, // openBDフェーズ2で追加
-        last_synced_at: new Date().toISOString(),
-      });
+      // 遠すぎる未来（2225年等）は「発売日未定」のプレースホルダなので除外
+      if (publishedDate > win.farFuture) continue;
+
+      if (minRealDate === null || publishedDate < minRealDate) minRealDate = publishedDate;
+
+      // 保存するのは「直近〜近刊」の窓内だけ
+      if (publishedDate >= win.start && publishedDate <= win.end) {
+        books.push({
+          isbn13,
+          isbn10:         isbn10 ?? null,
+          title:          Item.title,
+          author:         Item.author ?? "",
+          publisher:      Item.publisherName ?? "",
+          published_date: publishedDate,
+          genre_id:       genreId,
+          image_url:      Item.largeImageUrl ?? Item.mediumImageUrl ?? null,
+          rakuten_url:    Item.affiliateUrl || Item.itemUrl || null,
+          amazon_url:     isbn10 ? `https://www.amazon.co.jp/dp/${isbn10}` : null,
+          description:    null, // openBDフェーズ2で追加
+          last_synced_at: new Date().toISOString(),
+        });
+      }
     }
 
-    // 次ページがあるか確認
-    if (page >= (data.pageCount ?? 1)) break;
-    page++;
+    console.log(`  📖 ${label} — ページ${String(page).padStart(3)}（窓内累計 ${books.length}冊 / 最古 ${minRealDate ?? "-"}）`);
 
-    // 楽天API規約: 1秒1リクエスト
-    await sleep(1100);
+    // 末尾ページに到達したら終了
+    if (page >= (data.pageCount ?? 1)) break;
+    // -releaseDate降順なので、窓の開始より古い日付が出たら以降は全て窓外 → 停止
+    if (minRealDate !== null && minRealDate < win.start) break;
+
+    page++;
+    await sleep(1100); // 楽天API規約: 1秒1リクエスト
   }
 
   return books;
@@ -187,18 +215,23 @@ async function main() {
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-  const { from, to } = dateRange();
+  const win = dateWindow();
+
+  // 引数でジャンルIDを1つ渡すとそれだけ実行（例: node scripts/fetch-books.js 001006）。
+  // 数字6桁以上の引数だけをジャンルIDとみなす（-r dotenv/config の dotenv_config_path=... を誤認しないため）
+  const onlyGenre = process.argv.slice(2).find((a) => /^[0-9]{6,}$/.test(a));
+  const targetGenres = onlyGenre ? GENRES.filter((g) => g.id === onlyGenre) : GENRES;
 
   console.log(`\n🌸 新刊日和 日次バッチ開始`);
-  console.log(`📅 取得期間: ${from} 〜 ${to}`);
-  console.log(`📚 対象ジャンル: ${GENRES.length}件\n`);
+  console.log(`📅 保存対象の発売日: ${win.start} 〜 ${win.end}（${win.farFuture}より先は未定扱いで除外）`);
+  console.log(`📚 対象ジャンル: ${targetGenres.length}件\n`);
 
   const allBooks = [];
 
-  for (const genre of GENRES) {
+  for (const genre of targetGenres) {
     try {
-      const books = await fetchAllBooksForGenre(genre.id, genre.label, from, to);
-      console.log(`  ✅ ${genre.label}: ${books.length}冊取得\n`);
+      const books = await fetchAllBooksForGenre(genre.id, genre.label, win);
+      console.log(`  ✅ ${genre.label}: 窓内 ${books.length}冊取得\n`);
       allBooks.push(...books);
     } catch (err) {
       console.error(`  ⚠️ ${genre.label} 取得エラー: ${err.message}`);

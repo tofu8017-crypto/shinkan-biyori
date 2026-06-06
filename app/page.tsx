@@ -6,18 +6,21 @@ import BookCard from "@/components/BookCard";
 import { getBooksByDate, getBooksByDateRange } from "@/lib/supabase";
 
 function todayJST(): string {
-  return new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" })
-  ).toISOString().slice(0, 10);
+  // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
+  // （toLocaleString→new Date→toISOStringの二重変換はサーバーのTZ次第で1日ずれるため避ける）
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
 }
 
 function formatDateJP(dateStr: string) {
-  const d = new Date(dateStr + "T00:00:00+09:00");
+  // dateStrは "YYYY-MM-DD"。サーバーのTZに依存しないよう、曜日はUTC基準で算出し、
+  // 月日は文字列から直接組み立てる（getDate/getDay等のローカル時刻ゲッターは使わない）
+  const [y, m, dd] = dateStr.split("-").map(Number);
   const days = ["日", "月", "火", "水", "木", "金", "土"];
+  const dow = days[new Date(Date.UTC(y, m - 1, dd)).getUTCDay()];
   return {
-    mmdd: `${d.getMonth() + 1}/${d.getDate()}`,
-    dow: days[d.getDay()],
-    full: `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${days[d.getDay()]}）`,
+    mmdd: `${m}/${dd}`,
+    dow,
+    full: `${y}年${m}月${dd}日（${dow}）`,
   };
 }
 
@@ -34,14 +37,11 @@ async function TodaysBooks() {
   }
 
   const [featured, ...rest] = books;
-  const gridStyle = rest.length > 0
-    ? { display: "grid", gridTemplateColumns: "1.15fr repeat(4, 1fr)", gap: "18px" }
-    : {};
 
   return (
-    <div style={gridStyle}>
+    <div className={rest.length > 0 ? "today-grid" : ""}>
       {/* フィーチャーカード（2列分） */}
-      <div style={rest.length > 0 ? { gridColumn: "span 2" } : {}}>
+      <div className={rest.length > 0 ? "featured-cell" : ""}>
         <BookCard book={featured} featured />
       </div>
       {/* 残りのカード */}
@@ -69,13 +69,7 @@ async function WeekDays() {
   });
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(7, 1fr)",
-        gap: "16px",
-      }}
-    >
+    <div className="week-grid">
       {dates.map((date, i) => {
         const fmt = formatDateJP(date);
         const dayBooks = grouped[date] ?? [];
@@ -153,6 +147,7 @@ export default async function HomePage() {
 
       {/* ヒーロー（全面表示） */}
       <section
+        className="hero-section"
         style={{
           position: "relative",
           height: "500px",
@@ -233,8 +228,8 @@ export default async function HomePage() {
           </div>
           <Suspense
             fallback={
-              <div style={{ display: "grid", gridTemplateColumns: "1.15fr repeat(4, 1fr)", gap: "18px" }}>
-                <div style={{ gridColumn: "span 2", borderRadius: "9px", background: "var(--bg-subtle)", minHeight: "400px" }} className="animate-pulse" />
+              <div className="today-grid">
+                <div className="featured-cell animate-pulse" style={{ borderRadius: "9px", background: "var(--bg-subtle)", minHeight: "400px" }} />
                 {[...Array(4)].map((_, i) => (
                   <div key={i} style={{ borderRadius: "9px", background: "var(--bg-subtle)", aspectRatio: "3/5" }} className="animate-pulse" />
                 ))}

@@ -4,6 +4,7 @@ export type Genre =
   | "001004001" // ミステリー
   | "001004002" // SF・ホラー
   | "001004003" // エッセイ
+  | "001006"    // ビジネス・実用書
 
 export const GENRES: { id: Genre; label: string; color: string }[] = [
   { id: "001004008", label: "小説（日本）", color: "#B8D4C4" },
@@ -11,6 +12,7 @@ export const GENRES: { id: Genre; label: string; color: string }[] = [
   { id: "001004001", label: "ミステリー",  color: "#C8B8D4" },
   { id: "001004002", label: "SF・ホラー",  color: "#B8C8D4" },
   { id: "001004003", label: "エッセイ",    color: "#E8C4B8" },
+  { id: "001006",    label: "ビジネス・実用書", color: "#D8C99A" },
 ]
 
 export type Book = {

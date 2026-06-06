@@ -43,6 +43,28 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
   return data ?? [];
 }
 
+export async function getBooksByGenre(genreId: string): Promise<Book[]> {
+  if (useMock) {
+    return MOCK_BOOKS.filter((b) => b.genre_id === genreId).sort((a, b) =>
+      b.published_date.localeCompare(a.published_date)
+    );
+  }
+
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .eq("genre_id", genreId)
+    .not("title", "ilike", "%写真集%")
+    .not("title", "ilike", "%グラビア%")
+    .not("title", "ilike", "%アイドル%")
+    .order("published_date", { ascending: false })
+    .limit(120);
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
 export async function getBooksByDateRange(
   from: string,
   to: string

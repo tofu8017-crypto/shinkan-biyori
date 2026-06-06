@@ -16,13 +16,13 @@ export default function SiteHeader() {
     >
       {/* トップバー */}
       <div
-        className="max-w-6xl mx-auto px-4 flex items-center justify-between"
+        className="max-w-6xl mx-auto px-4 flex items-center justify-between topbar"
         style={{ height: "86px" }}
       >
         <div className="flex items-end gap-6">
           <a
             href="/"
-            className="leading-none"
+            className="leading-none site-logo"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "42px",
@@ -53,7 +53,7 @@ export default function SiteHeader() {
         style={{ borderColor: "rgba(232,221,214,0.7)" }}
       >
         <div
-          className="max-w-6xl mx-auto px-4 flex items-center gap-11"
+          className="max-w-6xl mx-auto px-4 flex items-center gap-11 genre-nav-inner"
           style={{ height: "112px" }}
         >
           {/* すべて */}
@@ -66,7 +66,7 @@ export default function SiteHeader() {
             }}
           >
             <div
-              className="rounded-full flex items-center justify-center border text-2xl"
+              className="rounded-full flex items-center justify-center border text-2xl genre-circle"
               style={{
                 width: "58px",
                 height: "58px",
@@ -96,7 +96,7 @@ export default function SiteHeader() {
                 style={{ color: "var(--text-main)", textDecoration: "none" }}
               >
                 <div
-                  className="rounded-full overflow-hidden border flex-shrink-0"
+                  className="rounded-full overflow-hidden border flex-shrink-0 genre-circle"
                   style={{
                     width: "58px",
                     height: "58px",
