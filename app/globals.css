@@ -35,10 +35,10 @@ body {
 
 /* ===== レスポンシブ・レイアウト ===== */
 
-/* 今日の新刊グリッド */
+/* 今日の新刊グリッド（フィーチャー2列＋小カード4枚で6列ぴったり1行） */
 .today-grid {
   display: grid;
-  grid-template-columns: 1.15fr repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 18px;
 }
 .today-grid .featured-cell { grid-column: span 2; }

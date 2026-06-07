@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
-import { getBooksByDate, getBooksByDateRange } from "@/lib/supabase";
+import { getBooksByDateRange, getLatestBooks } from "@/lib/supabase";
 
 function todayJST(): string {
   // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
@@ -26,12 +26,13 @@ function formatDateJP(dateStr: string) {
 
 async function TodaysBooks() {
   const today = todayJST();
-  const books = await getBooksByDate(today);
+  // 「ちょうど今日」の本だけだと数冊しか無い日があるため、今日を含む直近の新刊を新着順で表示
+  const books = await getLatestBooks(today, 5);
 
   if (books.length === 0) {
     return (
       <p className="py-8 text-sm" style={{ color: "var(--text-muted)" }}>
-        今日の新刊情報は現在データ収集中です。明朝9時に更新されます。
+        新刊情報は現在データ収集中です。明朝9時に更新されます。
       </p>
     );
   }

@@ -53,7 +53,7 @@ export default function SiteHeader() {
         style={{ borderColor: "rgba(232,221,214,0.7)" }}
       >
         <div
-          className="max-w-6xl mx-auto px-4 flex items-center gap-11 genre-nav-inner"
+          className="max-w-6xl mx-auto px-4 flex items-center gap-6 genre-nav-inner"
           style={{ height: "112px" }}
         >
           {/* すべて */}
@@ -68,11 +68,11 @@ export default function SiteHeader() {
             <div
               className="rounded-full flex items-center justify-center border text-2xl genre-circle"
               style={{
-                width: "58px",
-                height: "58px",
+                width: "48px",
+                height: "48px",
                 background: "#fff6ef",
                 borderColor: "var(--border)",
-                boxShadow: "inset 0 0 0 8px rgba(255,255,255,0.35)",
+                boxShadow: "inset 0 0 0 6px rgba(255,255,255,0.35)",
               }}
             >
               全
@@ -98,11 +98,11 @@ export default function SiteHeader() {
                 <div
                   className="rounded-full overflow-hidden border flex-shrink-0 genre-circle"
                   style={{
-                    width: "58px",
-                    height: "58px",
+                    width: "48px",
+                    height: "48px",
                     borderColor: "var(--border)",
                     background: g.color + "55",
-                    boxShadow: "inset 0 0 0 8px rgba(255,255,255,0.35)",
+                    boxShadow: "inset 0 0 0 6px rgba(255,255,255,0.35)",
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -112,7 +112,7 @@ export default function SiteHeader() {
                     className="w-full h-full object-cover object-center"
                   />
                 </div>
-                {g.label}
+                {g.short ?? g.label}
                 {isActive && (
                   <span
                     className="absolute left-0 right-0 bottom-0 rounded-full"

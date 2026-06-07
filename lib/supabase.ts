@@ -13,6 +13,10 @@ function isValidSupabaseUrl(url: string | undefined): boolean {
 
 const useMock = !isValidSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
+// トップ（今日の新刊・直近7日間・日付ページ）から除外するジャンル＝ビジネス・実用書。
+// 看板が「文芸書の新刊カレンダー」なので、実用書は専用タブ(/genre/001006)からのみ閲覧可とする。
+const HOME_EXCLUDED_GENRE = "001006";
+
 async function getClient() {
   if (useMock) return null;
   const { createClient } = await import("@supabase/supabase-js");
@@ -22,9 +26,44 @@ async function getClient() {
   );
 }
 
+export async function getLatestBooks(
+  onOrBefore: string,
+  limit: number
+): Promise<Book[]> {
+  if (useMock) {
+    return MOCK_BOOKS.filter(
+      (b) => b.published_date <= onOrBefore && b.genre_id !== HOME_EXCLUDED_GENRE
+    )
+      .sort(
+        (a, b) =>
+          b.published_date.localeCompare(a.published_date) ||
+          a.title.localeCompare(b.title, "ja")
+      )
+      .slice(0, limit);
+  }
+
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .lte("published_date", onOrBefore)
+    .not("title", "ilike", "%写真集%")
+    .not("title", "ilike", "%グラビア%")
+    .not("title", "ilike", "%アイドル%")
+    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .order("published_date", { ascending: false })
+    .order("title")
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
 export async function getBooksByDate(date: string): Promise<Book[]> {
   if (useMock) {
-    return MOCK_BOOKS.filter((b) => b.published_date === date).sort((a, b) =>
+    return MOCK_BOOKS.filter(
+      (b) => b.published_date === date && b.genre_id !== HOME_EXCLUDED_GENRE
+    ).sort((a, b) =>
       a.title.localeCompare(b.title, "ja")
     );
   }
@@ -37,6 +76,7 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .neq("genre_id", HOME_EXCLUDED_GENRE)
     .order("title");
 
   if (error) throw new Error(error.message);
@@ -71,7 +111,10 @@ export async function getBooksByDateRange(
 ): Promise<Book[]> {
   if (useMock) {
     return MOCK_BOOKS.filter(
-      (b) => b.published_date >= from && b.published_date <= to
+      (b) =>
+        b.published_date >= from &&
+        b.published_date <= to &&
+        b.genre_id !== HOME_EXCLUDED_GENRE
     ).sort((a, b) => a.published_date.localeCompare(b.published_date));
   }
 
@@ -84,6 +127,7 @@ export async function getBooksByDateRange(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .neq("genre_id", HOME_EXCLUDED_GENRE)
     .order("published_date");
 
   if (error) throw new Error(error.message);
