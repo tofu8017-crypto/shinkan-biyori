@@ -62,7 +62,7 @@ function CoverPlaceholder({ book, genre, large = false }: { book: Book; genre: t
 export default function BookCard({ book, featured = false }: Props) {
   const genre = GENRES.find((g) => g.id === book.genre_id);
   const azUrl = amazonUrl(book);
-  const href = book.rakuten_url ?? azUrl;
+  const href = azUrl; // 表紙画像クリックの飛び先＝Amazon（楽天は黒の楽天ボタンから）
   const borderColor = genre?.color ?? "var(--border)";
 
   if (featured) {
@@ -205,13 +205,13 @@ export default function BookCard({ book, featured = false }: Props) {
       <div className="flex gap-2 mt-auto">
         {book.rakuten_url && (
           <a href={book.rakuten_url} target="_blank" rel="noopener noreferrer"
-            className="text-xs font-bold rounded-full px-3 py-1 transition-opacity hover:opacity-80"
+            className="flex-1 text-center text-xs font-bold rounded-full py-2 transition-opacity hover:opacity-80"
             style={{ background: "#111", color: "#fff", textDecoration: "none" }}>
             楽天
           </a>
         )}
         <a href={azUrl} target="_blank" rel="noopener noreferrer"
-          className="text-xs font-bold rounded-full px-3 py-1 transition-opacity hover:opacity-80"
+          className="flex-1 text-center text-xs font-bold rounded-full py-2 transition-opacity hover:opacity-80"
           style={{ background: "#ED8A22", color: "#fff", textDecoration: "none" }}>
           Amazon
         </a>
