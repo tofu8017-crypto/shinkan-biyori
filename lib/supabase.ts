@@ -17,6 +17,18 @@ const useMock = !isValidSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 // 看板が「文芸書の新刊カレンダー」なので、実用書は専用タブ(/genre/001006)からのみ閲覧可とする。
 const HOME_EXCLUDED_GENRE = "001006";
 
+// ジャンルページで「直近の新刊」とみなす日数（今日からこの日数前まで）
+const GENRE_RECENT_DAYS = 14;
+
+function jstToday(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
+}
+function addDaysUTC(isoDate: string, n: number): string {
+  const d = new Date(isoDate + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 async function getClient() {
   if (useMock) return null;
   const { createClient } = await import("@supabase/supabase-js");
@@ -84,10 +96,17 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
 }
 
 export async function getBooksByGenre(genreId: string): Promise<Book[]> {
+  // ジャンルページは「直近に出た新刊」だけを表示する（背景の古い本は出さない）
+  const today = jstToday();
+  const since = addDaysUTC(today, -GENRE_RECENT_DAYS);
+
   if (useMock) {
-    return MOCK_BOOKS.filter((b) => b.genre_id === genreId).sort((a, b) =>
-      b.published_date.localeCompare(a.published_date)
-    );
+    return MOCK_BOOKS.filter(
+      (b) =>
+        b.genre_id === genreId &&
+        b.published_date >= since &&
+        b.published_date <= today
+    ).sort((a, b) => b.published_date.localeCompare(a.published_date));
   }
 
   const sb = await getClient();
@@ -95,6 +114,8 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
     .from("books")
     .select("*")
     .eq("genre_id", genreId)
+    .gte("published_date", since)
+    .lte("published_date", today)
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")

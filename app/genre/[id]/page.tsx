@@ -95,13 +95,13 @@ export default async function GenrePage({
             {genre.label}
           </h1>
           <span className="font-bold" style={{ color: "var(--text-muted)" }}>
-            全{books.length}冊
+            直近の新刊 {books.length}冊
           </span>
         </div>
 
         {books.length === 0 ? (
           <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-            この分類の新刊データは現在収集中です。
+            直近の新刊は今のところありません。
           </p>
         ) : (
           <div
