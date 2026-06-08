@@ -61,6 +61,8 @@ async function main() {
     author: b.author,
     publisher: b.publisher,
     published_date: b.published_date,
+    isbn13: b.isbn13,
+    isbn10: b.isbn10,
     amazon_url: amazonUrl(b),
     rakuten_url: b.rakuten_url,
   }));
