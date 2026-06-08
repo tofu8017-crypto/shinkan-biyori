@@ -1,4 +1,5 @@
 import type { Book } from "@/types/book";
+import type { Column } from "@/types/column";
 import { MOCK_BOOKS } from "./mock-data";
 
 function isValidSupabaseUrl(url: string | undefined): boolean {
@@ -165,4 +166,46 @@ export async function getBookCountByDate(
     counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
   }
   return counts;
+}
+
+// 公開済みコラムを新しい順に取得する。
+// "columns" テーブルはまだ存在しない可能性があるため、try/catchで握りつぶし、
+// エラー時は空配列を返してページがクラッシュしないようにする
+export async function getPublishedColumns(limit = 50): Promise<Column[]> {
+  if (useMock) return [];
+
+  try {
+    const sb = await getClient();
+    const { data, error } = await sb!
+      .from("columns")
+      .select("*")
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// slug指定で公開済みコラムを1件取得する。見つからない・エラー時はnullを返す
+export async function getColumnBySlug(slug: string): Promise<Column | null> {
+  if (useMock) return null;
+
+  try {
+    const sb = await getClient();
+    const { data, error } = await sb!
+      .from("columns")
+      .select("*")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data ?? null;
+  } catch {
+    return null;
+  }
 }

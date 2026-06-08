@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { GENRES } from "@/types/book";
-import { getBookCountByDate } from "@/lib/supabase";
+import { getBookCountByDate, getPublishedColumns } from "@/lib/supabase";
 
 const BASE_URL = "https://shinkanbiyori.com";
 
@@ -51,6 +51,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // 日付ページはスキップし、ホーム＋ジャンルだけ返す
+  }
+
+  // コラム一覧ページ
+  entries.push({
+    url: `${BASE_URL}/column`,
+    lastModified: today,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  });
+
+  // 公開済みコラム各記事。getPublishedColumns はエラー時 [] を返すのでサイトマップは壊れない
+  const columns = await getPublishedColumns();
+  for (const col of columns) {
+    entries.push({
+      url: `${BASE_URL}/column/${col.slug}`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
   }
 
   return entries;

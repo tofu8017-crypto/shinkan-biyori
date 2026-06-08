@@ -72,3 +72,47 @@ body {
 @media (max-width: 480px) {
   .week-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 }
+
+/* ===== コラム記事本文（body_html）のタイポグラフィ ===== */
+.column-body h2 {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+  color: var(--text-main);
+}
+.column-body h3 {
+  font-size: 20px;
+  margin-top: 1.6em;
+  color: var(--text-main);
+}
+.column-body p {
+  line-height: 1.95;
+  margin: 1.2em 0;
+  color: var(--text-sub);
+}
+.column-body ul,
+.column-body ol {
+  padding-left: 1.4em;
+  margin: 1.2em 0;
+}
+.column-body ul { list-style: disc; }
+.column-body ol { list-style: decimal; }
+.column-body li {
+  margin: 0.5em 0;
+  color: var(--text-sub);
+}
+.column-body a {
+  color: var(--highlight);
+  text-decoration: underline;
+}
+.column-body strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+.column-body blockquote {
+  border-left: 3px solid var(--accent-sage);
+  padding-left: 1em;
+  margin: 1.4em 0;
+  color: var(--text-muted);
+}

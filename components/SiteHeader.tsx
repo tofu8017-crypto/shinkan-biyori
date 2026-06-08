@@ -42,6 +42,9 @@ export default function SiteHeader() {
           </span>
         </div>
         <div className="hidden sm:flex gap-7 font-bold text-sm" style={{ color: "var(--text-main)" }}>
+          <a href="/column" style={{ color: "var(--text-main)", textDecoration: "none" }}>
+            コラム
+          </a>
           <span>♡ お気に入り</span>
           <span>⌕ 検索</span>
         </div>
