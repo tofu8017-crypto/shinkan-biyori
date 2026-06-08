@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
-import { getBooksByDateRange, getLatestBooks } from "@/lib/supabase";
+import { getBooksByDate, getBooksByDateRange, getLatestBooks } from "@/lib/supabase";
 
 function todayJST(): string {
   // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
@@ -26,8 +26,11 @@ function formatDateJP(dateStr: string) {
 
 async function TodaysBooks() {
   const today = todayJST();
-  // 「ちょうど今日」の本だけだと数冊しか無い日があるため、今日を含む直近の新刊を新着順で表示
-  const books = await getLatestBooks(today, 5);
+  // まず今日発売の本をすべて取得。今日が0冊の日だけ直近の新刊で補填する。
+  let books = await getBooksByDate(today);
+  if (books.length === 0) {
+    books = await getLatestBooks(today, 6);
+  }
 
   if (books.length === 0) {
     return (
@@ -45,8 +48,8 @@ async function TodaysBooks() {
       <div className={rest.length > 0 ? "featured-cell" : ""}>
         <BookCard book={featured} featured />
       </div>
-      {/* 残りのカード */}
-      {rest.slice(0, 4).map((book) => (
+      {/* 残りのカード（今日の分はすべて表示） */}
+      {rest.map((book) => (
         <BookCard key={book.id} book={book} />
       ))}
     </div>
