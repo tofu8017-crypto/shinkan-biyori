@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
 import { getBooksByDate } from "@/lib/supabase";
+import { notFound } from "next/navigation";
 
 function formatDateJP(dateStr: string) {
   // dateStrは "YYYY-MM-DD"。サーバーのTZに依存しないよう、曜日はUTC基準で算出し、
@@ -17,17 +19,83 @@ function formatDateJP(dateStr: string) {
   };
 }
 
+// "YYYY-MM-DD" 形式かつ実在する日付かを検証（不正なURLは404にするため）
+function isValidDateStr(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const [y, m, d] = s.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return (
+    dt.getUTCFullYear() === y &&
+    dt.getUTCMonth() === m - 1 &&
+    dt.getUTCDate() === d
+  );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ date: string }>;
+}): Promise<Metadata> {
+  const { date } = await params;
+  if (!isValidDateStr(date)) {
+    return { title: "ページが見つかりません", robots: { index: false, follow: false } };
+  }
+  const fmt = formatDateJP(date);
+  const description = `${fmt.full}に発売された文芸書の新刊一覧。楽天ブックス・Amazonのリンク付き。`;
+
+  return {
+    title: `${fmt.full}の新刊`,
+    description,
+    alternates: {
+      canonical: `/date/${date}`,
+    },
+    openGraph: {
+      title: `${fmt.full}の新刊｜新刊日和`,
+      description,
+      url: `https://shinkanbiyori.com/date/${date}`,
+      images: ["/hero.jpg"],
+    },
+  };
+}
+
 export default async function DatePage({
   params,
 }: {
   params: Promise<{ date: string }>;
 }) {
   const { date } = await params;
+  if (!isValidDateStr(date)) notFound();
   const fmt = formatDateJP(date);
   const books = await getBooksByDate(date);
 
+  // パンくずの構造化データ：ホーム > 日付ページ
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "ホーム",
+        item: "https://shinkanbiyori.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: `${fmt.full}の新刊`,
+        item: `https://shinkanbiyori.com/date/${date}`,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <SiteHeader />
 
       <main className="max-w-6xl mx-auto w-full px-4 py-14">

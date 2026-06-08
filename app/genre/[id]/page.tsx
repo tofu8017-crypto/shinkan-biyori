@@ -1,9 +1,40 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
 import { getBooksByGenre } from "@/lib/supabase";
 import { GENRES } from "@/types/book";
+import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const genre = GENRES.find((g) => g.id === id);
+
+  if (!genre) {
+    return { title: "ページが見つかりません", robots: { index: false, follow: false } };
+  }
+
+  const description = `${genre.label}の最新の新刊を発売日順にまとめてチェック。楽天ブックス・Amazonのリンク付き。`;
+
+  return {
+    title: `${genre.label}の新刊一覧`,
+    description,
+    alternates: {
+      canonical: `/genre/${id}`,
+    },
+    openGraph: {
+      title: `${genre.label}の新刊一覧｜新刊日和`,
+      description,
+      url: `https://shinkanbiyori.com/genre/${id}`,
+      images: ["/hero.jpg"],
+    },
+  };
+}
 
 export default async function GenrePage({
   params,
@@ -14,22 +45,39 @@ export default async function GenrePage({
   const genre = GENRES.find((g) => g.id === id);
 
   if (!genre) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <SiteHeader />
-        <main className="max-w-6xl mx-auto w-full px-4 py-14">
-          <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-            ジャンルが見つかりません
-          </p>
-        </main>
-      </div>
-    );
+    notFound();
   }
 
   const books = await getBooksByGenre(id);
 
+  // パンくずの構造化データ：ホーム > ジャンル
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "ホーム",
+        item: "https://shinkanbiyori.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: genre.label,
+        item: `https://shinkanbiyori.com/genre/${id}`,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <SiteHeader />
 
       <main className="max-w-6xl mx-auto w-full px-4 py-14">
