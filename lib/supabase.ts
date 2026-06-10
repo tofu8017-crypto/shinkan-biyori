@@ -72,6 +72,44 @@ export async function getLatestBooks(
   return data ?? [];
 }
 
+export async function searchBooks(
+  query: string,
+  limit = 60
+): Promise<Book[]> {
+  const q = query.trim();
+  if (!q) return [];
+
+  if (useMock) {
+    const lower = q.toLowerCase();
+    return MOCK_BOOKS.filter(
+      (b) =>
+        b.title.toLowerCase().includes(lower) ||
+        (b.author ?? "").toLowerCase().includes(lower)
+    )
+      .sort((a, b) => b.published_date.localeCompare(a.published_date))
+      .slice(0, limit);
+  }
+
+  // PostgRESTのor()はカンマ・括弧を区切り文字に使うため、検索語に含まれると
+  // フィルタが壊れる。安全のため該当記号は空白に置換してから検索する。
+  const safe = q.replace(/[,()%*]/g, " ").trim();
+  if (!safe) return [];
+
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .or(`title.ilike.%${safe}%,author.ilike.%${safe}%`)
+    .not("title", "ilike", "%写真集%")
+    .not("title", "ilike", "%グラビア%")
+    .not("title", "ilike", "%アイドル%")
+    .order("published_date", { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
 export async function getBooksByDate(date: string): Promise<Book[]> {
   if (useMock) {
     return MOCK_BOOKS.filter(

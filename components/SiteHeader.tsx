@@ -41,12 +41,26 @@ export default function SiteHeader() {
             文芸書の新刊カレンダー
           </span>
         </div>
-        <div className="hidden sm:flex gap-7 font-bold text-sm" style={{ color: "var(--text-main)" }}>
-          <a href="/column" style={{ color: "var(--text-main)", textDecoration: "none" }}>
-            コラム
-          </a>
-          <span>♡ お気に入り</span>
-          <span>⌕ 検索</span>
+        <div className="flex items-center gap-4">
+          {/* 検索フォーム（JSなしのGET送信。/search?q=... へ遷移） */}
+          <form action="/search" method="get" className="flex items-center search-form">
+            <input
+              type="search"
+              name="q"
+              placeholder="作家名・書名で検索"
+              aria-label="作家名・書名で検索"
+              className="search-input"
+            />
+            <button type="submit" aria-label="検索" className="search-btn">
+              ⌕
+            </button>
+          </form>
+          <div className="hidden sm:flex gap-6 font-bold text-sm" style={{ color: "var(--text-main)" }}>
+            <a href="/column" style={{ color: "var(--text-main)", textDecoration: "none" }}>
+              コラム
+            </a>
+            <span>♡ お気に入り</span>
+          </div>
         </div>
       </div>
 

@@ -73,6 +73,43 @@ body {
   .week-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 }
 
+/* ヘッダーの検索フォーム */
+.search-form {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  padding: 2px 2px 2px 14px;
+  height: 38px;
+}
+.search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-main);
+  width: 190px;
+}
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+.search-btn {
+  border: none;
+  background: var(--highlight);
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .search-input { width: 110px; font-size: 12px; }
+  .search-form { padding-left: 10px; height: 34px; }
+  .search-btn { width: 26px; height: 26px; font-size: 14px; }
+}
+
 /* ジャンルタブの横スクロール: スクロールバーを隠し、縦への揺れ(オーバースクロール連動)を防ぐ */
 .genre-nav {
   overscroll-behavior-x: contain; /* 横スクロールが縦ページに連動して揺れるのを防止 */
