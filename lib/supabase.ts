@@ -72,34 +72,46 @@ export async function getLatestBooks(
   return data ?? [];
 }
 
+// 検索語から空白・ワイルドカード記号を取り除き、各文字の間に % を挟んだ
+// ilikeパターンを作る。これで「東野圭吾」が「東野 圭吾」「東野　圭吾(全角空白)」
+// のように姓名の間に空白が入った著者名にもヒットする（空白無視のあいまい検索）。
+function buildSearchPattern(q: string): string | null {
+  // ilikeの特殊文字(% _)とor()を壊す記号(, ( ))、各種空白を除去
+  const chars = Array.from(q).filter(
+    (c) => !/[\s,()%_*]/.test(c)
+  );
+  if (chars.length === 0) return null;
+  return `%${chars.join("%")}%`;
+}
+
 export async function searchBooks(
   query: string,
-  limit = 60
+  limit = 200
 ): Promise<Book[]> {
   const q = query.trim();
   if (!q) return [];
 
   if (useMock) {
-    const lower = q.toLowerCase();
+    // モックでも空白を無視して比較する
+    const strip = (s: string) => s.replace(/[\s　]/g, "").toLowerCase();
+    const needle = strip(q);
     return MOCK_BOOKS.filter(
       (b) =>
-        b.title.toLowerCase().includes(lower) ||
-        (b.author ?? "").toLowerCase().includes(lower)
+        strip(b.title).includes(needle) ||
+        strip(b.author ?? "").includes(needle)
     )
       .sort((a, b) => b.published_date.localeCompare(a.published_date))
       .slice(0, limit);
   }
 
-  // PostgRESTのor()はカンマ・括弧を区切り文字に使うため、検索語に含まれると
-  // フィルタが壊れる。安全のため該当記号は空白に置換してから検索する。
-  const safe = q.replace(/[,()%*]/g, " ").trim();
-  if (!safe) return [];
+  const pattern = buildSearchPattern(q);
+  if (!pattern) return [];
 
   const sb = await getClient();
   const { data, error } = await sb!
     .from("books")
     .select("*")
-    .or(`title.ilike.%${safe}%,author.ilike.%${safe}%`)
+    .or(`title.ilike.${pattern},author.ilike.${pattern}`)
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
