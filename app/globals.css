@@ -73,6 +73,21 @@ body {
   .week-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 }
 
+/* ジャンルタブの横スクロール: スクロールバーを隠し、縦への揺れ(オーバースクロール連動)を防ぐ */
+.genre-nav {
+  overscroll-behavior-x: contain; /* 横スクロールが縦ページに連動して揺れるのを防止 */
+  scrollbar-width: none;          /* Firefox: スクロールバー非表示 */
+  -ms-overflow-style: none;       /* 旧Edge/IE */
+  -webkit-overflow-scrolling: touch;
+}
+.genre-nav::-webkit-scrollbar {
+  display: none;                  /* Safari/Chrome: スクロールバー非表示で行のガタつきを解消 */
+}
+/* 各タブの縦位置を固定して上下のブレをなくす */
+.genre-nav-inner > a {
+  align-self: center;
+}
+
 /* ===== コラム記事本文（body_html）のタイポグラフィ ===== */
 .column-body h2 {
   font-family: var(--font-serif);

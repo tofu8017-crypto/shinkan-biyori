@@ -52,7 +52,7 @@ export default function SiteHeader() {
 
       {/* ジャンルタブ */}
       <nav
-        className="border-t overflow-x-auto"
+        className="border-t overflow-x-auto genre-nav"
         style={{ borderColor: "rgba(232,221,214,0.7)" }}
       >
         <div
