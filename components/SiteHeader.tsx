@@ -122,11 +122,16 @@ export default function SiteHeader() {
                     boxShadow: "inset 0 0 0 6px rgba(255,255,255,0.35)",
                   }}
                 >
+                  {/* アイコン画像が無いジャンル（例: 文庫）はリンク切れにせず、
+                      色付きの丸だけ見せる（imgを隠す）フォールバック */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`/cats/${g.id}.png`}
                     alt={g.label}
                     className="w-full h-full object-cover object-center"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 </div>
                 {g.short ?? g.label}

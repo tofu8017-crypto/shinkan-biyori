@@ -11,6 +11,7 @@ const COVER_GRADIENTS: Record<string, string> = {
   "001004001": "linear-gradient(145deg,#eee5f4,#b9a6c9)",
   "001004002": "linear-gradient(145deg,#dfeef5,#9fc0d1)",
   "001004003": "linear-gradient(145deg,#f7e1d8,#e7b49f)",
+  "001019": "linear-gradient(145deg,#e6ead9,#b3bb9c)",
   "001006": "linear-gradient(145deg,#efe7cf,#cdbb8e)",
 };
 
