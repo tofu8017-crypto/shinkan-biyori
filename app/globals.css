@@ -168,3 +168,15 @@ body {
   margin: 1.4em 0;
   color: var(--text-muted);
 }
+
+/* 書籍詳細ページ: スマホでは表紙と書誌を縦積みにし、表紙幅を抑える */
+@media (max-width: 640px) {
+  .book-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+  }
+  .book-detail-grid > div:first-child {
+    max-width: 200px;
+    margin: 0 auto;
+  }
+}
