@@ -4,6 +4,7 @@ import {
   getBookCountByDate,
   getPublishedColumns,
   getAllBooksForSitemap,
+  getAllSeriesForSitemap,
 } from "@/lib/supabase";
 import { splitAuthors, authorSlug } from "@/lib/normalize-author";
 
@@ -82,6 +83,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // 書籍・著者ページはスキップ
+  }
+
+  // シリーズページ
+  try {
+    const series = await getAllSeriesForSitemap();
+    for (const s of series) {
+      entries.push({
+        url: `${BASE_URL}/series/${s.slug}`,
+        lastModified: today,
+        changeFrequency: "weekly",
+        priority: 0.5,
+      });
+    }
+  } catch {
+    // シリーズページはスキップ
+  }
+
+  // 月別カレンダーページ（前後3ヶ月＋当月、ジャンル別含む）
+  for (let i = -1; i <= 2; i++) {
+    const d = new Date(`${today}T00:00:00Z`);
+    d.setUTCMonth(d.getUTCMonth() + i);
+    const ym = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    entries.push({
+      url: `${BASE_URL}/calendar/${ym}`,
+      lastModified: today,
+      changeFrequency: "daily",
+      priority: 0.7,
+    });
+    for (const g of GENRES) {
+      if (g.id === "001006") continue;
+      entries.push({
+        url: `${BASE_URL}/calendar/${ym}/${g.id}`,
+        lastModified: today,
+        changeFrequency: "daily",
+        priority: 0.5,
+      });
+    }
   }
 
   // コラム一覧ページ

@@ -2,6 +2,7 @@ import type { Book } from "@/types/book";
 import type { Column } from "@/types/column";
 import { MOCK_BOOKS } from "./mock-data";
 import { isSameAuthor, splitAuthors } from "./normalize-author";
+import { groupBySeries, seriesSlug } from "./detect-series";
 
 function isValidSupabaseUrl(url: string | undefined): boolean {
   if (!url) return false;
@@ -322,6 +323,82 @@ export async function getAllBooksForSitemap(): Promise<
     .order("published_date", { ascending: false })
     .limit(50000);
 
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+// 文芸ジャンルの新刊を広めに取得する内部ヘルパー。
+// シリーズ判定・月別カレンダーで母集団として使う。ビジネス・実用書は除外。
+async function getBooksForGrouping(limit = 5000): Promise<Book[]> {
+  if (useMock) {
+    return MOCK_BOOKS.filter((b) => b.genre_id !== HOME_EXCLUDED_GENRE);
+  }
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .order("published_date", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+// slug指定でシリーズの巻一覧（巻数昇順）を取得する。見つからなければ空配列。
+export async function getSeriesBySlug(slug: string): Promise<{
+  base: string;
+  books: Book[];
+} | null> {
+  const all = await getBooksForGrouping();
+  const groups = groupBySeries(all);
+  for (const [base, books] of groups) {
+    if (seriesSlug(base) === slug) return { base, books };
+  }
+  return null;
+}
+
+// sitemap用に全シリーズの slug と base を返す。
+export async function getAllSeriesForSitemap(): Promise<
+  { slug: string; base: string }[]
+> {
+  const all = await getBooksForGrouping();
+  const groups = groupBySeries(all);
+  return [...groups.keys()].map((base) => ({ slug: seriesSlug(base), base }));
+}
+
+// 指定年月（"YYYY-MM"）の新刊を取得する。月別カレンダーページ用。
+// genreId を渡すとそのジャンルに絞り込む。
+export async function getBooksByMonth(
+  yyyymm: string,
+  genreId?: string
+): Promise<Book[]> {
+  const from = `${yyyymm}-01`;
+  const [y, m] = yyyymm.split("-").map(Number);
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const to = `${yyyymm}-${String(lastDay).padStart(2, "0")}`;
+
+  if (useMock) {
+    return MOCK_BOOKS.filter(
+      (b) =>
+        b.published_date >= from &&
+        b.published_date <= to &&
+        b.genre_id !== HOME_EXCLUDED_GENRE &&
+        (!genreId || b.genre_id === genreId)
+    ).sort((a, b) => a.published_date.localeCompare(b.published_date));
+  }
+
+  const sb = await getClient();
+  let q = sb!
+    .from("books")
+    .select("*")
+    .gte("published_date", from)
+    .lte("published_date", to)
+    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .not("title", "ilike", "%写真集%")
+    .not("title", "ilike", "%グラビア%")
+    .not("title", "ilike", "%アイドル%");
+  if (genreId) q = q.eq("genre_id", genreId);
+  const { data, error } = await q.order("published_date").limit(2000);
   if (error) throw new Error(error.message);
   return data ?? [];
 }

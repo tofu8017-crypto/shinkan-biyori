@@ -78,6 +78,13 @@ export function detectSeries(title: string): SeriesInfo | null {
     if (vol) return makeSeries(m[1], vol);
   }
 
+  // 末尾のローマ数字（スペース区切り）。例: "狼と香辛料 XII"
+  m = t.match(/^(.+?[^\sIVXivx])\s+([IVXivx]{1,5})$/u);
+  if (m) {
+    const vol = romanToNumber(m[2]);
+    if (vol) return makeSeries(m[1], vol);
+  }
+
   // 末尾の裸の算用数字（全角含む）。ただし1文字以上のベースが残る場合のみ。
   m = t.match(/^(.+?[^0-9０-９\s])\s+([0-9０-９]{1,3})$/u);
   if (m) {
