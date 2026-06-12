@@ -1,6 +1,7 @@
 import type { Book } from "@/types/book";
 import type { Column } from "@/types/column";
 import { MOCK_BOOKS } from "./mock-data";
+import { isSameAuthor, splitAuthors } from "./normalize-author";
 
 function isValidSupabaseUrl(url: string | undefined): boolean {
   if (!url) return false;
@@ -216,6 +217,113 @@ export async function getBookCountByDate(
     counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
   }
   return counts;
+}
+
+// ISBN13で書籍を1冊取得する。見つからなければ null。書籍詳細ページ用。
+export async function getBookByIsbn(isbn13: string): Promise<Book | null> {
+  if (useMock) {
+    return MOCK_BOOKS.find((b) => b.isbn13 === isbn13) ?? null;
+  }
+
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .eq("isbn13", isbn13)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ?? null;
+}
+
+// 指定書籍と同じ著者の他の新刊（自身は除く）を発売日降順で取得する。内部リンク用。
+export async function getBooksBySameAuthor(
+  book: Book,
+  limit = 8
+): Promise<Book[]> {
+  const authors = splitAuthors(book.author);
+  if (authors.length === 0) return [];
+
+  if (useMock) {
+    return MOCK_BOOKS.filter(
+      (b) =>
+        b.isbn13 !== book.isbn13 &&
+        authors.some((a) => isSameAuthor(a, b.author))
+    )
+      .sort((a, b) => b.published_date.localeCompare(a.published_date))
+      .slice(0, limit);
+  }
+
+  const sb = await getClient();
+  // 著者名は文字列カラムのため、代表著者名であいまい一致（部分一致）を取る。
+  // 連名の最初の著者をキーにする（完全な正規化はバッチ側の責務）。
+  const pattern = `%${authors[0].replace(/\s/g, "%")}%`;
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .ilike("author", pattern)
+    .neq("isbn13", book.isbn13)
+    .order("published_date", { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+// 指定著者名（正規化済み）の新刊を発売日降順で取得する。著者ページ用。
+export async function getBooksByAuthor(
+  authorName: string,
+  limit = 100
+): Promise<Book[]> {
+  if (useMock) {
+    return MOCK_BOOKS.filter((b) =>
+      splitAuthors(b.author).some((a) => isSameAuthor(a, authorName))
+    ).sort((a, b) => b.published_date.localeCompare(a.published_date));
+  }
+
+  const sb = await getClient();
+  const pattern = `%${authorName.replace(/\s/g, "%")}%`;
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .ilike("author", pattern)
+    .order("published_date", { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  // 部分一致のノイズ（別人の同字含み）を正規化判定で絞り込む
+  return (data ?? []).filter((b) =>
+    splitAuthors(b.author).some((a) => isSameAuthor(a, authorName))
+  );
+}
+
+// 同日発売の他の本（自身を除く）。内部リンク用。
+export async function getBooksSameDay(book: Book, limit = 8): Promise<Book[]> {
+  const books = await getBooksByDate(book.published_date);
+  return books.filter((b) => b.isbn13 !== book.isbn13).slice(0, limit);
+}
+
+// sitemap / generateStaticParams 用に全書籍の最小情報を取得する。
+export async function getAllBooksForSitemap(): Promise<
+  Pick<Book, "isbn13" | "author" | "last_synced_at">[]
+> {
+  if (useMock) {
+    return MOCK_BOOKS.map((b) => ({
+      isbn13: b.isbn13,
+      author: b.author,
+      last_synced_at: b.last_synced_at,
+    }));
+  }
+
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("isbn13, author, last_synced_at")
+    .order("published_date", { ascending: false })
+    .limit(50000);
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 
 // 公開済みコラムを新しい順に取得する。

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Book } from "@/types/book";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
@@ -187,7 +188,12 @@ export default function BookCard({ book, featured = false }: Props) {
           color: "var(--text-main)",
         }}
       >
-        {book.title}
+        <Link
+          href={`/books/${book.isbn13}`}
+          style={{ color: "inherit", textDecoration: "none" }}
+        >
+          {book.title}
+        </Link>
       </h3>
       <div className="text-xs font-bold mb-2" style={{ color: "var(--text-muted)" }}>{book.author}</div>
       <span

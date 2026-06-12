@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
 import { GENRES } from "@/types/book";
-import { getBookCountByDate, getPublishedColumns } from "@/lib/supabase";
+import {
+  getBookCountByDate,
+  getPublishedColumns,
+  getAllBooksForSitemap,
+} from "@/lib/supabase";
+import { splitAuthors, authorSlug } from "@/lib/normalize-author";
 
 const BASE_URL = "https://shinkanbiyori.com";
 
@@ -51,6 +56,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // 日付ページはスキップし、ホーム＋ジャンルだけ返す
+  }
+
+  // 書籍詳細ページ + 著者ページ。全書籍を1回取得して両方を組み立てる。
+  // DB障害時はスキップ（try/catchで握りつぶす）。
+  try {
+    const books = await getAllBooksForSitemap();
+    const authorSlugs = new Set<string>();
+    for (const b of books) {
+      entries.push({
+        url: `${BASE_URL}/books/${b.isbn13}`,
+        lastModified: b.last_synced_at?.slice(0, 10) || today,
+        changeFrequency: "weekly",
+        priority: 0.5,
+      });
+      for (const a of splitAuthors(b.author)) authorSlugs.add(authorSlug(a));
+    }
+    for (const slug of authorSlugs) {
+      entries.push({
+        url: `${BASE_URL}/authors/${slug}`,
+        lastModified: today,
+        changeFrequency: "weekly",
+        priority: 0.5,
+      });
+    }
+  } catch {
+    // 書籍・著者ページはスキップ
   }
 
   // コラム一覧ページ
