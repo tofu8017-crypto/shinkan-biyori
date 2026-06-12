@@ -67,6 +67,9 @@ body {
   .site-logo { font-size: 30px !important; letter-spacing: 0.1em !important; }
   .genre-nav-inner { height: 84px !important; gap: 22px !important; }
   .genre-circle { width: 46px !important; height: 46px !important; }
+  /* スマホでは上下paddingを詰め、タブ項目がナビ枠(84px)からはみ出さないようにする
+     （はみ出しによる上下のガタつき・余白を防止） */
+  .genre-nav-inner > a { padding-top: 0 !important; padding-bottom: 0 !important; }
 }
 
 @media (max-width: 480px) {

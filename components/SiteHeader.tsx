@@ -76,7 +76,7 @@ export default function SiteHeader() {
           {/* すべて */}
           <a
             href="/"
-            className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 pb-7 pt-6"
+            className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 h-full pb-7 pt-6"
             style={{
               color: "var(--text-main)",
               textDecoration: "none",
@@ -109,11 +109,11 @@ export default function SiteHeader() {
               <a
                 key={g.id}
                 href={`/genre/${g.id}`}
-                className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 pb-7 pt-6"
+                className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 h-full pb-7 pt-6"
                 style={{ color: "var(--text-main)", textDecoration: "none" }}
               >
                 <div
-                  className="rounded-full overflow-hidden border flex-shrink-0 genre-circle"
+                  className="relative rounded-full overflow-hidden border flex-shrink-0 flex items-center justify-center text-2xl genre-circle"
                   style={{
                     width: "48px",
                     height: "48px",
@@ -123,12 +123,16 @@ export default function SiteHeader() {
                   }}
                 >
                   {/* アイコン画像が無いジャンル（例: 文庫）はリンク切れにせず、
-                      色付きの丸だけ見せる（imgを隠す）フォールバック */}
+                      ジャンル名の頭文字を丸の中に表示する（imgを隠して文字を見せる）。
+                      文字は最初に描画しておき、画像が読めたら上から覆う。 */}
+                  <span style={{ color: "var(--text-main)" }}>
+                    {(g.short ?? g.label).charAt(0)}
+                  </span>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`/cats/${g.id}.png`}
                     alt={g.label}
-                    className="w-full h-full object-cover object-center"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
                     }}
