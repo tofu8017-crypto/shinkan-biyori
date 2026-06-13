@@ -105,16 +105,16 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
           )}
         </a>
 
-        {/* 書誌 */}
-        <div className="flex flex-col">
+        {/* 書誌（書影が高いので右側は縦中央寄せにして空白の偏りを防ぐ） */}
+        <div className="flex flex-col justify-center">
           <h3
             className="featured-title"
             style={{
               fontFamily: "var(--font-serif)",
-              fontSize: "31px",
+              fontSize: "27px",
               fontWeight: 500,
-              lineHeight: 1.55,
-              margin: "10px 0 14px",
+              lineHeight: 1.5,
+              margin: "0 0 14px",
               color: "var(--text-main)",
             }}
           >
@@ -142,7 +142,7 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
               {book.description}
             </p>
           )}
-          <div className="flex gap-3 mt-auto pt-6">
+          <div className="flex gap-3 pt-7">
             {book.rakuten_url && (
               <a href={book.rakuten_url} target="_blank" rel="noopener noreferrer sponsored"
                 className="text-sm font-bold rounded-full py-2.5 text-center whitespace-nowrap transition-opacity hover:opacity-80"
