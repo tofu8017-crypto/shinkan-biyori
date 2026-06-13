@@ -45,7 +45,7 @@ html, body {
   grid-template-columns: repeat(6, 1fr);
   gap: 18px;
 }
-.today-grid .featured-cell { grid-column: span 2; }
+.today-grid .featured-cell { grid-column: span 2; min-width: 0; }
 
 /* 直近7日間グリッド */
 .week-grid {
@@ -57,7 +57,7 @@ html, body {
 /* タブレット以下 */
 @media (max-width: 900px) {
   .today-grid { grid-template-columns: repeat(2, 1fr); }
-  .today-grid .featured-cell { grid-column: span 2; }
+  .today-grid .featured-cell { grid-column: span 2; min-width: 0; }
 }
 
 @media (max-width: 768px) {

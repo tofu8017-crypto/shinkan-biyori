@@ -105,8 +105,9 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
           )}
         </a>
 
-        {/* 書誌（書影が高いので右側は縦中央寄せにして空白の偏りを防ぐ） */}
-        <div className="flex flex-col justify-center">
+        {/* 書誌（書影が高いので右側は縦中央寄せにして空白の偏りを防ぐ）
+            min-w-0: グリッド列が内容の最小幅で広がってカードからはみ出すのを防ぐ */}
+        <div className="flex flex-col justify-center min-w-0">
           <h3
             className="featured-title"
             style={{
@@ -142,17 +143,17 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
               {book.description}
             </p>
           )}
-          <div className="flex gap-3 pt-7">
+          <div className="flex flex-wrap gap-3 pt-7">
             {book.rakuten_url && (
               <a href={book.rakuten_url} target="_blank" rel="noopener noreferrer sponsored"
-                className="text-sm font-bold rounded-full py-2.5 text-center whitespace-nowrap transition-opacity hover:opacity-80"
-                style={{ background: "#111", color: "#fff", textDecoration: "none", minWidth: "120px", flex: "0 1 140px" }}>
+                className="text-sm font-bold rounded-full py-2.5 px-4 text-center whitespace-nowrap transition-opacity hover:opacity-80"
+                style={{ background: "#111", color: "#fff", textDecoration: "none", flex: "1 1 110px", minWidth: 0 }}>
                 楽天ブックス
               </a>
             )}
             <a href={azUrl} target="_blank" rel="noopener noreferrer sponsored"
-              className="text-sm font-bold rounded-full py-2.5 text-center whitespace-nowrap transition-opacity hover:opacity-80"
-              style={{ background: "#ED8A22", color: "#fff", textDecoration: "none", minWidth: "120px", flex: "0 1 140px" }}>
+              className="text-sm font-bold rounded-full py-2.5 px-4 text-center whitespace-nowrap transition-opacity hover:opacity-80"
+              style={{ background: "#ED8A22", color: "#fff", textDecoration: "none", flex: "1 1 110px", minWidth: 0 }}>
               Amazon
             </a>
           </div>
