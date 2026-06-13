@@ -66,11 +66,12 @@ export default function SiteHeader() {
               ⌕
             </button>
           </form>
-          <div className="hidden sm:flex gap-6 font-bold text-sm" style={{ color: "var(--text-main)" }}>
+          <div className="flex items-center gap-6 font-bold text-sm flex-shrink-0" style={{ color: "var(--text-main)" }}>
+            {/* コラムはスマホでも表示。お気に入り（未実装の飾り）はデスクトップのみ */}
             <a href="/column" style={{ color: "var(--text-main)", textDecoration: "none" }}>
               コラム
             </a>
-            <span>♡ お気に入り</span>
+            <span className="hidden sm:inline">♡ お気に入り</span>
           </div>
         </div>
       </div>
