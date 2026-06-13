@@ -2,6 +2,17 @@
 import { usePathname } from "next/navigation";
 import { GENRES } from "@/types/book";
 
+// public/cats/ にアイコン画像が存在するジャンルID。
+// ここに無いジャンル（文庫など）は壊れた画像を出さず、頭文字だけ表示する。
+const ICON_GENRE_IDS = new Set([
+  "001004001",
+  "001004002",
+  "001004003",
+  "001004008",
+  "001004009",
+  "001006",
+]);
+
 export default function SiteHeader() {
   const pathname = usePathname();
 
@@ -122,21 +133,21 @@ export default function SiteHeader() {
                     boxShadow: "inset 0 0 0 6px rgba(255,255,255,0.35)",
                   }}
                 >
-                  {/* アイコン画像が無いジャンル（例: 文庫）はリンク切れにせず、
-                      ジャンル名の頭文字を丸の中に表示する（imgを隠して文字を見せる）。
-                      文字は最初に描画しておき、画像が読めたら上から覆う。 */}
-                  <span style={{ color: "var(--text-main)" }}>
-                    {(g.short ?? g.label).charAt(0)}
-                  </span>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/cats/${g.id}.png`}
-                    alt={g.label}
-                    className="absolute inset-0 w-full h-full object-cover object-center"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                  {/* アイコン画像があるジャンルだけ画像を表示。無いジャンル（文庫など）は
+                      ジャンル名の頭文字を丸の中に表示する。壊れた画像を出さないため、
+                      JSのonErrorに頼らず存在するIDだけを画像表示する。 */}
+                  {ICON_GENRE_IDS.has(g.id) ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={`/cats/${g.id}.png`}
+                      alt={g.label}
+                      className="absolute inset-0 w-full h-full object-cover object-center"
+                    />
+                  ) : (
+                    <span style={{ color: "var(--text-main)" }}>
+                      {(g.short ?? g.label).charAt(0)}
+                    </span>
+                  )}
                 </div>
                 {g.short ?? g.label}
                 {isActive && (
