@@ -444,3 +444,38 @@ export async function getColumnBySlug(slug: string): Promise<Column | null> {
     return null;
   }
 }
+
+// 下書きを含む全ステータスのコラムを新しい順に取得する（プレビュー用・非公開導線）。
+export async function getDraftColumns(limit = 100): Promise<Column[]> {
+  if (useMock) return [];
+  try {
+    const sb = await getClient();
+    const { data, error } = await sb!
+      .from("columns")
+      .select("*")
+      .neq("status", "published")
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// slug指定でステータスを問わずコラムを1件取得する（プレビュー用）。
+export async function getColumnBySlugAnyStatus(slug: string): Promise<Column | null> {
+  if (useMock) return null;
+  try {
+    const sb = await getClient();
+    const { data, error } = await sb!
+      .from("columns")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
