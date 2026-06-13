@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
+import ColumnHero from "@/components/ColumnHero";
 import { getColumnBySlug } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
@@ -156,19 +157,9 @@ export default async function ColumnDetailPage({
           </p>
         )}
 
-        {column.hero_image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={column.hero_image_url}
-            alt={column.title}
-            style={{
-              width: "100%",
-              borderRadius: "9px",
-              display: "block",
-              margin: "0 0 32px",
-            }}
-          />
-        )}
+        <div style={{ borderRadius: "9px", overflow: "hidden", margin: "0 0 32px" }}>
+          <ColumnHero title={column.title} genreId={column.genre_id} variant="detail" />
+        </div>
 
         {/* body_html は自社のAIが生成し人間がレビュー済みの信頼できる内部コンテンツ */}
         <div

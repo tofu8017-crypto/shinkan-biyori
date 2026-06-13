@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
+import ColumnHero from "@/components/ColumnHero";
 import { getPublishedColumns } from "@/lib/supabase";
 
 const DESCRIPTION =
@@ -78,27 +79,7 @@ export default async function ColumnListPage() {
                     textDecoration: "none",
                   }}
                 >
-                  {col.hero_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={col.hero_image_url}
-                      alt={col.title}
-                      style={{
-                        width: "100%",
-                        height: "150px",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "150px",
-                        background: "var(--accent-sage)",
-                      }}
-                    />
-                  )}
+                  <ColumnHero title={col.title} genreId={col.genre_id} variant="list" />
                   <div style={{ padding: "16px 18px 18px" }}>
                     <h2
                       style={{
