@@ -244,9 +244,10 @@ export default async function HomePage() {
 
         {/* 今日の新刊 */}
         <section className="mb-16">
-          <div className="flex items-baseline gap-6 mb-6">
+          <div className="flex items-baseline gap-x-6 gap-y-1 mb-6 flex-wrap">
             <h2
-              style={{ fontFamily: "var(--font-serif)", fontSize: "34px", fontWeight: 500, letterSpacing: "0.14em", color: "var(--text-main)", margin: 0 }}
+              className="section-title"
+              style={{ fontFamily: "var(--font-serif)", fontSize: "34px", fontWeight: 500, letterSpacing: "0.14em", color: "var(--text-main)", margin: 0, whiteSpace: "nowrap" }}
             >
               今日の新刊
             </h2>
@@ -270,7 +271,8 @@ export default async function HomePage() {
         <section>
           <div className="mb-6">
             <h2
-              style={{ fontFamily: "var(--font-serif)", fontSize: "34px", fontWeight: 500, letterSpacing: "0.14em", color: "var(--text-main)", margin: "0 0 4px" }}
+              className="section-title"
+              style={{ fontFamily: "var(--font-serif)", fontSize: "34px", fontWeight: 500, letterSpacing: "0.14em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap" }}
             >
               直近7日間の新刊
             </h2>

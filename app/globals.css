@@ -28,9 +28,13 @@
 
 * { box-sizing: border-box; }
 
-body {
+html, body {
   background: var(--bg-base);
   color: var(--text-main);
+  /* 画面全体が横にスライド（横スクロール）して背景の余白が見えるのを防ぐ。
+     ジャンルタブなど、意図した横スクロールは子要素側のoverflow-xで効くため影響しない。 */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ===== レスポンシブ・レイアウト ===== */
@@ -70,6 +74,13 @@ body {
   /* スマホでは上下paddingを詰め、タブ項目がナビ枠(84px)からはみ出さないようにする
      （はみ出しによる上下のガタつき・余白を防止） */
   .genre-nav-inner > a { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+  /* セクション見出し（今日の新刊 等）: スマホで折り返さないよう縮小。
+     letter-spacingも詰めて1行に収める。 */
+  .section-title {
+    font-size: 26px !important;
+    letter-spacing: 0.08em !important;
+  }
 
   /* 今日の一冊（フィーチャーカード）: スマホでは縦積みにして見やすくする。
      横2カラムだと書影が見切れ・タイトルが細長く折り返すため。 */
