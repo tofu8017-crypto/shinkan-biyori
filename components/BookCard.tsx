@@ -3,7 +3,7 @@ import type { Book } from "@/types/book";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
 
-type Props = { book: Book; featured?: boolean };
+type Props = { book: Book; featured?: boolean; featuredLabel?: string };
 
 const COVER_GRADIENTS: Record<string, string> = {
   "001004008": "linear-gradient(145deg,#dfeade,#a9c6b4)",
@@ -61,7 +61,7 @@ function CoverPlaceholder({ book, genre, large = false }: { book: Book; genre: t
   );
 }
 
-export default function BookCard({ book, featured = false }: Props) {
+export default function BookCard({ book, featured = false, featuredLabel = "今日の一冊" }: Props) {
   const genre = GENRES.find((g) => g.id === book.genre_id);
   const azUrl = amazonUrl(book);
   const href = azUrl; // 表紙画像クリックの飛び先＝Amazon（楽天は黒の楽天ボタンから）
@@ -92,7 +92,7 @@ export default function BookCard({ book, featured = false }: Props) {
             padding: "8px 18px",
           }}
         >
-          今日の一冊
+          {featuredLabel}
         </div>
 
         {/* 書影 */}

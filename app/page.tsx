@@ -42,17 +42,33 @@ async function TodaysBooks() {
   }
 
   // 「今日の一冊」はなるべくライトノベル以外を選ぶ。
-  // 非ラノベが1冊もなければ先頭にフォールバック。
+  // ① 今日の新刊から非ラノベを探す
+  // ② 今日が全部ラノベなら、直近の非ラノベ書籍を代わりに選ぶ
+  // ③ それも無ければ今日の先頭にフォールバック
+  let featured: typeof books[number];
+  let rest: typeof books;
+  let featuredLabel = "今日の一冊";
   const featuredIndex = books.findIndex((b) => !isLikelyLightNovel(b));
-  const featuredPos = featuredIndex >= 0 ? featuredIndex : 0;
-  const featured = books[featuredPos];
-  const rest = books.filter((_, i) => i !== featuredPos);
+  if (featuredIndex >= 0) {
+    featured = books[featuredIndex];
+    rest = books.filter((_, i) => i !== featuredIndex);
+  } else {
+    const recent = await getLatestBooks(today, 40);
+    const pick = recent.find(
+      (b) => !isLikelyLightNovel(b) && !books.some((x) => x.id === b.id)
+    );
+    featured = pick ?? books[0];
+    // 代替ピックは今日の本ではないので、今日の本は全部gridに残す
+    rest = pick ? books : books.filter((_, i) => i !== 0);
+    // 今日以外から選んだ場合はラベルを変える（「今日の一冊」だと不正確なため）
+    if (pick) featuredLabel = "注目の一冊";
+  }
 
   return (
     <div className={rest.length > 0 ? "today-grid" : ""}>
       {/* フィーチャーカード（2列分） */}
       <div className={rest.length > 0 ? "featured-cell" : ""}>
-        <BookCard book={featured} featured />
+        <BookCard book={featured} featured featuredLabel={featuredLabel} />
       </div>
       {/* 残りのカード（今日の分はすべて表示） */}
       {rest.map((book) => (
