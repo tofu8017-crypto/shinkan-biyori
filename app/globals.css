@@ -70,6 +70,24 @@ body {
   /* スマホでは上下paddingを詰め、タブ項目がナビ枠(84px)からはみ出さないようにする
      （はみ出しによる上下のガタつき・余白を防止） */
   .genre-nav-inner > a { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+  /* 今日の一冊（フィーチャーカード）: スマホでは縦積みにして見やすくする。
+     横2カラムだと書影が見切れ・タイトルが細長く折り返すため。 */
+  .featured-card {
+    grid-template-columns: 1fr !important;
+    padding: 50px 18px 22px !important;
+    gap: 16px !important;
+    min-height: 0 !important;
+  }
+  .featured-card .featured-cover {
+    max-width: 190px;
+    margin: 0 auto;
+  }
+  .featured-card .featured-title {
+    font-size: 24px !important;
+    text-align: center;
+    margin-top: 0 !important;
+  }
 }
 
 @media (max-width: 480px) {

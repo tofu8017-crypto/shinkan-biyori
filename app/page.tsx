@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
 import { getBooksByDate, getBooksByDateRange, getLatestBooks } from "@/lib/supabase";
+import { isLikelyLightNovel } from "@/lib/is-light-novel";
 
 function todayJST(): string {
   // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
@@ -40,7 +41,12 @@ async function TodaysBooks() {
     );
   }
 
-  const [featured, ...rest] = books;
+  // 「今日の一冊」はなるべくライトノベル以外を選ぶ。
+  // 非ラノベが1冊もなければ先頭にフォールバック。
+  const featuredIndex = books.findIndex((b) => !isLikelyLightNovel(b));
+  const featuredPos = featuredIndex >= 0 ? featuredIndex : 0;
+  const featured = books[featuredPos];
+  const rest = books.filter((_, i) => i !== featuredPos);
 
   return (
     <div className={rest.length > 0 ? "today-grid" : ""}>

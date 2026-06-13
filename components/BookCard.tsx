@@ -70,7 +70,7 @@ export default function BookCard({ book, featured = false }: Props) {
   if (featured) {
     return (
       <article
-        className="relative grid"
+        className="relative grid featured-card"
         style={{
           background: "var(--bg-card)",
           borderRadius: "9px",
@@ -96,10 +96,10 @@ export default function BookCard({ book, featured = false }: Props) {
         </div>
 
         {/* 書影 */}
-        <a href={href} target="_blank" rel="noopener noreferrer" style={{ borderRadius: "4px", overflow: "hidden", boxShadow: "0 10px 20px rgba(61,53,48,0.12)" }}>
+        <a href={href} target="_blank" rel="noopener noreferrer" className="featured-cover self-start" style={{ borderRadius: "4px", overflow: "hidden", boxShadow: "0 10px 20px rgba(61,53,48,0.12)", display: "block" }}>
           {book.image_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={book.image_url} alt={book.title} className="w-full h-full object-cover" style={{ aspectRatio: "3/4" }} />
+            <img src={book.image_url} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} />
           ) : (
             <CoverPlaceholder book={book} genre={genre} large />
           )}
@@ -108,6 +108,7 @@ export default function BookCard({ book, featured = false }: Props) {
         {/* 書誌 */}
         <div className="flex flex-col">
           <h3
+            className="featured-title"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "31px",
@@ -117,7 +118,9 @@ export default function BookCard({ book, featured = false }: Props) {
               color: "var(--text-main)",
             }}
           >
-            {book.title}
+            <Link href={`/books/${book.isbn13}`} style={{ color: "inherit", textDecoration: "none" }}>
+              {book.title}
+            </Link>
           </h3>
           <div className="text-sm font-bold mb-3" style={{ color: "var(--text-muted)" }}>
             {book.author}　｜　{book.publisher}
@@ -141,15 +144,15 @@ export default function BookCard({ book, featured = false }: Props) {
           )}
           <div className="flex gap-3 mt-auto pt-6">
             {book.rakuten_url && (
-              <a href={book.rakuten_url} target="_blank" rel="noopener noreferrer"
-                className="text-sm font-bold rounded-full px-5 py-2 transition-opacity hover:opacity-80"
-                style={{ background: "#111", color: "#fff", textDecoration: "none" }}>
-                楽天
+              <a href={book.rakuten_url} target="_blank" rel="noopener noreferrer sponsored"
+                className="text-sm font-bold rounded-full py-2.5 text-center whitespace-nowrap transition-opacity hover:opacity-80"
+                style={{ background: "#111", color: "#fff", textDecoration: "none", minWidth: "120px", flex: "0 1 140px" }}>
+                楽天ブックス
               </a>
             )}
-            <a href={azUrl} target="_blank" rel="noopener noreferrer"
-              className="text-sm font-bold rounded-full px-5 py-2 transition-opacity hover:opacity-80"
-              style={{ background: "#ED8A22", color: "#fff", textDecoration: "none" }}>
+            <a href={azUrl} target="_blank" rel="noopener noreferrer sponsored"
+              className="text-sm font-bold rounded-full py-2.5 text-center whitespace-nowrap transition-opacity hover:opacity-80"
+              style={{ background: "#ED8A22", color: "#fff", textDecoration: "none", minWidth: "120px", flex: "0 1 140px" }}>
               Amazon
             </a>
           </div>
