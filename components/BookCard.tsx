@@ -182,13 +182,13 @@ export default function BookCard({ book, featured = false, featuredLabel = "ไปๆ
         )}
       </a>
       <h3
-        className="line-clamp-2"
+        className="line-clamp-3 card-title"
         style={{
           fontFamily: "var(--font-serif)",
-          fontSize: "18px",
+          fontSize: "15px",
           fontWeight: 500,
-          lineHeight: 1.55,
-          margin: "14px 0 8px",
+          lineHeight: 1.5,
+          margin: "12px 0 8px",
           color: "var(--text-main)",
         }}
       >

@@ -75,6 +75,9 @@ html, body {
      （はみ出しによる上下のガタつき・余白を防止） */
   .genre-nav-inner > a { padding-top: 0 !important; padding-bottom: 0 !important; }
 
+  /* 本カードのタイトル: 狭いカード幅でも見切れにくいよう、スマホでさらに縮小 */
+  .card-title { font-size: 14px !important; }
+
   /* セクション見出し（今日の新刊 等）: スマホで折り返さないよう縮小。
      letter-spacingも詰めて1行に収める。 */
   .section-title {
