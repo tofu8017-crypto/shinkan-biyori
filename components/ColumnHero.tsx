@@ -1,8 +1,9 @@
 import { GENRES } from "@/types/book";
+import { pickColumnImage } from "@/lib/column-images";
 
-// コラムのアイキャッチ。ジャンルに合わせた実写の無料写真（public/columns/<genreId>.jpg、
-// Unsplashライセンス・自サイト保存で壊れない）を見出し画像として表示し、
-// 左下に小さなジャンルラベルを重ねる。グラデーション/光沢のテンプレ感を排した編集的な体裁。
+// コラムのアイキャッチ。記事ごとに public/columns/pool/ のプールから
+// slugで安定して1枚を選んで表示し、左下に小さなジャンルラベルを重ねる。
+// 写真は自サイト保存なので壊れない。グラデーション/光沢のテンプレ感は排除。
 
 const ACCENTS: Record<string, string> = {
   "001004008": "#7FA68C",
@@ -14,22 +15,19 @@ const ACCENTS: Record<string, string> = {
   "001006": "#B59B5E",
 };
 
-// 画像を用意しているジャンルID（無いIDは画像を出さず何も表示しない）
-const HAS_IMAGE = new Set(Object.keys(ACCENTS));
-
 type Props = {
+  /** 記事の識別名。これを元に表示する写真を決める */
+  slug: string;
   genreId?: string | null;
   /** list: 一覧カード用 / detail: 記事ページ用（大きめ） */
   variant?: "list" | "detail";
-  /** 互換のため受け取るが未使用 */
-  title?: string;
 };
 
-export default function ColumnHero({ genreId, variant = "list" }: Props) {
+export default function ColumnHero({ slug, genreId, variant = "list" }: Props) {
   const genre = GENRES.find((g) => g.id === genreId);
-  if (!genre || !genreId || !HAS_IMAGE.has(genreId)) return null;
-  const accent = ACCENTS[genreId];
+  const accent = (genreId && ACCENTS[genreId]) || "#9c8f86";
   const isDetail = variant === "detail";
+  const src = pickColumnImage(slug);
 
   return (
     <div
@@ -38,29 +36,31 @@ export default function ColumnHero({ genreId, variant = "list" }: Props) {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/columns/${genreId}.jpg`}
-        alt={`${genre.label}のコラム`}
+        src={src}
+        alt={genre ? `${genre.label}のコラム` : "コラム"}
         className="w-full h-full object-cover"
       />
-      {/* 下部に向けた暗いスクリム（ラベルの可読性確保） */}
+      {/* 下部の暗いスクリム（ラベルの可読性確保） */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.45) 100%)" }}
       />
-      <span
-        className="absolute font-bold"
-        style={{
-          left: isDetail ? "20px" : "14px",
-          bottom: isDetail ? "16px" : "12px",
-          fontSize: isDetail ? "13px" : "11px",
-          letterSpacing: "0.08em",
-          color: "#fff",
-          borderLeft: `3px solid ${accent}`,
-          paddingLeft: "8px",
-        }}
-      >
-        {genre.label}
-      </span>
+      {genre && (
+        <span
+          className="absolute font-bold"
+          style={{
+            left: isDetail ? "20px" : "14px",
+            bottom: isDetail ? "16px" : "12px",
+            fontSize: isDetail ? "13px" : "11px",
+            letterSpacing: "0.08em",
+            color: "#fff",
+            borderLeft: `3px solid ${accent}`,
+            paddingLeft: "8px",
+          }}
+        >
+          {genre.label}
+        </span>
+      )}
     </div>
   );
 }
