@@ -29,8 +29,8 @@ const GENRES = [
 
 // 楽天APIには発売日の絞り込み入力パラメータが無い（salesDateは出力専用）。
 // そこで -releaseDate（発売日の新しい順）で取得し、こちら側で「直近〜近刊」の窓だけ保存する。
-const WINDOW_PAST_DAYS   = 14;   // 何日前まで保存するか
-const WINDOW_FUTURE_DAYS = 45;   // 何日先（近刊）まで保存するか
+const WINDOW_PAST_DAYS   = 95;   // 何日前まで保存するか（過去約3ヶ月）
+const WINDOW_FUTURE_DAYS = 45;   // 何日先（近刊）まで保存するか（約1ヶ月半先）
 const FAR_FUTURE_DAYS    = 120;  // これより先は「発売日未定」のプレースホルダ(例:2225年)とみなし除外
 
 // ===== ユーティリティ =====

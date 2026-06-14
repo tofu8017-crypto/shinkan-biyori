@@ -3,8 +3,10 @@ export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
-import { getBooksByDate, getBooksByDateRange, getLatestBooks } from "@/lib/supabase";
+import Link from "next/link";
+import { getBooksByDate, getBookCountByDate, getLatestBooks } from "@/lib/supabase";
 import { isLikelyLightNovel } from "@/lib/is-light-novel";
+import MonthCalendar from "@/components/MonthCalendar";
 
 function todayJST(): string {
   // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
@@ -78,87 +80,44 @@ async function TodaysBooks() {
   );
 }
 
-async function WeekDays() {
+function shiftMonth(yyyymm: string, delta: number): string {
+  const [y, m] = yyyymm.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(yyyymm: string): string {
+  const [y, m] = yyyymm.split("-").map(Number);
+  return `${y}年${m}月`;
+}
+
+// 今月の発売日カレンダー（月間グリッド）。発売がある日に冊数を表示し、
+// クリックでその日の一覧へ。前月・翌月は /calendar/[yyyymm] でたどれる。
+async function CalendarSection() {
   const today = todayJST();
-  const sevenDaysAgo = new Date(new Date(today).getTime() - 6 * 24 * 60 * 60 * 1000)
-    .toISOString().slice(0, 10);
-
-  const books = await getBooksByDateRange(sevenDaysAgo, today);
-  const grouped = books.reduce<Record<string, typeof books>>((acc, book) => {
-    (acc[book.published_date] ??= []).push(book);
-    return acc;
-  }, {});
-
-  const dates = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(new Date(today).getTime() - i * 24 * 60 * 60 * 1000);
-    return d.toISOString().slice(0, 10);
-  });
+  const yyyymm = today.slice(0, 7);
+  const from = `${yyyymm}-01`;
+  const [y, m] = yyyymm.split("-").map(Number);
+  const to = `${yyyymm}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
+  const counts = await getBookCountByDate(from, to);
+  const prev = shiftMonth(yyyymm, -1);
+  const next = shiftMonth(yyyymm, 1);
 
   return (
-    <div className="week-grid">
-      {dates.map((date, i) => {
-        const fmt = formatDateJP(date);
-        const dayBooks = grouped[date] ?? [];
-        const isToday = i === 0;
-
-        return (
-          <div
-            key={date}
-            className="text-center"
-            style={{
-              borderLeft: i > 0 ? "1px solid var(--border)" : undefined,
-              padding: "0 14px 8px",
-            }}
-          >
-            {/* 日付バッジ */}
-            <div
-              className="mx-auto mb-4 flex flex-col items-center justify-center"
-              style={{
-                width: "64px",
-                height: "64px",
-                borderRadius: "50%",
-                background: "#fff",
-                border: `2px solid ${isToday ? "var(--accent-sage)" : "var(--border)"}`,
-                fontFamily: "var(--font-serif)",
-                fontSize: "19px",
-                lineHeight: 1.2,
-              }}
-            >
-              <span style={{ fontSize: "15px" }}>{fmt.mmdd}</span>
-              <small style={{ fontSize: "11px", color: "var(--text-muted)" }}>{fmt.dow}</small>
-            </div>
-
-            {/* ミニ書影 */}
-            {dayBooks.length > 0 ? (
-              <>
-                <div className="flex justify-center gap-1 mb-3">
-                  {dayBooks.slice(0, 3).map((b, j) => (
-                    <div
-                      key={b.id}
-                      style={{
-                        width: "38px",
-                        height: "58px",
-                        borderRadius: "2px",
-                        background: ["var(--accent-sage)", "var(--accent-sage)", "var(--accent-rose)"][j] ?? "var(--border)",
-                        opacity: 0.75,
-                      }}
-                    />
-                  ))}
-                </div>
-                <a
-                  href={`/date/${date}`}
-                  className="text-xs font-bold"
-                  style={{ color: "var(--text-sub)", textDecoration: "none" }}
-                >
-                  {dayBooks.length}冊 〉
-                </a>
-              </>
-            ) : (
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>—</p>
-            )}
-          </div>
-        );
-      })}
+    <div className="max-w-md mx-auto">
+      {/* 前月・翌月ナビ */}
+      <div className="flex items-center justify-between mb-4 text-sm font-bold" style={{ color: "var(--highlight)" }}>
+        <Link href={`/calendar/${prev}`} style={{ color: "inherit", textDecoration: "none" }}>
+          ← {monthLabel(prev)}
+        </Link>
+        <span style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px" }}>
+          {monthLabel(yyyymm)}
+        </span>
+        <Link href={`/calendar/${next}`} style={{ color: "inherit", textDecoration: "none" }}>
+          {monthLabel(next)} →
+        </Link>
+      </div>
+      <MonthCalendar yyyymm={yyyymm} counts={counts} today={today} />
     </div>
   );
 }
@@ -267,21 +226,21 @@ export default async function HomePage() {
           </Suspense>
         </section>
 
-        {/* 直近7日間 */}
+        {/* 発売日カレンダー（月間） */}
         <section>
           <div className="mb-6">
             <h2
               className="section-title"
               style={{ fontFamily: "var(--font-serif)", fontSize: "34px", fontWeight: 500, letterSpacing: "0.14em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap" }}
             >
-              直近7日間の新刊
+              発売日カレンダー
             </h2>
             <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-              日付をクリックするとその日の新刊をすべて表示できます。
+              色のついた日に新刊があります。日付をクリックするとその日の新刊一覧へ。前月・翌月もたどれます。
             </p>
           </div>
           <Suspense fallback={null}>
-            <WeekDays />
+            <CalendarSection />
           </Suspense>
         </section>
       </main>

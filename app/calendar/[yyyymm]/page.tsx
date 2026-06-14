@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
+import MonthCalendar from "@/components/MonthCalendar";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { GENRES } from "@/types/book";
 import type { Book } from "@/types/book";
@@ -120,6 +121,18 @@ export default async function CalendarMonthPage({
           <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
             全{books.length}冊
           </p>
+        </div>
+
+        {/* 月間カレンダー（発売がある日に冊数表示・クリックで日付ページへ） */}
+        <div className="max-w-md mx-auto mb-12">
+          <MonthCalendar
+            yyyymm={yyyymm}
+            counts={books.reduce<Record<string, number>>((acc, b) => {
+              acc[b.published_date] = (acc[b.published_date] ?? 0) + 1;
+              return acc;
+            }, {})}
+            today={new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" })}
+          />
         </div>
 
         {/* ジャンル絞り込みリンク */}
