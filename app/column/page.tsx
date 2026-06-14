@@ -73,16 +73,13 @@ export default async function ColumnListPage() {
                     display: "block",
                     background: "#fff",
                     borderRadius: "6px",
-                    boxShadow: "0 1px 2px rgba(61,53,48,0.06)",
-                    border: "1px solid var(--border)",
+                    boxShadow: "0 2px 10px rgba(61,53,48,0.06)",
                     overflow: "hidden",
                     textDecoration: "none",
                   }}
                 >
-                  <div style={{ padding: "20px 18px 18px" }}>
-                    <div style={{ marginBottom: "10px" }}>
-                      <ColumnHero genreId={col.genre_id} variant="list" />
-                    </div>
+                  <ColumnHero genreId={col.genre_id} variant="list" />
+                  <div style={{ padding: "16px 18px 18px" }}>
                     <h2
                       style={{
                         fontFamily: "var(--font-serif)",

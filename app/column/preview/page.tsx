@@ -69,21 +69,19 @@ export default async function ColumnPreviewListPage() {
                   textDecoration: "none",
                 }}
               >
-                <div style={{ padding: "20px 18px 18px" }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <ColumnHero genreId={col.genre_id} variant="list" />
-                    <span
-                      className="inline-block text-xs font-bold"
-                      style={{
-                        borderRadius: "999px",
-                        background: "var(--highlight)",
-                        color: "#fff",
-                        padding: "2px 10px",
-                      }}
-                    >
-                      {col.status}
-                    </span>
-                  </div>
+                <ColumnHero genreId={col.genre_id} variant="list" />
+                <div style={{ padding: "16px 18px 18px" }}>
+                  <span
+                    className="inline-block text-xs font-bold mb-2"
+                    style={{
+                      borderRadius: "999px",
+                      background: "var(--highlight)",
+                      color: "#fff",
+                      padding: "2px 10px",
+                    }}
+                  >
+                    {col.status}
+                  </span>
                   <h2
                     style={{
                       fontFamily: "var(--font-serif)",
