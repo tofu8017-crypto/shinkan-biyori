@@ -11,6 +11,10 @@ jobs:
   write-columns:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # claude-code-action はOIDCトークン取得に id-token: write が必要
+    permissions:
+      contents: write
+      id-token: write
     # Supabaseキーは既存のGitHub Secretsを再利用（日次バッチと同じもの）
     env:
       NEXT_PUBLIC_SUPABASE_URL:    ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
