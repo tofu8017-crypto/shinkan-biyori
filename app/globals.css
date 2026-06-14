@@ -78,6 +78,14 @@ html, body {
   /* 本カードのタイトル: 狭いカード幅でも見切れにくいよう、スマホでさらに縮小 */
   .card-title { font-size: 14px !important; }
 
+  /* 記事/詳細ページの見出し(h1)はスマホで大きすぎて読みづらいので縮小。
+     書籍詳細・コラム・著者・シリーズ・日付・カレンダー等の本文内h1が対象。 */
+  main h1, article h1 {
+    font-size: 22px !important;
+    letter-spacing: 0.04em !important;
+    line-height: 1.55 !important;
+  }
+
   /* セクション見出し（今日の新刊 等）: スマホで折り返さないよう縮小。
      letter-spacingも詰めて1行に収める。 */
   .section-title {
@@ -98,7 +106,7 @@ html, body {
     margin: 0 auto;
   }
   .featured-card .featured-title {
-    font-size: 24px !important;
+    font-size: 21px !important;
     text-align: center;
     margin-top: 0 !important;
   }

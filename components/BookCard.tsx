@@ -65,7 +65,6 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
   const genre = GENRES.find((g) => g.id === book.genre_id);
   const azUrl = amazonUrl(book);
   const href = azUrl; // 表紙画像クリックの飛び先＝Amazon（楽天は黒の楽天ボタンから）
-  const borderColor = genre?.color ?? "var(--border)";
 
   if (featured) {
     return (
@@ -74,8 +73,7 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
         style={{
           background: "var(--bg-card)",
           borderRadius: "9px",
-          borderTop: `5px solid ${borderColor}`,
-          boxShadow: "0 12px 28px rgba(61,53,48,0.10)",
+          boxShadow: "0 2px 12px rgba(61,53,48,0.08)",
           padding: "58px 28px 28px",
           gridTemplateColumns: "42% 1fr",
           gap: "28px",
@@ -168,8 +166,7 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
       style={{
         background: "var(--bg-card)",
         borderRadius: "9px",
-        borderTop: `5px solid ${borderColor}`,
-        boxShadow: "0 12px 28px rgba(61,53,48,0.10)",
+        boxShadow: "0 2px 12px rgba(61,53,48,0.08)",
         padding: "18px 14px 22px",
       }}
     >
