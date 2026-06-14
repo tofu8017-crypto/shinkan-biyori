@@ -134,13 +134,16 @@ export default async function ColumnDetailPage({
       <SiteHeader />
 
       <article className="max-w-3xl mx-auto w-full px-4 py-14">
+        <div style={{ marginBottom: "14px" }}>
+          <ColumnHero genreId={column.genre_id} variant="detail" />
+        </div>
         <h1
           style={{
             fontFamily: "var(--font-serif)",
             fontSize: "34px",
             fontWeight: 500,
             letterSpacing: "0.04em",
-            lineHeight: 1.4,
+            lineHeight: 1.5,
             color: "var(--text-main)",
             margin: "0 0 12px",
           }}
@@ -151,15 +154,11 @@ export default async function ColumnDetailPage({
         {dateJP && (
           <p
             className="text-sm font-bold"
-            style={{ color: "var(--text-muted)", margin: "0 0 28px" }}
+            style={{ color: "var(--text-muted)", margin: "0 0 36px" }}
           >
             {dateJP}
           </p>
         )}
-
-        <div style={{ borderRadius: "9px", overflow: "hidden", margin: "0 0 32px" }}>
-          <ColumnHero title={column.title} genreId={column.genre_id} variant="detail" />
-        </div>
 
         {/* body_html は自社のAIが生成し人間がレビュー済みの信頼できる内部コンテンツ */}
         <div

@@ -79,15 +79,18 @@ export default async function ColumnListPage() {
                     textDecoration: "none",
                   }}
                 >
-                  <ColumnHero title={col.title} genreId={col.genre_id} variant="list" />
-                  <div style={{ padding: "16px 18px 18px" }}>
+                  <div style={{ padding: "20px 18px 18px" }}>
+                    <div style={{ marginBottom: "10px" }}>
+                      <ColumnHero genreId={col.genre_id} variant="list" />
+                    </div>
                     <h2
                       style={{
                         fontFamily: "var(--font-serif)",
-                        fontSize: "20px",
+                        fontSize: "19px",
                         fontWeight: 500,
+                        lineHeight: 1.6,
                         color: "var(--text-main)",
-                        margin: "0 0 8px",
+                        margin: "0 0 10px",
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
