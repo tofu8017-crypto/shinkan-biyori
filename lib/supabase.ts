@@ -494,3 +494,80 @@ export async function getColumnBySlugAnyStatus(slug: string): Promise<Column | n
     return null;
   }
 }
+
+// ===== /stats ダッシュボード用の集計 =====
+export type SiteStats = {
+  totalBooks: number;
+  thisMonthBooks: number;
+  publishedColumns: number;
+  byGenre: { id: string; count: number }[];
+  pages: number;          // 生成ページ数の概算（書籍+コラム+ジャンル+カレンダー等）
+  lastSyncedAt: string | null;
+};
+
+export async function getSiteStats(): Promise<SiteStats> {
+  const GENRE_IDS = [
+    "001004008", "001004009", "001004001",
+    "001004002", "001004003", "001019", "001006",
+  ];
+  const today = jstToday();
+  const ym = today.slice(0, 7);
+  const monthFrom = `${ym}-01`;
+  const [y, m] = ym.split("-").map(Number);
+  const monthTo = `${ym}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
+
+  if (useMock) {
+    const byGenre = GENRE_IDS.map((id) => ({
+      id,
+      count: MOCK_BOOKS.filter((b) => b.genre_id === id).length,
+    }));
+    return {
+      totalBooks: MOCK_BOOKS.length,
+      thisMonthBooks: MOCK_BOOKS.filter((b) => b.published_date >= monthFrom && b.published_date <= monthTo).length,
+      publishedColumns: 0,
+      byGenre,
+      pages: MOCK_BOOKS.length + GENRE_IDS.length,
+      lastSyncedAt: null,
+    };
+  }
+
+  const sb = await getClient();
+
+  const totalBooksRes = await sb!.from("books").select("*", { count: "exact", head: true });
+  const totalBooks = totalBooksRes.count ?? 0;
+
+  const monthRes = await sb!
+    .from("books")
+    .select("*", { count: "exact", head: true })
+    .gte("published_date", monthFrom)
+    .lte("published_date", monthTo);
+  const thisMonthBooks = monthRes.count ?? 0;
+
+  const byGenre: { id: string; count: number }[] = [];
+  for (const id of GENRE_IDS) {
+    const r = await sb!.from("books").select("*", { count: "exact", head: true }).eq("genre_id", id);
+    byGenre.push({ id, count: r.count ?? 0 });
+  }
+
+  let publishedColumns = 0;
+  try {
+    const c = await sb!.from("columns").select("*", { count: "exact", head: true }).eq("status", "published");
+    publishedColumns = c.count ?? 0;
+  } catch {
+    publishedColumns = 0;
+  }
+
+  // 最終更新（最新のlast_synced_at）
+  let lastSyncedAt: string | null = null;
+  try {
+    const ls = await sb!.from("books").select("last_synced_at").order("last_synced_at", { ascending: false }).limit(1).maybeSingle();
+    lastSyncedAt = ls.data?.last_synced_at ?? null;
+  } catch {
+    lastSyncedAt = null;
+  }
+
+  // 生成ページ概算: 書籍詳細 + コラム + ジャンル7 + 今月カレンダー1
+  const pages = totalBooks + publishedColumns + GENRE_IDS.length + 1;
+
+  return { totalBooks, thisMonthBooks, publishedColumns, byGenre, pages, lastSyncedAt };
+}
