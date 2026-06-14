@@ -76,7 +76,7 @@ export default async function ColumnPreviewDetailPage({
         )}
 
         <div style={{ borderRadius: "9px", overflow: "hidden", margin: "0 0 32px" }}>
-          <ColumnHero title={column.title} genreId={column.genre_id} variant="detail" />
+          <ColumnHero slug={column.slug} genreId={column.genre_id} variant="detail" />
         </div>
 
         <div
