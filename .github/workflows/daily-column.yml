@@ -1,0 +1,58 @@
+name: 日次コラム自動執筆（下書き）
+
+on:
+  schedule:
+    # 毎朝6:00 JST = UTC 21:00（前日）
+    - cron: "0 21 * * *"
+  # 手動実行ボタン（テスト用）
+  workflow_dispatch:
+
+jobs:
+  write-columns:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Supabaseキーは既存のGitHub Secretsを再利用（日次バッチと同じもの）
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:    ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY:   ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 依存関係インストール
+        run: npm ci
+
+      - name: コラムを2本執筆して下書き保存
+        uses: anthropics/claude-code-action@v1
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL:    ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY:   ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        with:
+          claude_args: "--dangerously-skip-permissions --max-turns 60"
+          prompt: |
+            あなたは新刊日和(shinkanbiyori.com)のコラム自動執筆エージェントです。リポジトリはチェックアウト済み、依存関係もインストール済みです。環境変数 NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY は設定済みなので、スクリプトは `node scripts/xxx.js`（dotenv不要）でそのまま実行できます。
+
+            文芸コラムを【2本】書いて、Supabaseに【下書き(status:draft)】で保存してください。絶対に公開(publish)しないこと。
+
+            ■ 文体・ルール: `.claude/agents/nakano.md` を必ず読み、その執筆者ペルソナ「ナカノ」の文体・禁止表現・2パス推敲のルールに従って自分で執筆してください（サブエージェントは使わず、あなた自身が書く）。
+
+            ■ 手順:
+            1. 2本は異なるジャンルにする。なろう系・ラノベ・POD・ハーレクインは避け、純文学/一般文芸/ミステリー/エッセイ/海外文学などブランドに合う本を選ぶ。ジャンルID: 小説(日本)=001004008 / 小説(海外)=001004009 / ミステリー=001004001 / SF・ホラー=001004002 / エッセイ=001004003。
+            2. 各ジャンルの直近新刊を `node scripts/recent-books.js <ジャンルID> 30` で取得し、文芸らしい注目作を3〜5冊選ぶ。各本の isbn13 / amazon_url を控える。
+            3. キーワードは `node scripts/suggest-keywords.js "<シード語>"` で取得し、target_keyword を1つ決める。
+            4. 各本は書く前に必ず openBD `curl -s 'https://api.openbd.jp/v1/get?isbn=<isbn13カンマ区切り>'` で内容紹介(TextType=03)を調べる。openBDに無ければ WebSearch（使えなければ `curl` でWeb検索）で著者・あらすじ・受賞歴を調べる。資料に無い感想・評価は書かない（事実のみ）。
+            5. 各コラムを `/tmp/column-<slug>.json` に書く。形式: {"slug","title","body_html","excerpt","target_keyword","genre_id","status":"draft"}。slugは半角英数とハイフン、body_htmlは1行・許可タグのみ・属性はシングルクォート、各本にamazonリンクを本文に貼る。
+            6. `node scripts/save-column.js /tmp/column-<slug>.json` で下書き保存する。
+            7. 最後に、生成した2本の「タイトル / slug / target_keyword / 取り上げた本 / 文字数」を箇条書きで報告する。失敗時は原因を具体的に報告する。
+
+            注意: 公開コマンド(publish-column.js)は実行しない。下書き保存のみ。質より乱造を避け、薄い記事にしない。
