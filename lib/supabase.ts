@@ -41,6 +41,17 @@ async function getClient() {
   );
 }
 
+// サーバー側専用クライアント。RLSをバイパスして下書き(draft)も読める。
+// SUPABASE_SERVICE_ROLE_KEY が無い環境では null を返す（プレビューは空になる）。
+// このキーは NEXT_PUBLIC_ を付けないため、ブラウザには絶対に出ない。
+async function getServiceClient() {
+  if (useMock) return null;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) return null;
+  const { createClient } = await import("@supabase/supabase-js");
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
+}
+
 export async function getLatestBooks(
   onOrBefore: string,
   limit: number
@@ -446,11 +457,13 @@ export async function getColumnBySlug(slug: string): Promise<Column | null> {
 }
 
 // 下書きを含む全ステータスのコラムを新しい順に取得する（プレビュー用・非公開導線）。
+// 下書きはRLSで匿名キーから読めないため、サービスキー(getServiceClient)で取得する。
 export async function getDraftColumns(limit = 100): Promise<Column[]> {
   if (useMock) return [];
   try {
-    const sb = await getClient();
-    const { data, error } = await sb!
+    const sb = await getServiceClient();
+    if (!sb) return [];
+    const { data, error } = await sb
       .from("columns")
       .select("*")
       .neq("status", "published")
@@ -464,11 +477,13 @@ export async function getDraftColumns(limit = 100): Promise<Column[]> {
 }
 
 // slug指定でステータスを問わずコラムを1件取得する（プレビュー用）。
+// 下書きも読めるようサービスキーを使う。無い場合は公開分のみのクライアントにフォールバック。
 export async function getColumnBySlugAnyStatus(slug: string): Promise<Column | null> {
   if (useMock) return null;
   try {
-    const sb = await getClient();
-    const { data, error } = await sb!
+    const sb = (await getServiceClient()) ?? (await getClient());
+    if (!sb) return null;
+    const { data, error } = await sb
       .from("columns")
       .select("*")
       .eq("slug", slug)
