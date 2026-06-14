@@ -1,80 +1,79 @@
 import { GENRES } from "@/types/book";
 
-// コラムのアイキャッチ（ヘッダー画像）。
-// 画像生成の仕組みが無いため外部画像ファイルには依存せず、
-// ジャンル色から作るグラデーションのバナーを表示する。
-// これにより画像ファイル欠落による「壊れた画像」が出ない。
+// コラムのアイキャッチ。画像生成の仕組みが無いため画像ファイルに依存せず、
+// 「紙面（編集）」を思わせるミニマルな見出しブロックで代替する。
+// 派手な2色グラデーション・光沢は使わず（テンプレ/AIっぽさを避ける）、
+// クリーム地＋ジャンル色は細いアクセント（ラベルと罫線）だけに留める。
 
-const GRADIENTS: Record<string, string> = {
-  "001004008": "linear-gradient(135deg,#dfeade,#a9c6b4)",
-  "001004009": "linear-gradient(135deg,#dceaf1,#9fc0d1)",
-  "001004001": "linear-gradient(135deg,#eee5f4,#b9a6c9)",
-  "001004002": "linear-gradient(135deg,#dfeef5,#9fc0d1)",
-  "001004003": "linear-gradient(135deg,#f7e1d8,#e7b49f)",
-  "001019": "linear-gradient(135deg,#e6ead9,#b3bb9c)",
-  "001006": "linear-gradient(135deg,#efe7cf,#cdbb8e)",
+// ジャンルごとの差し色（彩度を抑えた一色。背景の極薄ティントと罫線に使う）
+const ACCENTS: Record<string, string> = {
+  "001004008": "#7FA68C", // 小説（日本）緑
+  "001004009": "#B89F73", // 小説（海外）金茶
+  "001004001": "#9683AE", // ミステリー 紫
+  "001004002": "#7C9BB5", // SF・ホラー 青
+  "001004003": "#C98C6E", // エッセイ 橙
+  "001019": "#8A936F", // 文庫
+  "001006": "#B59B5E", // ビジネス
 };
 
 type Props = {
   title: string;
   genreId?: string | null;
-  /** list: 一覧カード用の小さめ / detail: 記事ページ用の大きめ */
+  /** list: 一覧カード用 / detail: 記事ページ用 */
   variant?: "list" | "detail";
 };
 
 export default function ColumnHero({ title, genreId, variant = "list" }: Props) {
-  const bg = (genreId && GRADIENTS[genreId]) || "linear-gradient(135deg,#e9efe6,#bcd2c4)";
+  const accent = (genreId && ACCENTS[genreId]) || "#9c8f86";
   const genre = GENRES.find((g) => g.id === genreId);
   const isDetail = variant === "detail";
 
   return (
     <div
-      className="relative w-full flex items-end overflow-hidden"
       style={{
-        height: isDetail ? "260px" : "150px",
-        background: bg,
-        padding: isDetail ? "28px" : "16px",
+        height: isDetail ? "220px" : "150px",
+        // 紙のような微妙な縦グラデ（ほぼ無地・差し色の極薄ティントだけ）
+        background: `linear-gradient(180deg, #FBF8F3 0%, ${accent}14 100%)`,
+        borderBottom: `2px solid ${accent}`,
+        padding: isDetail ? "30px 32px" : "18px 20px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: isDetail ? "center" : "flex-start",
       }}
     >
-      {/* 白の光沢でアイキャッチらしさを出す */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle at 25% 20%, rgba(255,255,255,0.45), transparent 45%)",
-        }}
-      />
-      <div className="relative">
-        {genre && (
+      {genre && (
+        <div className="flex items-center gap-2" style={{ marginBottom: isDetail ? "14px" : "10px" }}>
+          {/* 小さな差し色の罫（ブックマーク風） */}
+          <span style={{ display: "inline-block", width: "14px", height: "2px", background: accent }} />
           <span
-            className="inline-block text-xs font-bold mb-2"
             style={{
-              borderRadius: "999px",
-              background: "rgba(255,255,255,0.6)",
-              color: "var(--text-sub)",
-              padding: "2px 12px",
+              fontSize: "11px",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              color: accent,
             }}
           >
             {genre.label}
           </span>
-        )}
-        <p
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: isDetail ? "26px" : "16px",
-            fontWeight: 600,
-            lineHeight: 1.5,
-            color: "rgba(61,53,48,0.85)",
-            margin: 0,
-            display: "-webkit-box",
-            WebkitLineClamp: isDetail ? 3 : 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {title}
-        </p>
-      </div>
+        </div>
+      )}
+      <p
+        style={{
+          fontFamily: "var(--font-serif)",
+          fontSize: isDetail ? "26px" : "16px",
+          fontWeight: 600,
+          lineHeight: 1.6,
+          letterSpacing: "0.02em",
+          color: "var(--text-main)",
+          margin: 0,
+          display: "-webkit-box",
+          WebkitLineClamp: isDetail ? 3 : 3,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}
+      >
+        {title}
+      </p>
     </div>
   );
 }

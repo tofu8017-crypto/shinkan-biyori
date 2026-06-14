@@ -72,9 +72,9 @@ export default async function ColumnListPage() {
                   style={{
                     display: "block",
                     background: "#fff",
-                    borderRadius: "9px",
-                    boxShadow: "0 1px 3px rgba(61,53,48,0.08)",
-                    borderTop: "4px solid var(--accent-sage)",
+                    borderRadius: "6px",
+                    boxShadow: "0 1px 2px rgba(61,53,48,0.06)",
+                    border: "1px solid var(--border)",
                     overflow: "hidden",
                     textDecoration: "none",
                   }}
