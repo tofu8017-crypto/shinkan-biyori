@@ -23,7 +23,7 @@ jobs:
           cache: "npm"
 
       - name: 依存関係インストール
-        run: npm ci --omit=dev
+        run: npm install --omit=dev --no-audit --no-fund
 
       - name: 新刊データ取得・保存
         env:

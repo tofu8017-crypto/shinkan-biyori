@@ -28,7 +28,7 @@ jobs:
           cache: "npm"
 
       - name: 依存関係インストール
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: コラムを2本執筆して下書き保存
         uses: anthropics/claude-code-action@v1
