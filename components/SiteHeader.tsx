@@ -78,11 +78,14 @@ export default function SiteHeader() {
 
       {/* ジャンルタブ */}
       <nav
-        className="border-t overflow-x-auto genre-nav"
+        className="border-t genre-nav"
         style={{ borderColor: "rgba(232,221,214,0.7)" }}
       >
+        {/* スクロール領域をmax-w-6xl内に収める。タブはヘッダーと左右が揃い、
+            入りきらない分はこのコンテナ内で横スクロールする（右へのはみ出し・見切れ防止）。 */}
+        <div className="max-w-6xl mx-auto px-4 overflow-x-auto genre-scroller">
         <div
-          className="max-w-6xl mx-auto px-4 flex items-center gap-6 genre-nav-inner"
+          className="flex items-center gap-6 genre-nav-inner"
           style={{ height: "112px" }}
         >
           {/* すべて */}
@@ -160,6 +163,7 @@ export default function SiteHeader() {
               </a>
             );
           })}
+        </div>
         </div>
       </nav>
     </header>

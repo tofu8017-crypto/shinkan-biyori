@@ -157,14 +157,15 @@ html, body {
   .search-btn { width: 26px; height: 26px; font-size: 14px; }
 }
 
-/* ジャンルタブの横スクロール: スクロールバーを隠し、縦への揺れ(オーバースクロール連動)を防ぐ */
-.genre-nav {
+/* ジャンルタブの横スクロール: スクロールバーを隠し、縦への揺れ(オーバースクロール連動)を防ぐ。
+   スクロールはmax-w-6xl内の .genre-scroller が担う（ヘッダーと左右を揃え、右へのはみ出し防止） */
+.genre-scroller {
   overscroll-behavior-x: contain; /* 横スクロールが縦ページに連動して揺れるのを防止 */
   scrollbar-width: none;          /* Firefox: スクロールバー非表示 */
   -ms-overflow-style: none;       /* 旧Edge/IE */
   -webkit-overflow-scrolling: touch;
 }
-.genre-nav::-webkit-scrollbar {
+.genre-scroller::-webkit-scrollbar {
   display: none;                  /* Safari/Chrome: スクロールバー非表示で行のガタつきを解消 */
 }
 /* 各タブの縦位置を固定して上下のブレをなくす */
