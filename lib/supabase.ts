@@ -3,6 +3,12 @@ import type { Column } from "@/types/column";
 import { MOCK_BOOKS } from "./mock-data";
 import { isSameAuthor, splitAuthors } from "./normalize-author";
 import { groupBySeries, seriesSlug } from "./detect-series";
+import { isLikelyLightNovel } from "./is-light-novel";
+
+// ラノベが紛れ込みやすい「小説系」ジャンル。これらの表示からはラノベを除外し、
+// ラノベ専用タブ(001017)へ寄せる。
+const RANOBE_ID = "001017";
+const NOVEL_GENRE_IDS = ["001004008", "001004009", "001004001", "001004002", "001019"];
 
 function isValidSupabaseUrl(url: string | undefined): boolean {
   if (!url) return false;
@@ -165,15 +171,39 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
   const since = addDaysUTC(today, -GENRE_RECENT_DAYS);
 
   if (useMock) {
-    return MOCK_BOOKS.filter(
-      (b) =>
-        b.genre_id === genreId &&
-        b.published_date >= since &&
-        b.published_date <= today
-    ).sort((a, b) => b.published_date.localeCompare(a.published_date));
+    let rows = MOCK_BOOKS.filter(
+      (b) => b.published_date >= since && b.published_date <= today
+    );
+    if (genreId === RANOBE_ID) {
+      rows = rows.filter((b) => b.genre_id === RANOBE_ID || isLikelyLightNovel(b));
+    } else {
+      rows = rows.filter((b) => b.genre_id === genreId);
+      if (NOVEL_GENRE_IDS.includes(genreId)) rows = rows.filter((b) => !isLikelyLightNovel(b));
+    }
+    return rows.sort((a, b) => b.published_date.localeCompare(a.published_date));
   }
 
   const sb = await getClient();
+
+  // ラノベタブ: 小説系ジャンルの直近 + genre_id=001017 を集め、ラノベ判定で絞る
+  if (genreId === RANOBE_ID) {
+    const { data, error } = await sb!
+      .from("books")
+      .select("*")
+      .in("genre_id", [...NOVEL_GENRE_IDS, RANOBE_ID])
+      .gte("published_date", since)
+      .lte("published_date", today)
+      .not("title", "ilike", "%写真集%")
+      .not("title", "ilike", "%グラビア%")
+      .not("title", "ilike", "%アイドル%")
+      .order("published_date", { ascending: false })
+      .limit(300);
+    if (error) throw new Error(error.message);
+    return (data ?? [])
+      .filter((b) => b.genre_id === RANOBE_ID || isLikelyLightNovel(b))
+      .slice(0, 120);
+  }
+
   const { data, error } = await sb!
     .from("books")
     .select("*")
@@ -187,7 +217,12 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
     .limit(120);
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  let rows = data ?? [];
+  // 小説系ジャンルからはラノベを除外（ラノベ専用タブへ寄せる）
+  if (NOVEL_GENRE_IDS.includes(genreId)) {
+    rows = rows.filter((b) => !isLikelyLightNovel(b));
+  }
+  return rows;
 }
 
 export async function getBooksByDateRange(

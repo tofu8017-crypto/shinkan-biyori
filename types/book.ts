@@ -4,6 +4,8 @@ export type Genre =
   | "001004001" // ミステリー
   | "001004002" // SF・ホラー
   | "001004003" // エッセイ
+  | "001017"    // ライトノベル
+  | "001001"    // コミック
   | "001019"    // 文庫
   | "001006"    // ビジネス・実用書
 
@@ -15,9 +17,15 @@ export const GENRES: { id: Genre; label: string; color: string; short?: string }
   { id: "001004001", label: "ミステリー",  color: "#C8B8D4" },
   { id: "001004002", label: "SF・ホラー",  color: "#B8C8D4" },
   { id: "001004003", label: "エッセイ",    color: "#E8C4B8" },
+  { id: "001017",    label: "ライトノベル", color: "#D4B8C8", short: "ラノベ" },
+  { id: "001001",    label: "コミック",    color: "#B8C4D4" },
   { id: "001019",    label: "文庫",        color: "#C4C9B8" },
   { id: "001006",    label: "ビジネス・実用書", color: "#D8C99A", short: "ビジネス" },
 ]
+
+// ラノベの判定で使う「文芸の小説ジャンル」。これらに入っていても
+// is-light-novel 判定に当たればラノベ扱いにして 小説（日本）等から外す。
+export const RANOBE_GENRE_ID = "001017";
 
 export type Book = {
   id: string

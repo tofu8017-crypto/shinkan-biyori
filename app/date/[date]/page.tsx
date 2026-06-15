@@ -1,10 +1,18 @@
 export const revalidate = 1800;
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import BookCard from "@/components/BookCard";
-import { getBooksByDate } from "@/lib/supabase";
+import DateBooksFilter from "@/components/DateBooksFilter";
+import { getBooksByDate, getBookCountByDate } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+
+// "YYYY-MM-DD" を n日ずらす（UTC基準で計算）
+function shiftDate(date: string, n: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
 
 function formatDateJP(dateStr: string) {
   // dateStrは "YYYY-MM-DD"。サーバーのTZに依存しないよう、曜日はUTC基準で算出し、
@@ -68,6 +76,12 @@ export default async function DatePage({
   const fmt = formatDateJP(date);
   const books = await getBooksByDate(date);
 
+  // 前後5日分の日付と冊数（カレンダーに戻らず行き来できる帯ナビ用）
+  const stripStart = shiftDate(date, -5);
+  const stripEnd = shiftDate(date, 5);
+  const counts = await getBookCountByDate(stripStart, stripEnd);
+  const stripDates = Array.from({ length: 11 }, (_, i) => shiftDate(stripStart, i));
+
   // パンくずの構造化データ：ホーム > 日付ページ
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -99,7 +113,7 @@ export default async function DatePage({
       <SiteHeader />
 
       <main className="max-w-6xl mx-auto w-full px-4 py-14">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1
             style={{
               fontFamily: "var(--font-serif)",
@@ -117,22 +131,46 @@ export default async function DatePage({
           </p>
         </div>
 
+        {/* 前後の日付ナビ（±5日。カレンダーに戻らず行き来できる） */}
+        <div
+          className="flex items-stretch gap-2 mb-8 overflow-x-auto"
+          style={{ paddingBottom: "4px" }}
+        >
+          {stripDates.map((d) => {
+            const f = formatDateJP(d);
+            const c = counts[d] ?? 0;
+            const isCur = d === date;
+            return (
+              <Link
+                key={d}
+                href={`/date/${d}`}
+                className="flex flex-col items-center justify-center flex-shrink-0"
+                style={{
+                  width: "60px",
+                  padding: "8px 0",
+                  borderRadius: "10px",
+                  textDecoration: "none",
+                  background: isCur ? "var(--highlight)" : c > 0 ? "var(--accent-sage)" : "var(--bg-subtle)",
+                  color: isCur ? "#fff" : "var(--text-main)",
+                  opacity: c > 0 || isCur ? 1 : 0.5,
+                }}
+              >
+                <span style={{ fontSize: "13px", fontWeight: 700, lineHeight: 1.1 }}>{f.mmdd}</span>
+                <span style={{ fontSize: "10px" }}>{f.dow}</span>
+                <span style={{ fontSize: "10px", fontWeight: 700, marginTop: "3px" }}>
+                  {c > 0 ? `${c}冊` : "—"}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
         {books.length === 0 ? (
           <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
             この日の新刊データは現在収集中です。
           </p>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-              gap: "18px",
-            }}
-          >
-            {books.map((book) => (
-              <BookCard key={book.id} book={book} />
-            ))}
-          </div>
+          <DateBooksFilter books={books} />
         )}
       </main>
     </div>
