@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Book } from "@/types/book";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
+import { hiResCover } from "@/lib/cover";
 
 type Props = { book: Book; featured?: boolean; featuredLabel?: string };
 
@@ -97,7 +98,7 @@ export default function BookCard({ book, featured = false, featuredLabel = "ไปๆ
         <a href={href} target="_blank" rel="noopener noreferrer" className="featured-cover self-start" style={{ borderRadius: "4px", overflow: "hidden", boxShadow: "0 10px 20px rgba(61,53,48,0.12)", display: "block" }}>
           {book.image_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={book.image_url} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} />
+            <img src={hiResCover(book.image_url) ?? undefined} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} loading="lazy" />
           ) : (
             <CoverPlaceholder book={book} genre={genre} large />
           )}
@@ -174,7 +175,7 @@ export default function BookCard({ book, featured = false, featuredLabel = "ไปๆ
         style={{ borderRadius: "4px", overflow: "hidden", display: "block" }}>
         {book.image_url ? (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={book.image_url} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} />
+          <img src={hiResCover(book.image_url) ?? undefined} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} loading="lazy" />
         ) : (
           <CoverPlaceholder book={book} genre={genre} />
         )}

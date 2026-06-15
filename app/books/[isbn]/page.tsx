@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 1800;
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
 import { splitAuthors, authorSlug } from "@/lib/normalize-author";
+import { hiResCover } from "@/lib/cover";
 import {
   getBookByIsbn,
   getBooksBySameAuthor,
@@ -132,7 +133,7 @@ export default async function BookDetailPage({
             {book.image_url ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={book.image_url}
+                src={hiResCover(book.image_url, 600) ?? undefined}
                 alt={book.title}
                 className="w-full object-cover"
                 style={{ aspectRatio: "3/4" }}
