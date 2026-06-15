@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getBooksByDate, getBookCountByDate, getLatestBooks } from "@/lib/supabase";
 import { isLikelyLightNovel } from "@/lib/is-light-novel";
 import MonthCalendar from "@/components/MonthCalendar";
+import HeroSlideshow from "@/components/HeroSlideshow";
 
 function todayJST(): string {
   // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
@@ -195,15 +196,29 @@ export default async function HomePage() {
         </Suspense>
       </section>
 
-      {/* ヒーロー（縮小・テキスト左＋画像3枚並び） */}
-      <section className="hero-section" style={{ background: "var(--bg-subtle)" }}>
-        <div className="max-w-6xl mx-auto w-full px-4 py-10 flex items-center gap-10 hero-inner">
-          {/* テキスト */}
-          <div className="hero-copy" style={{ flexShrink: 0 }}>
+      {/* ヒーロー（縮小・背景3枚を数秒ごとにクロスフェード巡回） */}
+      <section
+        className="hero-section"
+        style={{ position: "relative", height: "320px", overflow: "hidden" }}
+      >
+        {/* 背景スライドショー（クライアント・3枚巡回） */}
+        <HeroSlideshow />
+        {/* 左からのグラデーションオーバーレイ（テキスト可読性確保） */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(90deg, rgba(250,246,241,0.92) 0%, rgba(250,246,241,0.75) 45%, rgba(250,246,241,0.1) 100%)",
+          }}
+        />
+        {/* テキスト */}
+        <div className="relative h-full max-w-6xl mx-auto px-4 flex items-center">
+          <div style={{ maxWidth: "520px" }}>
             <h1
               style={{
                 fontFamily: "var(--font-serif)",
-                fontSize: "clamp(30px, 4vw, 46px)",
+                fontSize: "clamp(28px, 4vw, 44px)",
                 fontWeight: 900,
                 letterSpacing: "0.14em",
                 lineHeight: 1.5,
@@ -228,29 +243,6 @@ export default async function HomePage() {
             >
               今日の新刊を見る <span>↓</span>
             </a>
-          </div>
-
-          {/* 画像3枚（少し上下にずらして並べる）。差し替えは public/hero-1〜3.jpg */}
-          <div className="hero-photos">
-            {[1, 2, 3].map((n) => (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                key={n}
-                src={`/hero-${n}.jpg`}
-                alt=""
-                aria-hidden="true"
-                className="hero-photo"
-                style={{
-                  width: "100%",
-                  height: "60px",
-                  objectFit: "cover",
-                  objectPosition: "center",
-                  borderRadius: "12px",
-                  boxShadow: "0 12px 28px rgba(120,90,60,0.18)",
-                  marginTop: n === 2 ? "28px" : "0",
-                }}
-              />
-            ))}
           </div>
         </div>
       </section>
