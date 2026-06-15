@@ -91,33 +91,80 @@ function monthLabel(yyyymm: string): string {
   return `${y}年${m}月`;
 }
 
+// その月の初日・末日（"YYYY-MM-DD"）を返す
+function monthRange(yyyymm: string): { from: string; to: string } {
+  const [y, m] = yyyymm.split("-").map(Number);
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return { from: `${yyyymm}-01`, to: `${yyyymm}-${String(last).padStart(2, "0")}` };
+}
+
 // 今月の発売日カレンダー（月間グリッド）。発売がある日に冊数を表示し、
 // クリックでその日の一覧へ。前月・翌月は /calendar/[yyyymm] でたどれる。
 async function CalendarSection() {
   const today = todayJST();
   const yyyymm = today.slice(0, 7);
-  const from = `${yyyymm}-01`;
-  const [y, m] = yyyymm.split("-").map(Number);
-  const to = `${yyyymm}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
-  const counts = await getBookCountByDate(from, to);
   const prev = shiftMonth(yyyymm, -1);
   const next = shiftMonth(yyyymm, 1);
 
-  return (
-    <div className="max-w-md mx-auto">
-      {/* 前月・翌月ナビ */}
-      <div className="flex items-center justify-between mb-4 text-sm font-bold" style={{ color: "var(--highlight)" }}>
-        <Link href={`/calendar/${prev}`} style={{ color: "inherit", textDecoration: "none" }}>
-          ← {monthLabel(prev)}
-        </Link>
-        <span style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px" }}>
-          {monthLabel(yyyymm)}
-        </span>
-        <Link href={`/calendar/${next}`} style={{ color: "inherit", textDecoration: "none" }}>
-          {monthLabel(next)} →
-        </Link>
+  // 当月＋前後月の冊数をまとめて取得（前後月はPC版の薄表示でのみ使う）
+  const cur = monthRange(yyyymm);
+  const pr = monthRange(prev);
+  const nx = monthRange(next);
+  const [counts, prevCounts, nextCounts] = await Promise.all([
+    getBookCountByDate(cur.from, cur.to),
+    getBookCountByDate(pr.from, pr.to),
+    getBookCountByDate(nx.from, nx.to),
+  ]);
+
+  // 前月・翌月の「薄表示」カラム。月全体を1つのリンクにして、その月のページへ。
+  const SideMonth = ({ ym, c }: { ym: string; c: Record<string, number> }) => (
+    <Link
+      href={`/calendar/${ym}`}
+      aria-label={`${monthLabel(ym)}のカレンダーへ`}
+      className="hidden lg:block flex-1 self-start transition-opacity hover:opacity-90"
+      style={{ opacity: 0.45, textDecoration: "none", filter: "grayscale(0.2)" }}
+    >
+      <div
+        className="text-center mb-2 font-bold"
+        style={{ color: "var(--text-muted)", fontFamily: "var(--font-serif)", fontSize: "15px" }}
+      >
+        {monthLabel(ym)}
       </div>
-      <MonthCalendar yyyymm={yyyymm} counts={counts} today={today} />
+      <MonthCalendar yyyymm={ym} counts={c} today={today} muted />
+    </Link>
+  );
+
+  return (
+    <div className="flex items-start justify-center gap-6">
+      {/* 前月（PCのみ・薄表示） */}
+      <SideMonth ym={prev} c={prevCounts} />
+
+      {/* 当月（常に表示） */}
+      <div className="w-full max-w-md flex-shrink-0">
+        {/* スマホ用の前後月テキストナビ（PCでは前後カレンダーが見えるので隠す） */}
+        <div className="flex lg:hidden items-center justify-between mb-4 text-sm font-bold" style={{ color: "var(--highlight)" }}>
+          <Link href={`/calendar/${prev}`} style={{ color: "inherit", textDecoration: "none" }}>
+            ← {monthLabel(prev)}
+          </Link>
+          <span style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px" }}>
+            {monthLabel(yyyymm)}
+          </span>
+          <Link href={`/calendar/${next}`} style={{ color: "inherit", textDecoration: "none" }}>
+            {monthLabel(next)} →
+          </Link>
+        </div>
+        {/* PC用の当月ラベル（前後月のラベルと高さを揃える） */}
+        <div
+          className="hidden lg:block text-center mb-2"
+          style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px", fontWeight: 700 }}
+        >
+          {monthLabel(yyyymm)}
+        </div>
+        <MonthCalendar yyyymm={yyyymm} counts={counts} today={today} />
+      </div>
+
+      {/* 翌月（PCのみ・薄表示） */}
+      <SideMonth ym={next} c={nextCounts} />
     </div>
   );
 }
@@ -148,51 +195,19 @@ export default async function HomePage() {
         </Suspense>
       </section>
 
-      {/* ヒーロー（全面表示） */}
-      <section
-        className="hero-section"
-        style={{
-          position: "relative",
-          height: "500px",
-          overflow: "hidden",
-        }}
-      >
-        {/* 背景画像 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero.jpg"
-          alt=""
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center",
-          }}
-        />
-        {/* 左からのグラデーションオーバーレイ（テキスト可読性確保） */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(90deg, rgba(250,246,241,0.92) 0%, rgba(250,246,241,0.75) 45%, rgba(250,246,241,0.1) 100%)",
-          }}
-        />
-        {/* テキスト */}
-        <div
-          className="relative h-full max-w-6xl mx-auto px-4 flex items-center"
-        >
-          <div style={{ maxWidth: "520px" }}>
+      {/* ヒーロー（縮小・テキスト左＋画像3枚並び） */}
+      <section className="hero-section" style={{ background: "var(--bg-subtle)" }}>
+        <div className="max-w-6xl mx-auto w-full px-4 py-10 flex items-center gap-10 hero-inner">
+          {/* テキスト */}
+          <div className="hero-copy" style={{ flexShrink: 0 }}>
             <h1
               style={{
                 fontFamily: "var(--font-serif)",
-                fontSize: "clamp(36px, 5vw, 58px)",
+                fontSize: "clamp(30px, 4vw, 46px)",
                 fontWeight: 900,
-                letterSpacing: "0.16em",
-                lineHeight: 1.55,
-                margin: "0 0 32px",
+                letterSpacing: "0.14em",
+                lineHeight: 1.5,
+                margin: "0 0 24px",
                 color: "var(--text-main)",
               }}
             >
@@ -205,7 +220,7 @@ export default async function HomePage() {
                 background: "var(--highlight)",
                 color: "#fff",
                 borderRadius: "999px",
-                padding: "15px 34px",
+                padding: "13px 30px",
                 fontSize: "16px",
                 textDecoration: "none",
                 boxShadow: "0 12px 24px rgba(196,149,106,0.25)",
@@ -213,6 +228,29 @@ export default async function HomePage() {
             >
               今日の新刊を見る <span>↓</span>
             </a>
+          </div>
+
+          {/* 画像3枚（少し上下にずらして並べる）。差し替えは public/hero-1〜3.jpg */}
+          <div className="hero-photos">
+            {[1, 2, 3].map((n) => (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                key={n}
+                src={`/hero-${n}.jpg`}
+                alt=""
+                aria-hidden="true"
+                className="hero-photo"
+                style={{
+                  width: "100%",
+                  height: "60px",
+                  objectFit: "cover",
+                  objectPosition: "center",
+                  borderRadius: "12px",
+                  boxShadow: "0 12px 28px rgba(120,90,60,0.18)",
+                  marginTop: n === 2 ? "28px" : "0",
+                }}
+              />
+            ))}
           </div>
         </div>
       </section>

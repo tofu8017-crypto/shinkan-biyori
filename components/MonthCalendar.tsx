@@ -7,11 +7,14 @@ type Props = {
   yyyymm: string; // "2026-06"
   counts: Record<string, number>; // { "2026-06-13": 5, ... }
   today: string; // JSTの今日 "2026-06-14"
+  // 前月・翌月の「薄表示」用。trueのとき各日付のリンクを外し（呼び出し側で月全体を
+  // 1つのリンクにできるよう）、今日の枠線ハイライトも出さない。
+  muted?: boolean;
 };
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
-export default function MonthCalendar({ yyyymm, counts, today }: Props) {
+export default function MonthCalendar({ yyyymm, counts, today, muted = false }: Props) {
   const [y, m] = yyyymm.split("-").map(Number);
   const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
@@ -49,7 +52,7 @@ export default function MonthCalendar({ yyyymm, counts, today }: Props) {
           if (!date) return <div key={`b${idx}`} />;
           const day = Number(date.slice(8));
           const count = counts[date] ?? 0;
-          const isToday = date === today;
+          const isToday = !muted && date === today;
           const has = count > 0;
 
           const inner = (
@@ -73,7 +76,9 @@ export default function MonthCalendar({ yyyymm, counts, today }: Props) {
             </div>
           );
 
-          return has ? (
+          // 薄表示（前月・翌月）では各日のリンクを張らない。月全体を呼び出し側で
+          // 1つのリンクにするため（aの入れ子はNG）。
+          return has && !muted ? (
             <Link key={date} href={`/date/${date}`} style={{ textDecoration: "none" }}>
               {inner}
             </Link>

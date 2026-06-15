@@ -47,6 +47,23 @@ html, body {
 }
 .today-grid .featured-cell { grid-column: span 2; min-width: 0; }
 
+/* ヒーロー（テキスト左＋画像3枚並び） */
+.hero-copy { width: 360px; max-width: 42%; }
+.hero-photos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+/* タブレット以下：テキストを上、画像3枚を下に */
+@media (max-width: 860px) {
+  .hero-inner { flex-direction: column; align-items: flex-start !important; gap: 24px !important; }
+  .hero-copy { width: 100%; max-width: 100%; }
+  .hero-photos { width: 100%; }
+  .hero-photo { height: 38px !important; margin-top: 0 !important; }
+}
+
 /* 直近7日間グリッド */
 .week-grid {
   display: grid;
@@ -66,7 +83,6 @@ html, body {
 
 /* スマホ */
 @media (max-width: 640px) {
-  .hero-section { height: 360px !important; }
   .topbar { height: 64px !important; }
   .site-logo { font-size: 30px !important; letter-spacing: 0.1em !important; }
   .genre-nav-inner { height: 84px !important; gap: 22px !important; }
