@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Serif_JP, M_PLUS_Rounded_1c } from "next/font/google";
 import "./globals.css";
+import ModeSwitchFloat from "@/components/ModeSwitchFloat";
 
 const notoSerifJP = Noto_Serif_JP({
   variable: "--font-serif",
@@ -86,6 +87,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <ModeSwitchFloat />
       </body>
     </html>
   );

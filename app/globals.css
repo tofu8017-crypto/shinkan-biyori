@@ -13,6 +13,23 @@
   --border:       #E8DDD6;
 }
 
+/* コミック版のダークテーマ。.comic-theme でラップした要素以下のCSS変数を上書きし、
+   BookCard等（var(--…)参照）も自動でダーク配色になる。文芸版(:root)はライトのまま。 */
+.comic-theme {
+  --bg-base:      #14141c;
+  --bg-card:      #1f1f2b;
+  --bg-subtle:    #1a1a24;
+  --accent-rose:  #ff6b8b;
+  --accent-sage:  #5ad1c4;
+  --highlight:    #ff5470;
+  --text-main:    #f4f4f6;
+  --text-sub:     #c6c3d2;
+  --text-muted:   #8b8799;
+  --border:       #2d2d3c;
+  background: var(--bg-base);
+  color: var(--text-main);
+}
+
 @theme inline {
   --color-bg-base:     var(--bg-base);
   --color-bg-card:     var(--bg-card);
@@ -38,6 +55,28 @@ html, body {
 }
 
 /* ===== レスポンシブ・レイアウト ===== */
+
+/* 文芸版⇄コミック版のフロート切り替えボタン */
+.mode-switch-float {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.mode-switch-float:hover { transform: translateY(-2px); }
+@media (max-width: 640px) {
+  .mode-switch-float { right: 14px; bottom: 14px; padding: 11px 18px; font-size: 14px; }
+}
 
 /* 今日の新刊グリッド（フィーチャー2列＋小カード4枚で6列ぴったり1行） */
 .today-grid {
