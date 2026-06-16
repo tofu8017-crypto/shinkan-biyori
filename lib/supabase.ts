@@ -258,10 +258,40 @@ export async function getBookCountByDate(
   from: string,
   to: string
 ): Promise<Record<string, number>> {
-  const books = await getBooksByDateRange(from, to);
   const counts: Record<string, number> = {};
-  for (const b of books) {
-    counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
+
+  if (useMock) {
+    const books = await getBooksByDateRange(from, to);
+    for (const b of books) {
+      counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  // Supabaseは1リクエスト最大1000行。月の冊数は1000を超えるため、published_dateだけを
+  // 1000件ずつページングして全件集計する（.select("*")だと前半1000件で打ち切られ、
+  // 月後半が0件に見える不具合になる）。フィルタは getBooksByDateRange と揃える。
+  const sb = await getClient();
+  const PAGE = 1000;
+  for (let offset = 0; ; offset += PAGE) {
+    const { data, error } = await sb!
+      .from("books")
+      .select("published_date")
+      .gte("published_date", from)
+      .lte("published_date", to)
+      .not("title", "ilike", "%写真集%")
+      .not("title", "ilike", "%グラビア%")
+      .not("title", "ilike", "%アイドル%")
+      .neq("genre_id", HOME_EXCLUDED_GENRE)
+      .order("published_date")
+      .range(offset, offset + PAGE - 1);
+
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    for (const b of rows) {
+      counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
+    }
+    if (rows.length < PAGE) break;
   }
   return counts;
 }

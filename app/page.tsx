@@ -178,24 +178,6 @@ export default async function HomePage() {
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
 
-      {/* 発売日カレンダー（ヒーローより上＝最初に目に入る位置） */}
-      <section className="max-w-6xl mx-auto w-full px-4 pt-8 pb-4">
-        <div className="mb-5">
-          <h2
-            className="section-title"
-            style={{ fontFamily: "var(--font-serif)", fontSize: "30px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap" }}
-          >
-            発売日カレンダー
-          </h2>
-          <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-            色のついた日に新刊があります。日付をクリックでその日の新刊一覧へ。前月・翌月もたどれます。
-          </p>
-        </div>
-        <Suspense fallback={null}>
-          <CalendarSection />
-        </Suspense>
-      </section>
-
       {/* ヒーロー（縮小・背景3枚を数秒ごとにクロスフェード巡回） */}
       <section
         className="hero-section"
@@ -275,6 +257,24 @@ export default async function HomePage() {
         </section>
 
       </main>
+
+      {/* 発売日カレンダー（ページ最下部） */}
+      <section className="max-w-6xl mx-auto w-full px-4 pt-4 pb-14">
+        <div className="mb-5">
+          <h2
+            className="section-title"
+            style={{ fontFamily: "var(--font-serif)", fontSize: "30px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap" }}
+          >
+            発売日カレンダー
+          </h2>
+          <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+            色のついた日に新刊があります。日付をクリックでその日の新刊一覧へ。前月・翌月もたどれます。
+          </p>
+        </div>
+        <Suspense fallback={null}>
+          <CalendarSection />
+        </Suspense>
+      </section>
 
       {/* フッター */}
       <footer
