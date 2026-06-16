@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import Link from "next/link";
 import BookCard from "@/components/BookCard";
 import MonthCalendar from "@/components/MonthCalendar";
-import HeroSlideshow from "@/components/HeroSlideshow";
 import { getComicsByDate, getLatestComics, getComicCountByDate } from "@/lib/supabase";
 
 export const metadata: Metadata = {
@@ -139,46 +138,32 @@ export default function ComicHomePage() {
         </div>
       </header>
 
-      {/* ヒーロー（背景3枚スライドショー＋青オーバーレイ） */}
-      <section className="hero-section" style={{ position: "relative", height: "320px", overflow: "hidden" }}>
-        <HeroSlideshow />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(90deg, rgba(11,108,181,0.92) 0%, rgba(11,108,181,0.7) 45%, rgba(26,134,212,0.15) 100%)",
-          }}
-        />
-        <div className="relative h-full max-w-6xl mx-auto px-4 flex items-center">
-          <div style={{ maxWidth: "520px" }}>
-            <h1
-              style={{
-                fontSize: "clamp(28px, 4vw, 44px)",
-                fontWeight: 900,
-                letterSpacing: "0.08em",
-                lineHeight: 1.5,
-                margin: "0 0 24px",
-                color: "#ffffff",
-              }}
-            >
-              あのマンガ、<br /><span style={{ whiteSpace: "nowrap" }}>今日出てた！</span>
-            </h1>
-            <a
-              href="#today"
-              className="inline-flex items-center gap-2 font-bold transition-opacity hover:opacity-85"
-              style={{
-                background: "#fff",
-                color: "var(--highlight)",
-                borderRadius: "999px",
-                padding: "13px 30px",
-                fontSize: "16px",
-                textDecoration: "none",
-                boxShadow: "0 12px 24px rgba(11,108,181,0.3)",
-              }}
-            >
-              今日のコミックを見る <span>↓</span>
-            </a>
-          </div>
+      {/* ヒーロー（コミック版バナーを丸ごと表示＋下にボタン） */}
+      <section style={{ background: "#fff", borderBottom: "1px solid var(--border)" }}>
+        <div className="max-w-6xl mx-auto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero-comic.jpg"
+            alt="新刊日和 コミック — 漫画の数だけ、心が動き出す。"
+            style={{ width: "100%", height: "auto", display: "block" }}
+          />
+        </div>
+        <div className="max-w-6xl mx-auto px-4 flex justify-center" style={{ padding: "20px 16px 28px" }}>
+          <a
+            href="#today"
+            className="inline-flex items-center gap-2 font-bold transition-opacity hover:opacity-85"
+            style={{
+              background: "var(--highlight)",
+              color: "#fff",
+              borderRadius: "999px",
+              padding: "13px 34px",
+              fontSize: "16px",
+              textDecoration: "none",
+              boxShadow: "0 12px 24px rgba(11,108,181,0.3)",
+            }}
+          >
+            今日のコミックを見る <span>↓</span>
+          </a>
         </div>
       </section>
 
