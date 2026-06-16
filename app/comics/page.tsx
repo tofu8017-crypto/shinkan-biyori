@@ -140,12 +140,23 @@ export default function ComicHomePage() {
 
       {/* ヒーロー（コミック版バナーを丸ごと表示＋下にボタン） */}
       <section style={{ background: "#fff", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto" style={{ position: "relative" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/hero-comic.jpg"
             alt="新刊日和 コミック — 漫画の数だけ、心が動き出す。"
             style={{ width: "100%", height: "auto", display: "block" }}
+          />
+          {/* バナー全面に青を薄く重ねる（少しだけ透過してバナーが透ける） */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "var(--highlight)",
+              opacity: 0.45,
+              pointerEvents: "none",
+            }}
           />
         </div>
         <div className="max-w-6xl mx-auto px-4 flex justify-center" style={{ padding: "20px 16px 28px" }}>
