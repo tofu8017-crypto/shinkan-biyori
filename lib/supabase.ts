@@ -29,6 +29,9 @@ const HOME_EXCLUDED_GENRES = ["001006", "001001"];
 // Supabaseの .not("genre_id","in",...) 用の文字列  例: "(001006,001001)"
 const HOME_EXCLUDED_IN = `(${HOME_EXCLUDED_GENRES.join(",")})`;
 
+// コミック版(/comics)で扱うジャンル
+const COMIC_GENRE_ID = "001001";
+
 // ジャンルページで「直近の新刊」とみなす日数（今日からこの日数前まで）
 const GENRE_RECENT_DAYS = 14;
 
@@ -289,6 +292,90 @@ export async function getBookCountByDate(
       .order("published_date")
       .range(offset, offset + PAGE - 1);
 
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    for (const b of rows) {
+      counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
+    }
+    if (rows.length < PAGE) break;
+  }
+  return counts;
+}
+
+// ===== コミック版(/comics)用：ジャンル=コミック(001001)だけを扱う =====
+
+// 指定日に発売のコミック一覧（コミック版トップの「今日のコミック」用）
+export async function getComicsByDate(date: string): Promise<Book[]> {
+  if (useMock) {
+    return MOCK_BOOKS.filter(
+      (b) => b.published_date === date && b.genre_id === COMIC_GENRE_ID
+    ).sort((a, b) => a.title.localeCompare(b.title, "ja"));
+  }
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .eq("published_date", date)
+    .eq("genre_id", COMIC_GENRE_ID)
+    .order("title");
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+// 直近に発売のコミック（今日が0冊のときのフォールバック用）
+export async function getLatestComics(
+  onOrBefore: string,
+  limit: number
+): Promise<Book[]> {
+  if (useMock) {
+    return MOCK_BOOKS.filter(
+      (b) => b.published_date <= onOrBefore && b.genre_id === COMIC_GENRE_ID
+    )
+      .sort(
+        (a, b) =>
+          b.published_date.localeCompare(a.published_date) ||
+          a.title.localeCompare(b.title, "ja")
+      )
+      .slice(0, limit);
+  }
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .lte("published_date", onOrBefore)
+    .eq("genre_id", COMIC_GENRE_ID)
+    .order("published_date", { ascending: false })
+    .order("title")
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+// コミックの日別冊数（コミック版カレンダー用）。1000行上限対策でページング集計。
+export async function getComicCountByDate(
+  from: string,
+  to: string
+): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {};
+  if (useMock) {
+    for (const b of MOCK_BOOKS) {
+      if (b.genre_id === COMIC_GENRE_ID && b.published_date >= from && b.published_date <= to) {
+        counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }
+  const sb = await getClient();
+  const PAGE = 1000;
+  for (let offset = 0; ; offset += PAGE) {
+    const { data, error } = await sb!
+      .from("books")
+      .select("published_date")
+      .gte("published_date", from)
+      .lte("published_date", to)
+      .eq("genre_id", COMIC_GENRE_ID)
+      .order("published_date")
+      .range(offset, offset + PAGE - 1);
     if (error) throw new Error(error.message);
     const rows = data ?? [];
     for (const b of rows) {

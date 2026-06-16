@@ -10,11 +10,13 @@ type Props = {
   // 前月・翌月の「薄表示」用。trueのとき各日付のリンクを外し（呼び出し側で月全体を
   // 1つのリンクにできるよう）、今日の枠線ハイライトも出さない。
   muted?: boolean;
+  // 各日のリンク先ベース。文芸版は "/date"、コミック版は "/comics/date"。
+  hrefBase?: string;
 };
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
-export default function MonthCalendar({ yyyymm, counts, today, muted = false }: Props) {
+export default function MonthCalendar({ yyyymm, counts, today, muted = false, hrefBase = "/date" }: Props) {
   const [y, m] = yyyymm.split("-").map(Number);
   const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
@@ -79,7 +81,7 @@ export default function MonthCalendar({ yyyymm, counts, today, muted = false }: 
           // 薄表示（前月・翌月）では各日のリンクを張らない。月全体を呼び出し側で
           // 1つのリンクにするため（aの入れ子はNG）。
           return has && !muted ? (
-            <Link key={date} href={`/date/${date}`} style={{ textDecoration: "none" }}>
+            <Link key={date} href={`${hrefBase}/${date}`} style={{ textDecoration: "none" }}>
               {inner}
             </Link>
           ) : (
