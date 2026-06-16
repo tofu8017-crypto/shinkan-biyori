@@ -138,36 +138,38 @@ export default function ComicHomePage() {
         </div>
       </header>
 
-      {/* ヒーロー（コミック版バナーを丸ごと表示＋下にボタン） */}
-      <section style={{ background: "#fff", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-6xl mx-auto" style={{ position: "relative" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/hero-comic.jpg"
-            alt="新刊日和 コミック — 漫画の数だけ、心が動き出す。"
-            style={{ width: "100%", height: "auto", display: "block" }}
-          />
-          {/* バナー全面に青を薄く重ねる（少しだけ透過してバナーが透ける） */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "var(--highlight)",
-              opacity: 0.45,
-              pointerEvents: "none",
-            }}
-          />
-        </div>
-        <div className="max-w-6xl mx-auto px-4 flex justify-center" style={{ padding: "20px 16px 28px" }}>
+      {/* ヒーロー（文芸版と同じ全幅の帯。バナーを背景に青を重ね、高さは半分の160px） */}
+      <section
+        className="hero-section"
+        style={{ position: "relative", height: "160px", overflow: "hidden" }}
+      >
+        {/* 背景＝コミックバナー */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-comic.jpg"
+          alt="新刊日和 コミック — 漫画の数だけ、心が動き出す。"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+        />
+        {/* 全面に青を重ねる（少しだけ透過） */}
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "var(--highlight)", opacity: 0.45 }} />
+        {/* 左からの濃い青グラデ（ボタンの可読性確保） */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(90deg, rgba(11,108,181,0.85) 0%, rgba(11,108,181,0.35) 45%, rgba(11,108,181,0) 100%)",
+          }}
+        />
+        {/* コンテンツ（ボタン） */}
+        <div className="relative h-full max-w-6xl mx-auto px-4 flex items-center">
           <a
             href="#today"
             className="inline-flex items-center gap-2 font-bold transition-opacity hover:opacity-85"
             style={{
-              background: "var(--highlight)",
-              color: "#fff",
+              background: "#fff",
+              color: "var(--highlight)",
               borderRadius: "999px",
-              padding: "13px 34px",
+              padding: "13px 30px",
               fontSize: "16px",
               textDecoration: "none",
               boxShadow: "0 12px 24px rgba(11,108,181,0.3)",
