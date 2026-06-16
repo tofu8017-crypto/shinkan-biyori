@@ -22,9 +22,12 @@ function isValidSupabaseUrl(url: string | undefined): boolean {
 
 const useMock = !isValidSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
-// トップ（今日の新刊・直近7日間・日付ページ）から除外するジャンル＝ビジネス・実用書。
-// 看板が「文芸書の新刊カレンダー」なので、実用書は専用タブ(/genre/001006)からのみ閲覧可とする。
-const HOME_EXCLUDED_GENRE = "001006";
+// トップ（今日の新刊・直近・日付ページ・カレンダー）から除外するジャンル。
+// ・ビジネス・実用書(001006): 看板が「文芸書の新刊カレンダー」なので専用タブ(/genre/001006)からのみ
+// ・コミック(001001): コミックは別サイト(/comic)に完全分離するため文芸版トップには出さない
+const HOME_EXCLUDED_GENRES = ["001006", "001001"];
+// Supabaseの .not("genre_id","in",...) 用の文字列  例: "(001006,001001)"
+const HOME_EXCLUDED_IN = `(${HOME_EXCLUDED_GENRES.join(",")})`;
 
 // ジャンルページで「直近の新刊」とみなす日数（今日からこの日数前まで）
 const GENRE_RECENT_DAYS = 14;
@@ -64,7 +67,7 @@ export async function getLatestBooks(
 ): Promise<Book[]> {
   if (useMock) {
     return MOCK_BOOKS.filter(
-      (b) => b.published_date <= onOrBefore && b.genre_id !== HOME_EXCLUDED_GENRE
+      (b) => b.published_date <= onOrBefore && !HOME_EXCLUDED_GENRES.includes(b.genre_id)
     )
       .sort(
         (a, b) =>
@@ -82,7 +85,7 @@ export async function getLatestBooks(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
-    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .not("genre_id", "in", HOME_EXCLUDED_IN)
     .order("published_date", { ascending: false })
     .order("title")
     .limit(limit);
@@ -144,7 +147,7 @@ export async function searchBooks(
 export async function getBooksByDate(date: string): Promise<Book[]> {
   if (useMock) {
     return MOCK_BOOKS.filter(
-      (b) => b.published_date === date && b.genre_id !== HOME_EXCLUDED_GENRE
+      (b) => b.published_date === date && !HOME_EXCLUDED_GENRES.includes(b.genre_id)
     ).sort((a, b) =>
       a.title.localeCompare(b.title, "ja")
     );
@@ -158,7 +161,7 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
-    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .not("genre_id", "in", HOME_EXCLUDED_IN)
     .order("title");
 
   if (error) throw new Error(error.message);
@@ -234,7 +237,7 @@ export async function getBooksByDateRange(
       (b) =>
         b.published_date >= from &&
         b.published_date <= to &&
-        b.genre_id !== HOME_EXCLUDED_GENRE
+        !HOME_EXCLUDED_GENRES.includes(b.genre_id)
     ).sort((a, b) => a.published_date.localeCompare(b.published_date));
   }
 
@@ -247,7 +250,7 @@ export async function getBooksByDateRange(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
-    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .not("genre_id", "in", HOME_EXCLUDED_IN)
     .order("published_date");
 
   if (error) throw new Error(error.message);
@@ -282,7 +285,7 @@ export async function getBookCountByDate(
       .not("title", "ilike", "%写真集%")
       .not("title", "ilike", "%グラビア%")
       .not("title", "ilike", "%アイドル%")
-      .neq("genre_id", HOME_EXCLUDED_GENRE)
+      .not("genre_id", "in", HOME_EXCLUDED_IN)
       .order("published_date")
       .range(offset, offset + PAGE - 1);
 
@@ -407,13 +410,13 @@ export async function getAllBooksForSitemap(): Promise<
 // シリーズ判定・月別カレンダーで母集団として使う。ビジネス・実用書は除外。
 async function getBooksForGrouping(limit = 5000): Promise<Book[]> {
   if (useMock) {
-    return MOCK_BOOKS.filter((b) => b.genre_id !== HOME_EXCLUDED_GENRE);
+    return MOCK_BOOKS.filter((b) => !HOME_EXCLUDED_GENRES.includes(b.genre_id));
   }
   const sb = await getClient();
   const { data, error } = await sb!
     .from("books")
     .select("*")
-    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .not("genre_id", "in", HOME_EXCLUDED_IN)
     .order("published_date", { ascending: false })
     .limit(limit);
   if (error) throw new Error(error.message);
@@ -458,7 +461,7 @@ export async function getBooksByMonth(
       (b) =>
         b.published_date >= from &&
         b.published_date <= to &&
-        b.genre_id !== HOME_EXCLUDED_GENRE &&
+        !HOME_EXCLUDED_GENRES.includes(b.genre_id) &&
         (!genreId || b.genre_id === genreId)
     ).sort((a, b) => a.published_date.localeCompare(b.published_date));
   }
@@ -469,7 +472,7 @@ export async function getBooksByMonth(
     .select("*")
     .gte("published_date", from)
     .lte("published_date", to)
-    .neq("genre_id", HOME_EXCLUDED_GENRE)
+    .not("genre_id", "in", HOME_EXCLUDED_IN)
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%");
