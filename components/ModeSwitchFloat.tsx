@@ -2,39 +2,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// 文芸版（ライト）⇄ コミック版（ダーク）を行き来するフロート切り替えボタン。
-// 全ページに常時表示。現在地が /comic 配下かどうかで行き先と見た目を変える。
+// 文芸版（ライト）⇄ コミック版（ダーク）を行き来するフロートのトグルスイッチ。
+// 全ページに常時表示。現在地が /comics 配下かどうかでスイッチのオン/オフと行き先が変わる。
+// オフ(左)=文芸版（☀ ライト） / オン(右)=コミック版（🌙 ダーク）。
 export default function ModeSwitchFloat() {
   const pathname = usePathname();
-  const inComic = pathname === "/comic" || pathname.startsWith("/comic/");
+  const inComic = pathname === "/comics" || pathname.startsWith("/comics/");
 
-  const href = inComic ? "/" : "/comic";
-  const label = inComic ? "文芸版へ" : "コミック版へ";
-  const icon = inComic ? "📖" : "📚";
+  // クリックで反対側のモードへ遷移する
+  const href = inComic ? "/" : "/comics";
+  const label = inComic ? "文芸版へ切り替え" : "コミック版へ切り替え";
 
   return (
     <Link
       href={href}
       aria-label={label}
-      className="mode-switch-float"
-      style={
-        inComic
-          ? {
-              // コミック版にいるとき：明るい文芸版へ戻るボタン
-              background: "#FAF6F1",
-              color: "#3D3530",
-              boxShadow: "0 10px 28px rgba(0,0,0,0.35)",
-            }
-          : {
-              // 文芸版にいるとき：暗いコミック版へ行くボタン
-              background: "#16161f",
-              color: "#f4f4f6",
-              boxShadow: "0 10px 28px rgba(20,20,40,0.3)",
-            }
-      }
+      title={label}
+      className={`mode-switch${inComic ? " on" : ""}`}
     >
-      <span style={{ fontSize: "18px", lineHeight: 1 }}>{icon}</span>
-      <span>{label}</span>
+      {/* 左ラベル：文芸（ライト） */}
+      <span className="mode-switch-side left">☀ 文芸</span>
+      {/* 右ラベル：コミック（ダーク） */}
+      <span className="mode-switch-side right">🌙 コミック</span>
+      {/* スライドする丸ノブ */}
+      <span className="mode-switch-knob" aria-hidden="true">
+        {inComic ? "🌙" : "☀"}
+      </span>
     </Link>
   );
 }

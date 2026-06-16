@@ -11,7 +11,7 @@ const COMIC_GENRE_ID = "001001";
 export const metadata: Metadata = {
   title: "コミック版 — 新刊コミックカレンダー",
   description: "今日発売のコミック・マンガを毎日まとめ。Amazon・楽天のリンク付き。",
-  alternates: { canonical: "/comic" },
+  alternates: { canonical: "/comics" },
 };
 
 async function ComicReleases() {
@@ -47,7 +47,7 @@ export default function ComicHomePage() {
       >
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between" style={{ height: "76px" }}>
           <a
-            href="/comic"
+            href="/comics"
             className="leading-none"
             style={{ fontFamily: "var(--font-serif)", fontSize: "30px", fontWeight: 700, letterSpacing: "0.12em", color: "var(--text-main)", textDecoration: "none" }}
           >

@@ -118,7 +118,8 @@ export default function SiteHeader() {
             )}
           </a>
 
-          {GENRES.map((g) => {
+          {/* コミック(001001)は別サイト /comics に分離したのでジャンルタブからは外す */}
+          {GENRES.filter((g) => g.id !== "001001").map((g) => {
             const isActive = pathname === `/genre/${g.id}`;
             return (
               <a
