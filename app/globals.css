@@ -16,18 +16,26 @@
 /* コミック版のダークテーマ。.comic-theme でラップした要素以下のCSS変数を上書きし、
    BookCard等（var(--…)参照）も自動でダーク配色になる。文芸版(:root)はライトのまま。 */
 .comic-theme {
-  --bg-base:      #14141c;
-  --bg-card:      #1f1f2b;
-  --bg-subtle:    #1a1a24;
-  --accent-rose:  #ff6b8b;
-  --accent-sage:  #5ad1c4;
-  --highlight:    #ff5470;
-  --text-main:    #f4f4f6;
-  --text-sub:     #c6c3d2;
-  --text-muted:   #8b8799;
-  --border:       #2d2d3c;
+  /* 講談社サイト風：白背景＋ブランドの青、ゴシック体 */
+  --bg-base:      #ffffff;
+  --bg-card:      #ffffff;
+  --bg-subtle:    #eef4fb;
+  --accent-rose:  #e8eff8;
+  --accent-sage:  #cfe2f7;
+  --highlight:    #0b6cb5;   /* コミック版の青 */
+  --text-main:    #122340;
+  --text-sub:     #3f5680;
+  --text-muted:   #8595b0;
+  --border:       #d6e3f1;
   background: var(--bg-base);
   color: var(--text-main);
+  /* ゴシック体（ヒラギノ角ゴシック系）。見出しもゴシックにする */
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP",
+    "Yu Gothic", Meiryo, var(--font-sans), sans-serif;
+}
+/* コミック版は見出しもゴシックに（文芸版の明朝 var(--font-serif) を上書き） */
+.comic-theme h1, .comic-theme h2, .comic-theme h3, .comic-theme .comic-font {
+  font-family: inherit !important;
 }
 
 @theme inline {
@@ -79,11 +87,11 @@ html, body {
   transition: background 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
 }
 .mode-switch:hover { transform: translateY(-2px); }
-/* オン＝コミック。赤はやめてベージュ系の落ち着いた縁に */
+/* オン＝コミック。講談社風の白×青に合わせる */
 .mode-switch.on {
-  background: #2b2a26;
-  border-color: #c9b79a;
-  box-shadow: 0 12px 30px rgba(70, 60, 45, 0.4);
+  background: #0b6cb5;
+  border-color: #095a96;
+  box-shadow: 0 12px 30px rgba(11, 108, 181, 0.4);
 }
 /* 左右ラベルは半分ずつ・中央寄せ。ノブの上に乗るので z-index を上げる */
 .mode-switch-side {
@@ -95,8 +103,8 @@ html, body {
 /* アクティブ側＝はっきり、非アクティブ側＝控えめ（赤は使わない） */
 .mode-switch .left  { color: #2f4a3f; }              /* 文芸（アクティブ） */
 .mode-switch .right { color: #6f7b73; }              /* コミック（非アクティブ・くすみ緑グレー） */
-.mode-switch.on .left  { color: #8c8a82; }           /* 文芸（非アクティブ） */
-.mode-switch.on .right { color: #efe6d4; }           /* コミック（アクティブ・ベージュ白） */
+.mode-switch.on .left  { color: #bcd6ef; }           /* 文芸（非アクティブ・淡い青白） */
+.mode-switch.on .right { color: #0b6cb5; }           /* コミック（アクティブ・白ノブ上の青文字） */
 /* スライドする長方形ノブ（アクティブ側ラベルを囲む） */
 .mode-switch-knob {
   position: absolute;
@@ -111,7 +119,7 @@ html, body {
 }
 .mode-switch.on .mode-switch-knob {
   transform: translateX(100%);
-  background: #4a463d;
+  background: #ffffff;
 }
 @media (max-width: 640px) {
   .mode-switch { right: 14px; bottom: 14px; width: 168px; height: 46px; font-size: 12px; }

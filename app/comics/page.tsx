@@ -40,20 +40,20 @@ async function ComicReleases() {
 export default function ComicHomePage() {
   return (
     <div className="comic-theme min-h-screen flex flex-col">
-      {/* ダーク・コミック版ヘッダー */}
+      {/* 白×青のコミック版ヘッダー（講談社サイト風・ゴシック） */}
       <header
         className="sticky top-0 z-40 border-b"
-        style={{ background: "rgba(20,20,28,0.92)", backdropFilter: "blur(12px)", borderColor: "var(--border)" }}
+        style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", borderColor: "var(--border)" }}
       >
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between" style={{ height: "76px" }}>
           <a
             href="/comics"
             className="leading-none"
-            style={{ fontFamily: "var(--font-serif)", fontSize: "30px", fontWeight: 700, letterSpacing: "0.12em", color: "var(--text-main)", textDecoration: "none" }}
+            style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "0.1em", color: "var(--text-main)", textDecoration: "none" }}
           >
             新刊日和
             <span
-              style={{ marginLeft: "12px", fontSize: "14px", fontWeight: 800, letterSpacing: "0.12em", color: "var(--highlight)", verticalAlign: "middle" }}
+              style={{ marginLeft: "10px", padding: "3px 8px", borderRadius: "5px", fontSize: "13px", fontWeight: 800, letterSpacing: "0.1em", color: "#fff", background: "var(--highlight)", verticalAlign: "middle" }}
             >
               COMIC
             </span>
@@ -61,36 +61,35 @@ export default function ComicHomePage() {
           <Link
             href="/"
             className="text-sm font-bold"
-            style={{ color: "var(--text-sub)", textDecoration: "none" }}
+            style={{ color: "var(--highlight)", textDecoration: "none" }}
           >
             文芸版へ →
           </Link>
         </div>
       </header>
 
-      {/* ヒーロー */}
+      {/* ヒーロー（白地＋青の帯） */}
       <section
         style={{
-          background: "linear-gradient(135deg, #1c1430 0%, #14141c 55%, #20131c 100%)",
+          background: "linear-gradient(135deg, #0b6cb5 0%, #1a86d4 60%, #3aa0e6 100%)",
           borderBottom: "1px solid var(--border)",
         }}
       >
         <div className="max-w-6xl mx-auto px-4 py-12">
-          <p className="font-bold mb-3" style={{ color: "var(--highlight)", letterSpacing: "0.1em", fontSize: "14px" }}>
+          <p className="font-bold mb-3" style={{ color: "rgba(255,255,255,0.9)", letterSpacing: "0.1em", fontSize: "14px" }}>
             毎日更新の新刊コミックカレンダー
           </p>
           <h1
             style={{
-              fontFamily: "var(--font-serif)",
               fontSize: "clamp(30px, 5vw, 52px)",
               fontWeight: 900,
-              letterSpacing: "0.1em",
+              letterSpacing: "0.08em",
               lineHeight: 1.4,
               margin: 0,
-              color: "var(--text-main)",
+              color: "#ffffff",
             }}
           >
-            あのマンガ、<span style={{ whiteSpace: "nowrap", color: "var(--highlight)" }}>今日出てた！</span>
+            あのマンガ、<span style={{ whiteSpace: "nowrap" }}>今日出てた！</span>
           </h1>
         </div>
       </section>
@@ -99,7 +98,7 @@ export default function ComicHomePage() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-12">
         <h2
           className="mb-6"
-          style={{ fontFamily: "var(--font-serif)", fontSize: "28px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)" }}
+          style={{ fontSize: "26px", fontWeight: 800, letterSpacing: "0.06em", color: "var(--text-main)", borderLeft: "5px solid var(--highlight)", paddingLeft: "12px" }}
         >
           新着コミック
         </h2>
@@ -121,7 +120,7 @@ export default function ComicHomePage() {
         className="text-center border-t"
         style={{ background: "var(--bg-subtle)", padding: "48px 0 36px", borderColor: "var(--border)" }}
       >
-        <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "22px", fontWeight: 500, letterSpacing: "0.1em", color: "var(--text-main)" }}>
+        <h2 style={{ fontSize: "20px", fontWeight: 800, letterSpacing: "0.08em", color: "var(--text-main)" }}>
           新刊日和 COMIC — 毎日更新の新刊コミックカレンダー
         </h2>
         <p className="mt-2 font-bold" style={{ color: "var(--text-muted)" }}>
