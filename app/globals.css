@@ -73,11 +73,11 @@ html, body {
   font-weight: 800;
   font-size: 13px;
   letter-spacing: 0.02em;
-  /* オフ＝文芸（ライト）。背景に溶けないよう白地＋ブランド色の枠線で輪郭を立てる */
-  background: #ffffff;
-  color: #3d3530;
-  border: 2px solid var(--highlight);
-  box-shadow: 0 12px 30px rgba(80, 60, 40, 0.35);
+  /* オフ＝文芸（ライト）。カレンダーの新刊セルと同じ薄い緑(--accent-sage)で統一 */
+  background: var(--accent-sage);
+  color: #2f4a3f;
+  border: 2px solid #9bc4b1;
+  box-shadow: 0 12px 30px rgba(80, 60, 40, 0.3);
   transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
 }
 .mode-switch:hover { transform: translateY(-2px); }
