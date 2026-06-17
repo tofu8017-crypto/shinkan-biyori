@@ -8,11 +8,11 @@ export default function ComicHeader() {
       className="sticky top-0 z-50 border-b"
       style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", borderColor: "var(--border)" }}
     >
-      <div className="max-w-6xl mx-auto px-4 flex items-center justify-between" style={{ height: "86px" }}>
+      <div className="max-w-6xl mx-auto px-4 flex items-center justify-between topbar" style={{ height: "86px" }}>
         <div className="flex items-end gap-6">
           <a
             href="/comics"
-            className="leading-none"
+            className="leading-none site-logo whitespace-nowrap flex-shrink-0"
             style={{ fontFamily: "var(--font-serif)", fontSize: "42px", fontWeight: 500, letterSpacing: "0.18em", color: "var(--text-main)", textDecoration: "none" }}
           >
             新刊日和
