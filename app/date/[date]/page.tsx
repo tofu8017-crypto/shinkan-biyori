@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import DateBooksFilter from "@/components/DateBooksFilter";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 import { getBooksByDate, getBookCountByDate } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
@@ -173,6 +174,9 @@ export default async function DatePage({
           <DateBooksFilter books={books} />
         )}
       </main>
+
+      {/* 発売日カレンダー（階層下ページでも最下部に表示） */}
+      <MonthCalendarSection />
     </div>
   );
 }

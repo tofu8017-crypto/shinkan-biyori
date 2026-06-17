@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { decodeAuthorSlug, authorSlug } from "@/lib/normalize-author";
 import { getBooksByAuthor } from "@/lib/supabase";
@@ -134,6 +135,9 @@ export default async function AuthorPage({
           ))}
         </div>
       </main>
+
+      {/* 発売日カレンダー（階層下ページでも最下部に表示） */}
+      <MonthCalendarSection />
     </div>
   );
 }

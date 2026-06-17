@@ -4,9 +4,9 @@ import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import Link from "next/link";
 import { getBooksByDate, getBookCountByDate } from "@/lib/supabase";
-import MonthCalendar from "@/components/MonthCalendar";
 import BookCard from "@/components/BookCard";
 import GenreChips from "@/components/GenreChips";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 
 function todayJST(): string {
   // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
@@ -125,94 +125,6 @@ async function TodaySection() {
   );
 }
 
-function shiftMonth(yyyymm: string, delta: number): string {
-  const [y, m] = yyyymm.split("-").map(Number);
-  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
-}
-
-function monthLabel(yyyymm: string): string {
-  const [y, m] = yyyymm.split("-").map(Number);
-  return `${y}年${m}月`;
-}
-
-// その月の初日・末日（"YYYY-MM-DD"）を返す
-function monthRange(yyyymm: string): { from: string; to: string } {
-  const [y, m] = yyyymm.split("-").map(Number);
-  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  return { from: `${yyyymm}-01`, to: `${yyyymm}-${String(last).padStart(2, "0")}` };
-}
-
-// 今月の発売日カレンダー（月間グリッド）。発売がある日に冊数を表示し、
-// クリックでその日の一覧へ。前月・翌月は /calendar/[yyyymm] でたどれる。
-async function CalendarSection() {
-  const today = todayJST();
-  const yyyymm = today.slice(0, 7);
-  const prev = shiftMonth(yyyymm, -1);
-  const next = shiftMonth(yyyymm, 1);
-
-  // 当月＋前後月の冊数をまとめて取得（前後月はPC版の薄表示でのみ使う）
-  const cur = monthRange(yyyymm);
-  const pr = monthRange(prev);
-  const nx = monthRange(next);
-  const [counts, prevCounts, nextCounts] = await Promise.all([
-    getBookCountByDate(cur.from, cur.to),
-    getBookCountByDate(pr.from, pr.to),
-    getBookCountByDate(nx.from, nx.to),
-  ]);
-
-  // 前月・翌月の「薄表示」カラム。月全体を1つのリンクにして、その月のページへ。
-  const SideMonth = ({ ym, c }: { ym: string; c: Record<string, number> }) => (
-    <Link
-      href={`/calendar/${ym}`}
-      aria-label={`${monthLabel(ym)}のカレンダーへ`}
-      className="hidden lg:block flex-1 self-start transition-opacity hover:opacity-90"
-      style={{ opacity: 0.45, textDecoration: "none", filter: "grayscale(0.2)" }}
-    >
-      <div
-        className="text-center mb-2 font-bold"
-        style={{ color: "var(--text-muted)", fontFamily: "var(--font-serif)", fontSize: "15px" }}
-      >
-        {monthLabel(ym)}
-      </div>
-      <MonthCalendar yyyymm={ym} counts={c} today={today} muted />
-    </Link>
-  );
-
-  return (
-    <div className="flex items-start justify-center gap-6">
-      {/* 前月（PCのみ・薄表示） */}
-      <SideMonth ym={prev} c={prevCounts} />
-
-      {/* 当月（常に表示） */}
-      <div className="w-full max-w-md flex-shrink-0">
-        {/* スマホ用の前後月テキストナビ（PCでは前後カレンダーが見えるので隠す） */}
-        <div className="flex lg:hidden items-center justify-between mb-4 text-sm font-bold" style={{ color: "var(--highlight)" }}>
-          <Link href={`/calendar/${prev}`} style={{ color: "inherit", textDecoration: "none" }}>
-            ← {monthLabel(prev)}
-          </Link>
-          <span style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px" }}>
-            {monthLabel(yyyymm)}
-          </span>
-          <Link href={`/calendar/${next}`} style={{ color: "inherit", textDecoration: "none" }}>
-            {monthLabel(next)} →
-          </Link>
-        </div>
-        {/* PC用の当月ラベル（前後月のラベルと高さを揃える） */}
-        <div
-          className="hidden lg:block text-center mb-2"
-          style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px", fontWeight: 700 }}
-        >
-          {monthLabel(yyyymm)}
-        </div>
-        <MonthCalendar yyyymm={yyyymm} counts={counts} today={today} />
-      </div>
-
-      {/* 翌月（PCのみ・薄表示） */}
-      <SideMonth ym={next} c={nextCounts} />
-    </div>
-  );
-}
 
 export default async function HomePage() {
   return (
@@ -234,22 +146,7 @@ export default async function HomePage() {
       </main>
 
       {/* 発売日カレンダー（ページ最下部） */}
-      <section className="max-w-6xl mx-auto w-full px-4 pt-4 pb-14">
-        <div className="mb-5">
-          <h2
-            className="section-title"
-            style={{ fontFamily: "var(--font-serif)", fontSize: "30px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap" }}
-          >
-            発売日カレンダー
-          </h2>
-          <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-            色のついた日に新刊があります。日付をクリックでその日の新刊一覧へ。前月・翌月もたどれます。
-          </p>
-        </div>
-        <Suspense fallback={null}>
-          <CalendarSection />
-        </Suspense>
-      </section>
+      <MonthCalendarSection />
 
       {/* フッター */}
       <footer

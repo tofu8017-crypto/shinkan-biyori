@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
 import GenreChips from "@/components/GenreChips";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 import { getBooksByGenre } from "@/lib/supabase";
 import { GENRES } from "@/types/book";
 import { notFound } from "next/navigation";
@@ -121,6 +122,9 @@ export default async function GenrePage({
           </div>
         )}
       </main>
+
+      {/* 発売日カレンダー（階層下ページでも最下部に表示） */}
+      <MonthCalendarSection />
     </div>
   );
 }

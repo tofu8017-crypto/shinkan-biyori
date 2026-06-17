@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
@@ -278,6 +279,9 @@ export default async function BookDetailPage({
           <RelatedSection title={`${pub}に発売されたほかの本`} books={sameDay} />
         )}
       </main>
+
+      {/* 発売日カレンダー（階層下ページでも最下部に表示） */}
+      <MonthCalendarSection />
     </div>
   );
 }

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 import { searchBooks } from "@/lib/supabase";
 
 export async function generateMetadata({
@@ -82,6 +83,9 @@ export default async function SearchPage({
           </div>
         )}
       </main>
+
+      {/* 発売日カレンダー（階層下ページでも最下部に表示） */}
+      <MonthCalendarSection />
     </div>
   );
 }
