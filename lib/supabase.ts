@@ -4,6 +4,7 @@ import { MOCK_BOOKS } from "./mock-data";
 import { isSameAuthor, splitAuthors } from "./normalize-author";
 import { groupBySeries, seriesSlug } from "./detect-series";
 import { isLikelyLightNovel } from "./is-light-novel";
+import { searchRakutenBooks, fetchRakutenByIsbn } from "./rakuten";
 
 // ラノベが紛れ込みやすい「小説系」ジャンル。これらの表示からはラノベを除外し、
 // ラノベ専用タブ(001017)へ寄せる。
@@ -144,7 +145,19 @@ export async function searchBooks(
     .limit(limit);
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  const dbBooks = data ?? [];
+
+  // DBは新刊しか持たないため、楽天の全カタログ検索で旧作も補う。
+  // DB収録分（新刊）を上に、楽天で見つかった未収録分（旧作など）を下に並べる。
+  try {
+    const seen = new Set(dbBooks.map((b) => b.isbn13));
+    const rakuten = await searchRakutenBooks(q, 60);
+    const extras = rakuten.filter((b) => !seen.has(b.isbn13));
+    return [...dbBooks, ...extras].slice(0, limit);
+  } catch {
+    // 楽天が落ちていてもDB結果は返す
+    return dbBooks;
+  }
 }
 
 export async function getBooksByDate(date: string): Promise<Book[]> {
@@ -400,7 +413,9 @@ export async function getBookByIsbn(isbn13: string): Promise<Book | null> {
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-  return data ?? null;
+  if (data) return data;
+  // DB未収録（旧作など）は楽天から取得を試みる
+  return await fetchRakutenByIsbn(isbn13);
 }
 
 // 指定書籍と同じ著者の他の新刊（自身は除く）を発売日降順で取得する。内部リンク用。
