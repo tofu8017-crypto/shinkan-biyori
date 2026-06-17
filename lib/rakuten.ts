@@ -1,5 +1,6 @@
 import type { Genre, Book } from "@/types/book";
 import { GENRES } from "@/types/book";
+import { effectiveGenreId } from "./author-genre";
 
 const APP_ID = process.env.RAKUTEN_APP_ID!;
 const ACCESS_KEY = process.env.RAKUTEN_ACCESS_KEY ?? "";
@@ -126,7 +127,8 @@ function rakutenItemToBook(item: RakutenBook): Book | null {
     author: item.author ?? "",
     publisher: item.publisherName ?? "",
     published_date: parseSalesDate(item.salesDate ?? ""),
-    genre_id: mapRakutenGenre(item.booksGenreId),
+    // 作家オーバーライドを反映（伊坂幸太郎→ミステリー等）。無ければ楽天ジャンルをそのまま。
+    genre_id: effectiveGenreId(item.author, mapRakutenGenre(item.booksGenreId)),
     image_url: item.largeImageUrl || null,
     rakuten_url: item.affiliateUrl || item.itemUrl || null,
     amazon_url: toAmazonUrl(isbn10),

@@ -3,6 +3,7 @@ export const revalidate = 1800;
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
+import GenreChips from "@/components/GenreChips";
 import { getBooksByGenre } from "@/lib/supabase";
 import { GENRES } from "@/types/book";
 import { notFound } from "next/navigation";
@@ -95,13 +96,16 @@ export default async function GenrePage({
             {genre.label}
           </h1>
           <span className="font-bold" style={{ color: "var(--text-muted)" }}>
-            直近の新刊 {books.length}冊
+            新刊・近刊 {books.length}冊
           </span>
         </div>
 
+        {/* 全ジャンルへの切替（現在のジャンルを強調） */}
+        <GenreChips activeId={id} />
+
         {books.length === 0 ? (
           <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-            直近の新刊は今のところありません。
+新刊・近刊は今のところありません。
           </p>
         ) : (
           <div

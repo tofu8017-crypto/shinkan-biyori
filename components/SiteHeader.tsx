@@ -2,19 +2,43 @@
 import { usePathname } from "next/navigation";
 import { GENRES } from "@/types/book";
 
-// public/cats/ にアイコン画像が存在するジャンルID。
-// ここに無いジャンル（文庫など）は壊れた画像を出さず、頭文字だけ表示する。
-const ICON_GENRE_IDS = new Set([
-  "001004001",
-  "001004002",
-  "001004003",
-  "001004008",
-  "001004009",
-  "001006",
-]);
+// "2026-06-17" → "2026年6月17日" に整形（パンくず用）
+function dateLabel(s: string): string {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return s;
+  return `${m[1]}年${Number(m[2])}月${Number(m[3])}日`;
+}
+
+// 現在のパスからパンくずを組み立てる。ホーム・コミックでは空（表示しない）。
+function buildCrumbs(pathname: string): { label: string; href?: string }[] {
+  if (pathname === "/" || pathname.startsWith("/comics")) return [];
+  const segs = pathname.split("/").filter(Boolean);
+  const crumbs: { label: string; href?: string }[] = [{ label: "ホーム", href: "/" }];
+  if (segs[0] === "genre" && segs[1]) {
+    const g = GENRES.find((x) => x.id === segs[1]);
+    crumbs.push({ label: g ? g.label : "ジャンル" });
+  } else if (segs[0] === "date" && segs[1]) {
+    crumbs.push({ label: `${dateLabel(segs[1])}の新刊` });
+  } else if (segs[0] === "search") {
+    crumbs.push({ label: "検索結果" });
+  } else if (segs[0] === "column") {
+    if (segs[1]) crumbs.push({ label: "コラム", href: "/column" }, { label: "記事" });
+    else crumbs.push({ label: "コラム" });
+  } else if (segs[0] === "books") {
+    crumbs.push({ label: "書籍" });
+  } else if (segs[0] === "authors") {
+    crumbs.push({ label: "著者" });
+  } else if (segs[0] === "series") {
+    crumbs.push({ label: "シリーズ" });
+  } else {
+    crumbs.push({ label: segs[0] });
+  }
+  return crumbs;
+}
 
 export default function SiteHeader() {
   const pathname = usePathname();
+  const crumbs = buildCrumbs(pathname);
 
   return (
     <header
@@ -76,97 +100,33 @@ export default function SiteHeader() {
         </div>
       </div>
 
-      {/* ジャンルタブ */}
-      <nav
-        className="border-t genre-nav"
-        style={{ borderColor: "rgba(232,221,214,0.7)" }}
-      >
-        {/* スクロール領域をmax-w-6xl内に収める。タブはヘッダーと左右が揃い、
-            入りきらない分はこのコンテナ内で横スクロールする（右へのはみ出し・見切れ防止）。 */}
-        <div className="max-w-6xl mx-auto px-4 overflow-x-auto genre-scroller">
-        <div
-          className="flex items-center gap-6 genre-nav-inner"
-          style={{ height: "112px" }}
+      {/* パンくず（ジャンルの丸ナビは廃止し、現在地をパンくずで示す。
+          ホーム・コミックでは crumbs が空になり、この帯ごと非表示になる） */}
+      {crumbs.length > 0 && (
+        <nav
+          aria-label="パンくずリスト"
+          className="border-t"
+          style={{ borderColor: "rgba(232,221,214,0.7)" }}
         >
-          {/* すべて */}
-          <a
-            href="/"
-            className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 h-full pb-7 pt-6"
-            style={{
-              color: "var(--text-main)",
-              textDecoration: "none",
-            }}
+          <div
+            className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2 text-sm font-bold overflow-x-auto"
+            style={{ color: "var(--text-muted)" }}
           >
-            <div
-              className="rounded-full flex items-center justify-center border text-2xl genre-circle"
-              style={{
-                width: "48px",
-                height: "48px",
-                background: "#fff6ef",
-                borderColor: "var(--border)",
-                boxShadow: "inset 0 0 0 6px rgba(255,255,255,0.35)",
-              }}
-            >
-              全
-            </div>
-            すべて
-            {pathname === "/" && (
-              <span
-                className="absolute left-0 right-0 bottom-0 rounded-full"
-                style={{ height: "5px", background: "var(--highlight)" }}
-              />
-            )}
-          </a>
-
-          {/* コミック(001001)は別サイト /comics に分離したのでジャンルタブからは外す */}
-          {GENRES.filter((g) => g.id !== "001001").map((g) => {
-            const isActive = pathname === `/genre/${g.id}`;
-            return (
-              <a
-                key={g.id}
-                href={`/genre/${g.id}`}
-                className="relative flex items-center gap-3 whitespace-nowrap font-bold flex-shrink-0 h-full pb-7 pt-6"
-                style={{ color: "var(--text-main)", textDecoration: "none" }}
-              >
-                <div
-                  className="relative rounded-full overflow-hidden border flex-shrink-0 flex items-center justify-center text-2xl genre-circle"
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderColor: "var(--border)",
-                    background: g.color + "55",
-                    boxShadow: "inset 0 0 0 6px rgba(255,255,255,0.35)",
-                  }}
-                >
-                  {/* アイコン画像があるジャンルだけ画像を表示。無いジャンル（文庫など）は
-                      ジャンル名の頭文字を丸の中に表示する。壊れた画像を出さないため、
-                      JSのonErrorに頼らず存在するIDだけを画像表示する。 */}
-                  {ICON_GENRE_IDS.has(g.id) ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={`/cats/${g.id}.png`}
-                      alt={g.label}
-                      className="absolute inset-0 w-full h-full object-cover object-center"
-                    />
-                  ) : (
-                    <span style={{ color: "var(--text-main)" }}>
-                      {(g.short ?? g.label).charAt(0)}
-                    </span>
-                  )}
-                </div>
-                {g.short ?? g.label}
-                {isActive && (
-                  <span
-                    className="absolute left-0 right-0 bottom-0 rounded-full"
-                    style={{ height: "5px", background: "var(--highlight)" }}
-                  />
+            {crumbs.map((c, i) => (
+              <span key={i} className="flex items-center gap-2 whitespace-nowrap">
+                {i > 0 && <span style={{ opacity: 0.45 }}>›</span>}
+                {c.href ? (
+                  <a href={c.href} style={{ color: "var(--text-muted)", textDecoration: "none" }}>
+                    {c.label}
+                  </a>
+                ) : (
+                  <span style={{ color: "var(--text-main)" }}>{c.label}</span>
                 )}
-              </a>
-            );
-          })}
-        </div>
-        </div>
-      </nav>
+              </span>
+            ))}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

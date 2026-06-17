@@ -5,6 +5,7 @@ import { isSameAuthor, splitAuthors } from "./normalize-author";
 import { groupBySeries, seriesSlug } from "./detect-series";
 import { isLikelyLightNovel } from "./is-light-novel";
 import { searchRakutenBooks, fetchRakutenByIsbn } from "./rakuten";
+import { effectiveGenreId, overrideAuthorsForGenre } from "./author-genre";
 
 // ラノベが紛れ込みやすい「小説系」ジャンル。これらの表示からはラノベを除外し、
 // ラノベ専用タブ(001017)へ寄せる。
@@ -32,9 +33,6 @@ const HOME_EXCLUDED_IN = `(${HOME_EXCLUDED_GENRES.join(",")})`;
 
 // コミック版(/comics)で扱うジャンル
 const COMIC_GENRE_ID = "001001";
-
-// ジャンルページで「直近の新刊」とみなす日数（今日からこの日数前まで）
-const GENRE_RECENT_DAYS = 14;
 
 function jstToday(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
@@ -185,13 +183,16 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
 }
 
 export async function getBooksByGenre(genreId: string): Promise<Book[]> {
-  // ジャンルページは「直近に出た新刊」だけを表示する（背景の古い本は出さない）
+  // ジャンルページは「最近の新刊＋近刊」を新しい順に表示する。
+  // 14日窓だと刊行ペースが緩いジャンル（ミステリー等）が空になるため、
+  // 過去180日〜先60日(近刊)の幅を持たせて必ず中身が出るようにする。
   const today = jstToday();
-  const since = addDaysUTC(today, -GENRE_RECENT_DAYS);
+  const since = addDaysUTC(today, -180);
+  const until = addDaysUTC(today, 60);
 
   if (useMock) {
     let rows = MOCK_BOOKS.filter(
-      (b) => b.published_date >= since && b.published_date <= today
+      (b) => b.published_date >= since && b.published_date <= until
     );
     if (genreId === RANOBE_ID) {
       rows = rows.filter((b) => b.genre_id === RANOBE_ID || isLikelyLightNovel(b));
@@ -211,7 +212,7 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
       .select("*")
       .in("genre_id", [...NOVEL_GENRE_IDS, RANOBE_ID])
       .gte("published_date", since)
-      .lte("published_date", today)
+      .lte("published_date", until)
       .not("title", "ilike", "%写真集%")
       .not("title", "ilike", "%グラビア%")
       .not("title", "ilike", "%アイドル%")
@@ -223,25 +224,66 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
       .slice(0, 120);
   }
 
+  // ① 元ジャンルが一致する本
   const { data, error } = await sb!
     .from("books")
     .select("*")
     .eq("genre_id", genreId)
     .gte("published_date", since)
-    .lte("published_date", today)
+    .lte("published_date", until)
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
     .order("published_date", { ascending: false })
-    .limit(120);
+    .limit(200);
 
   if (error) throw new Error(error.message);
-  let rows = data ?? [];
-  // 小説系ジャンルからはラノベを除外（ラノベ専用タブへ寄せる）
+
+  // ② このジャンルに手動で割り当てた作家の本（元ジャンルが違っても拾う）。
+  //    作家名は空白入りで保存されるため、文字間に%を挟んだ空白無視ilikeで照合する。
+  const ovAuthors = overrideAuthorsForGenre(genreId);
+  let extra: Book[] = [];
+  if (ovAuthors.length > 0) {
+    const orExpr = ovAuthors
+      .map((a) => buildSearchPattern(a))
+      .filter((p): p is string => !!p)
+      .map((p) => `author.ilike.${p}`)
+      .join(",");
+    if (orExpr) {
+      const { data: ed, error: ee } = await sb!
+        .from("books")
+        .select("*")
+        .or(orExpr)
+        .gte("published_date", since)
+        .lte("published_date", until)
+        .not("title", "ilike", "%写真集%")
+        .not("title", "ilike", "%グラビア%")
+        .not("title", "ilike", "%アイドル%")
+        .order("published_date", { ascending: false })
+        .limit(200);
+      if (ee) throw new Error(ee.message);
+      extra = ed ?? [];
+    }
+  }
+
+  // ③ 統合＋ISBN重複排除
+  const seen = new Set<string>();
+  let rows: Book[] = [];
+  for (const b of [...(data ?? []), ...extra]) {
+    if (seen.has(b.isbn13)) continue;
+    seen.add(b.isbn13);
+    rows.push(b);
+  }
+  // ④ 作家オーバーライドを反映した実効ジャンルで、このジャンルのものだけ残す
+  //    （例: 伊坂幸太郎は元が小説(日本)でもミステリーに入り、小説(日本)からは外れる）
+  rows = rows.filter((b) => effectiveGenreId(b.author, b.genre_id) === genreId);
+  // ⑤ 小説系ジャンルからはラノベを除外（ラノベ専用タブへ寄せる）
   if (NOVEL_GENRE_IDS.includes(genreId)) {
     rows = rows.filter((b) => !isLikelyLightNovel(b));
   }
-  return rows;
+  // ⑥ 新しい順に並べて上限
+  rows.sort((a, b) => b.published_date.localeCompare(a.published_date));
+  return rows.slice(0, 120);
 }
 
 export async function getBooksByDateRange(

@@ -3,6 +3,7 @@ import type { Book } from "@/types/book";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
 import { hiResCover } from "@/lib/cover";
+import { effectiveGenreId } from "@/lib/author-genre";
 
 type Props = { book: Book; featured?: boolean; featuredLabel?: string };
 
@@ -63,7 +64,8 @@ function CoverPlaceholder({ book, genre, large = false }: { book: Book; genre: t
 }
 
 export default function BookCard({ book, featured = false, featuredLabel = "今日の一冊" }: Props) {
-  const genre = GENRES.find((g) => g.id === book.genre_id);
+  // 作家オーバーライドを反映した実効ジャンルでラベルを出す（伊坂幸太郎→ミステリー等）
+  const genre = GENRES.find((g) => g.id === effectiveGenreId(book.author, book.genre_id));
   const azUrl = amazonUrl(book);
   const href = azUrl; // 表紙画像クリックの飛び先＝Amazon（楽天は黒の楽天ボタンから）
 

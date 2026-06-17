@@ -2,12 +2,11 @@ export const revalidate = 1800;
 
 import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
-import BookCard from "@/components/BookCard";
 import Link from "next/link";
-import { getBooksByDate, getBookCountByDate, getLatestBooks } from "@/lib/supabase";
-import { isLikelyLightNovel } from "@/lib/is-light-novel";
+import { getBooksByDate, getBookCountByDate } from "@/lib/supabase";
 import MonthCalendar from "@/components/MonthCalendar";
-import HeroSlideshow from "@/components/HeroSlideshow";
+import BookCard from "@/components/BookCard";
+import GenreChips from "@/components/GenreChips";
 
 function todayJST(): string {
   // en-CAロケールは "YYYY-MM-DD" 形式を返す。timeZone指定で日本の暦日を正しく取得する
@@ -28,56 +27,101 @@ function formatDateJP(dateStr: string) {
   };
 }
 
-async function TodaysBooks() {
+// "YYYY-MM-DD" を n日ずらす（UTC基準）。日付ストリップ用。
+function shiftDate(date: string, n: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// トップの本体。日付ページと同じ「日付見出し＋前後日付ストリップ＋ジャンル絞り込み」を、
+// 今日の日付で表示する。実用重視のため装飾ヒーローは置かない。
+async function TodaySection() {
   const today = todayJST();
-  // まず今日発売の本をすべて取得。今日が0冊の日だけ直近の新刊で補填する。
-  let books = await getBooksByDate(today);
-  if (books.length === 0) {
-    books = await getLatestBooks(today, 6);
-  }
+  const fmt = formatDateJP(today);
+  const books = await getBooksByDate(today);
 
-  if (books.length === 0) {
-    return (
-      <p className="py-8 text-sm" style={{ color: "var(--text-muted)" }}>
-        新刊情報は現在データ収集中です。明朝9時に更新されます。
-      </p>
-    );
-  }
-
-  // 「今日の一冊」はなるべくライトノベル以外を選ぶ。
-  // ① 今日の新刊から非ラノベを探す
-  // ② 今日が全部ラノベなら、直近の非ラノベ書籍を代わりに選ぶ
-  // ③ それも無ければ今日の先頭にフォールバック
-  let featured: typeof books[number];
-  let rest: typeof books;
-  let featuredLabel = "今日の一冊";
-  const featuredIndex = books.findIndex((b) => !isLikelyLightNovel(b));
-  if (featuredIndex >= 0) {
-    featured = books[featuredIndex];
-    rest = books.filter((_, i) => i !== featuredIndex);
-  } else {
-    const recent = await getLatestBooks(today, 40);
-    const pick = recent.find(
-      (b) => !isLikelyLightNovel(b) && !books.some((x) => x.id === b.id)
-    );
-    featured = pick ?? books[0];
-    // 代替ピックは今日の本ではないので、今日の本は全部gridに残す
-    rest = pick ? books : books.filter((_, i) => i !== 0);
-    // 今日以外から選んだ場合はラベルを変える（「今日の一冊」だと不正確なため）
-    if (pick) featuredLabel = "注目の一冊";
-  }
+  // 前後5日分の日付と冊数（カレンダーに戻らず行き来できる帯ナビ）
+  const stripStart = shiftDate(today, -5);
+  const stripEnd = shiftDate(today, 5);
+  const counts = await getBookCountByDate(stripStart, stripEnd);
+  const stripDates = Array.from({ length: 11 }, (_, i) => shiftDate(stripStart, i));
 
   return (
-    <div className={rest.length > 0 ? "today-grid" : ""}>
-      {/* フィーチャーカード（2列分） */}
-      <div className={rest.length > 0 ? "featured-cell" : ""}>
-        <BookCard book={featured} featured featuredLabel={featuredLabel} />
+    <>
+      <div className="mb-6">
+        <h1
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: "34px",
+            fontWeight: 500,
+            letterSpacing: "0.14em",
+            color: "var(--text-main)",
+            margin: "0 0 4px",
+          }}
+        >
+          {fmt.full}の新刊
+        </h1>
+        <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+          全{books.length}冊
+        </p>
       </div>
-      {/* 残りのカード（今日の分はすべて表示） */}
-      {rest.map((book) => (
-        <BookCard key={book.id} book={book} />
-      ))}
-    </div>
+
+      {/* 前後の日付ストリップ（±5日。クリックでその日の新刊一覧へ） */}
+      <div
+        className="flex items-stretch gap-2 mb-8 overflow-x-auto"
+        style={{ paddingBottom: "4px" }}
+      >
+        {stripDates.map((d) => {
+          const f = formatDateJP(d);
+          const c = counts[d] ?? 0;
+          const isCur = d === today;
+          return (
+            <Link
+              key={d}
+              href={isCur ? "/" : `/date/${d}`}
+              className="flex flex-col items-center justify-center flex-shrink-0"
+              style={{
+                width: "60px",
+                padding: "8px 0",
+                borderRadius: "10px",
+                textDecoration: "none",
+                background: isCur ? "var(--highlight)" : c > 0 ? "var(--accent-sage)" : "var(--bg-subtle)",
+                color: isCur ? "#fff" : "var(--text-main)",
+                opacity: c > 0 || isCur ? 1 : 0.5,
+              }}
+            >
+              <span style={{ fontSize: "13px", fontWeight: 700, lineHeight: 1.1 }}>{f.mmdd}</span>
+              <span style={{ fontSize: "10px" }}>{f.dow}</span>
+              <span style={{ fontSize: "10px", fontWeight: 700, marginTop: "3px" }}>
+                {c > 0 ? `${c}冊` : "—"}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* 全ジャンルへの導線（クリックで各ジャンルページへ） */}
+      <GenreChips activeId="all" />
+
+      {books.length === 0 ? (
+        <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+          本日の新刊データは現在収集中です。明朝9時に更新されます。
+        </p>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+            gap: "18px",
+          }}
+        >
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -171,91 +215,22 @@ async function CalendarSection() {
 }
 
 export default async function HomePage() {
-  const today = todayJST();
-  const fmt = formatDateJP(today);
-
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
 
-      {/* ヒーロー（縮小・背景3枚を数秒ごとにクロスフェード巡回） */}
-      <section
-        className="hero-section"
-        style={{ position: "relative", height: "320px", overflow: "hidden" }}
-      >
-        {/* 背景スライドショー（クライアント・3枚巡回） */}
-        <HeroSlideshow />
-        {/* 左からのグラデーションオーバーレイ（テキスト可読性確保） */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(90deg, rgba(250,246,241,0.92) 0%, rgba(250,246,241,0.75) 45%, rgba(250,246,241,0.1) 100%)",
-          }}
-        />
-        {/* テキスト */}
-        <div className="relative h-full max-w-6xl mx-auto px-4 flex items-center">
-          <div style={{ maxWidth: "520px" }}>
-            <h1
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontSize: "clamp(28px, 4vw, 44px)",
-                fontWeight: 900,
-                letterSpacing: "0.14em",
-                lineHeight: 1.5,
-                margin: "0 0 24px",
-                color: "var(--text-main)",
-              }}
-            >
-              あの本、<br /><span style={{ whiteSpace: "nowrap" }}>今日出てたんだ！</span>
-            </h1>
-            <a
-              href="#today"
-              className="inline-flex items-center gap-2 font-bold transition-opacity hover:opacity-85"
-              style={{
-                background: "var(--highlight)",
-                color: "#fff",
-                borderRadius: "999px",
-                padding: "13px 30px",
-                fontSize: "16px",
-                textDecoration: "none",
-                boxShadow: "0 12px 24px rgba(196,149,106,0.25)",
-              }}
-            >
-              今日の新刊を見る <span>↓</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-14" id="today">
-
-        {/* 今日の新刊 */}
-        <section className="mb-16">
-          <div className="flex items-baseline gap-x-6 gap-y-1 mb-6 flex-wrap">
-            <h2
-              className="section-title"
-              style={{ fontFamily: "var(--font-serif)", fontSize: "34px", fontWeight: 500, letterSpacing: "0.14em", color: "var(--text-main)", margin: 0, whiteSpace: "nowrap" }}
-            >
-              今日の新刊
-            </h2>
-            <span className="font-bold" style={{ color: "var(--text-main)" }}>{fmt.full}</span>
-          </div>
-          <Suspense
-            fallback={
-              <div className="today-grid">
-                <div className="featured-cell animate-pulse" style={{ borderRadius: "9px", background: "var(--bg-subtle)", minHeight: "400px" }} />
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} style={{ borderRadius: "9px", background: "var(--bg-subtle)", aspectRatio: "3/5" }} className="animate-pulse" />
-                ))}
-              </div>
-            }
-          >
-            <TodaysBooks />
-          </Suspense>
-        </section>
-
+        <Suspense
+          fallback={
+            <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{ borderRadius: "9px", background: "var(--bg-subtle)", aspectRatio: "3/5" }} className="animate-pulse" />
+              ))}
+            </div>
+          }
+        >
+          <TodaySection />
+        </Suspense>
       </main>
 
       {/* 発売日カレンダー（ページ最下部） */}
