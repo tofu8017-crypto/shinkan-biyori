@@ -5,7 +5,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import BookCard from "@/components/BookCard";
 import MonthCalendar from "@/components/MonthCalendar";
-import { getComicsByDate, getLatestComics, getComicCountByDate } from "@/lib/supabase";
+import ComicHeader from "@/components/ComicHeader";
+import { getComicsByDate, getComicCountByDate } from "@/lib/supabase";
 
 export const metadata: Metadata = {
   title: "コミック版 — 新刊コミックカレンダー",
@@ -20,7 +21,12 @@ function formatDateJP(dateStr: string) {
   const [y, m, dd] = dateStr.split("-").map(Number);
   const days = ["日", "月", "火", "水", "木", "金", "土"];
   const dow = days[new Date(Date.UTC(y, m - 1, dd)).getUTCDay()];
-  return { full: `${y}年${m}月${dd}日（${dow}）` };
+  return { mmdd: `${m}/${dd}`, dow, full: `${y}年${m}月${dd}日（${dow}）` };
+}
+function shiftDate(date: string, n: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
 }
 function shiftMonth(yyyymm: string, delta: number): string {
   const [y, m] = yyyymm.split("-").map(Number);
@@ -37,32 +43,86 @@ function monthRange(yyyymm: string): { from: string; to: string } {
   return { from: `${yyyymm}-01`, to: `${yyyymm}-${String(last).padStart(2, "0")}` };
 }
 
-// 今日のコミック（フィーチャー1冊＋グリッド）。今日が0冊なら直近で補填。
-async function TodaysComics() {
+// トップ本体（文芸版TodaySectionのコミック版）。日付見出し＋前後日付ストリップ＋今日のコミック。
+async function TodaysComicsSection() {
   const today = todayJST();
-  let books = await getComicsByDate(today);
-  if (books.length === 0) books = await getLatestComics(today, 6);
+  const fmt = formatDateJP(today);
+  const books = await getComicsByDate(today);
 
-  if (books.length === 0) {
-    return (
-      <p className="py-8 text-sm" style={{ color: "var(--text-muted)" }}>
-        新刊コミックは現在データ収集中です。明朝9時に更新されます。
-      </p>
-    );
-  }
-
-  const featured = books[0];
-  const rest = books.slice(1);
+  const stripStart = shiftDate(today, -5);
+  const stripEnd = shiftDate(today, 5);
+  const counts = await getComicCountByDate(stripStart, stripEnd);
+  const stripDates = Array.from({ length: 11 }, (_, i) => shiftDate(stripStart, i));
 
   return (
-    <div className={rest.length > 0 ? "today-grid" : ""}>
-      <div className={rest.length > 0 ? "featured-cell" : ""}>
-        <BookCard book={featured} featured featuredLabel="今日の一冊" />
+    <>
+      <div className="mb-6">
+        <h1
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: "34px",
+            fontWeight: 500,
+            letterSpacing: "0.14em",
+            color: "var(--text-main)",
+            margin: "0 0 4px",
+          }}
+        >
+          {fmt.full}の新刊コミック
+        </h1>
+        <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+          全{books.length}冊
+        </p>
       </div>
-      {rest.map((book) => (
-        <BookCard key={book.id} book={book} />
-      ))}
-    </div>
+
+      {/* 前後の日付ストリップ（±5日。クリックでその日のコミック一覧へ） */}
+      <div className="flex items-stretch gap-2 mb-8 overflow-x-auto" style={{ paddingBottom: "4px" }}>
+        {stripDates.map((d) => {
+          const f = formatDateJP(d);
+          const c = counts[d] ?? 0;
+          const isCur = d === today;
+          return (
+            <Link
+              key={d}
+              href={isCur ? "/comics" : `/comics/date/${d}`}
+              className="flex flex-col items-center justify-center flex-shrink-0"
+              style={{
+                width: "60px",
+                padding: "8px 0",
+                borderRadius: "10px",
+                textDecoration: "none",
+                background: isCur ? "var(--highlight)" : c > 0 ? "var(--accent-sage)" : "var(--bg-subtle)",
+                color: isCur ? "#fff" : "var(--text-main)",
+                opacity: c > 0 || isCur ? 1 : 0.5,
+              }}
+            >
+              <span style={{ fontSize: "13px", fontWeight: 700, lineHeight: 1.1 }}>{f.mmdd}</span>
+              <span style={{ fontSize: "10px" }}>{f.dow}</span>
+              <span style={{ fontSize: "10px", fontWeight: 700, marginTop: "3px" }}>
+                {c > 0 ? `${c}冊` : "—"}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {books.length === 0 ? (
+        <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+          本日の新刊コミックは現在収集中です。明朝9時に更新されます。
+        </p>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+            gap: "18px",
+          }}
+        >
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -87,9 +147,12 @@ async function ComicCalendarSection() {
       href={`/comics/calendar/${ym}`}
       aria-label={`${monthLabel(ym)}のカレンダーへ`}
       className="hidden lg:block flex-1 self-start transition-opacity hover:opacity-90"
-      style={{ opacity: 0.45, textDecoration: "none" }}
+      style={{ opacity: 0.45, textDecoration: "none", filter: "grayscale(0.2)" }}
     >
-      <div className="text-center mb-2 font-bold" style={{ color: "var(--text-muted)", fontSize: "15px" }}>
+      <div
+        className="text-center mb-2 font-bold"
+        style={{ color: "var(--text-muted)", fontFamily: "var(--font-serif)", fontSize: "15px" }}
+      >
         {monthLabel(ym)}
       </div>
       <MonthCalendar yyyymm={ym} counts={c} today={today} muted hrefBase="/comics/date" />
@@ -100,7 +163,10 @@ async function ComicCalendarSection() {
     <div className="flex items-start justify-center gap-6">
       <SideMonth ym={prev} c={prevCounts} />
       <div className="w-full max-w-md flex-shrink-0">
-        <div className="hidden lg:block text-center mb-2" style={{ color: "var(--text-main)", fontSize: "18px", fontWeight: 700 }}>
+        <div
+          className="hidden lg:block text-center mb-2"
+          style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px", fontWeight: 700 }}
+        >
           {monthLabel(yyyymm)}
         </div>
         <MonthCalendar yyyymm={yyyymm} counts={counts} today={today} hrefBase="/comics/date" />
@@ -111,111 +177,33 @@ async function ComicCalendarSection() {
 }
 
 export default function ComicHomePage() {
-  const today = todayJST();
-  const fmt = formatDateJP(today);
-
   return (
     <div className="comic-theme min-h-screen flex flex-col">
-      {/* 白×青のコミック版ヘッダー（講談社サイト風・ゴシック） */}
-      <header
-        className="sticky top-0 z-40 border-b"
-        style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", borderColor: "var(--border)" }}
-      >
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between" style={{ height: "76px" }}>
-          <a
-            href="/comics"
-            className="leading-none"
-            style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "0.1em", color: "var(--text-main)", textDecoration: "none" }}
-          >
-            新刊日和
-            <span style={{ marginLeft: "10px", padding: "3px 8px", borderRadius: "5px", fontSize: "13px", fontWeight: 800, letterSpacing: "0.1em", color: "#fff", background: "var(--highlight)", verticalAlign: "middle" }}>
-              COMIC
-            </span>
-          </a>
-          <Link href="/" className="text-sm font-bold" style={{ color: "var(--highlight)", textDecoration: "none" }}>
-            文芸版へ →
-          </Link>
-        </div>
-      </header>
-
-      {/* ヒーロー（文芸版と同じ全幅の帯。バナーを背景に青を重ね、高さは半分の160px） */}
-      <section
-        className="hero-section"
-        style={{ position: "relative", height: "160px", overflow: "hidden" }}
-      >
-        {/* 背景＝コミックバナー */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-comic.jpg"
-          alt="新刊日和 コミック — 漫画の数だけ、心が動き出す。"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
-        />
-        {/* 全面に青を重ねる（少しだけ透過） */}
-        <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "var(--highlight)", opacity: 0.45 }} />
-        {/* 左からの濃い青グラデ（ボタンの可読性確保） */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(90deg, rgba(11,108,181,0.85) 0%, rgba(11,108,181,0.35) 45%, rgba(11,108,181,0) 100%)",
-          }}
-        />
-        {/* コンテンツ（ボタン） */}
-        <div className="relative h-full max-w-6xl mx-auto px-4 flex items-center">
-          <a
-            href="#today"
-            className="inline-flex items-center gap-2 font-bold transition-opacity hover:opacity-85"
-            style={{
-              background: "#fff",
-              color: "var(--highlight)",
-              borderRadius: "999px",
-              padding: "13px 30px",
-              fontSize: "16px",
-              textDecoration: "none",
-              boxShadow: "0 12px 24px rgba(11,108,181,0.3)",
-            }}
-          >
-            今日のコミックを見る <span>↓</span>
-          </a>
-        </div>
-      </section>
+      <ComicHeader />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-14" id="today">
-        <section className="mb-16">
-          <div className="flex items-baseline gap-x-6 gap-y-1 mb-6 flex-wrap">
-            <h2
-              className="section-title"
-              style={{ fontSize: "32px", fontWeight: 800, letterSpacing: "0.06em", color: "var(--text-main)", margin: 0, whiteSpace: "nowrap", borderLeft: "6px solid var(--highlight)", paddingLeft: "14px" }}
-            >
-              今日のコミック
-            </h2>
-            <span className="font-bold" style={{ color: "var(--text-main)" }}>{fmt.full}</span>
-          </div>
-          <Suspense
-            fallback={
-              <div className="today-grid">
-                <div className="featured-cell animate-pulse" style={{ borderRadius: "9px", background: "var(--bg-subtle)", minHeight: "400px" }} />
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} style={{ borderRadius: "9px", background: "var(--bg-subtle)", aspectRatio: "3/5" }} className="animate-pulse" />
-                ))}
-              </div>
-            }
-          >
-            <TodaysComics />
-          </Suspense>
-        </section>
+        <Suspense
+          fallback={
+            <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{ borderRadius: "9px", background: "var(--bg-subtle)", aspectRatio: "3/5" }} className="animate-pulse" />
+              ))}
+            </div>
+          }
+        >
+          <TodaysComicsSection />
+        </Suspense>
       </main>
 
-      {/* コミック発売カレンダー（ページ最下部） */}
+      {/* 発売日カレンダー（ページ最下部） */}
       <section className="max-w-6xl mx-auto w-full px-4 pt-4 pb-14">
         <div className="mb-5">
           <h2
-            className="section-title"
-            style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "0.06em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap", borderLeft: "6px solid var(--highlight)", paddingLeft: "14px" }}
+            style={{ fontFamily: "var(--font-serif)", fontSize: "30px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap" }}
           >
             発売日カレンダー
           </h2>
-          <p className="text-sm font-bold" style={{ color: "var(--text-muted)", paddingLeft: "20px" }}>
+          <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
             色のついた日に新刊コミックがあります。日付をクリックでその日の一覧へ。前月・翌月もたどれます。
           </p>
         </div>
@@ -229,7 +217,7 @@ export default function ComicHomePage() {
         className="text-center relative border-t mt-8"
         style={{ background: "var(--bg-subtle)", padding: "64px 0 40px", borderColor: "var(--border)" }}
       >
-        <h2 style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "0.08em", color: "var(--text-main)" }}>
+        <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "28px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)" }}>
           新刊日和 COMIC — 毎日更新の新刊コミックカレンダー
         </h2>
         <p className="mt-2 font-bold" style={{ color: "var(--text-muted)" }}>

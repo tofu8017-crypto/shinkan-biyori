@@ -16,7 +16,7 @@
 /* コミック版のダークテーマ。.comic-theme でラップした要素以下のCSS変数を上書きし、
    BookCard等（var(--…)参照）も自動でダーク配色になる。文芸版(:root)はライトのまま。 */
 .comic-theme {
-  /* 講談社サイト風：白背景＋ブランドの青、ゴシック体 */
+  /* コミック版は「色だけ」青系に変える。フォント・レイアウトは文芸版と同じにする。 */
   --bg-base:      #ffffff;
   --bg-card:      #ffffff;
   --bg-subtle:    #eef4fb;
@@ -29,13 +29,6 @@
   --border:       #d6e3f1;
   background: var(--bg-base);
   color: var(--text-main);
-  /* ゴシック体（ヒラギノ角ゴシック系）。見出しもゴシックにする */
-  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP",
-    "Yu Gothic", Meiryo, var(--font-sans), sans-serif;
-}
-/* コミック版は見出しもゴシックに（文芸版の明朝 var(--font-serif) を上書き） */
-.comic-theme h1, .comic-theme h2, .comic-theme h3, .comic-theme .comic-font {
-  font-family: inherit !important;
 }
 
 @theme inline {
