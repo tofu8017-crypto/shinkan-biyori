@@ -51,12 +51,17 @@ jobs:
             文体は `.claude/agents/nakano.md` を1回だけ読んで、その文体・禁止表現に従って自分で書く（サブエージェントは使わない、推敲は1回でよい）。
 
             手順（テンポよく進める）:
-            1. ジャンルを2つ選ぶ（例: エッセイ=001004003 と 海外小説=001004009）。なろう系・ラノベ・POD・ハーレクインは避ける。
-            2. 各ジャンルにつき `node scripts/recent-books.js <ジャンルID> 30` を実行し、文芸らしい本を【3冊】選ぶ。isbn13 と amazon_url を控える。
-            3. 選んだ計6冊のisbn13をまとめて openBD で1回だけ調べる: `curl -s 'https://api.openbd.jp/v1/get?isbn=<6冊のisbn13をカンマ区切り>'`。内容紹介(TextType=03)を要約に使う。openBDに無い本は、DBのタイトル・著者・出版社・発売日という事実だけで簡潔に紹介する（あらすじの捏造は禁止、WebSearchもしない）。
-            4. キーワードは任意。付けるなら recent-books の傾向から自分で決めて良い（suggest-keywordsの実行は省略可）。
-            5. 各コラムを `/tmp/column-<slug>.json` に書く。形式: {"slug","title","body_html","excerpt","target_keyword","genre_id","status":"draft"}。slugは半角英数とハイフン+今日の年月(例 essay-2026-06)、body_htmlは1行・h2/p/a/strongなど基本タグのみ・属性はシングルクォート、各本にamazonリンク(<a href='...'>)を本文に貼る。各記事1500〜2500字程度。
+            1. 狙うキーワードを取得: `node scripts/next-keywords.js 6 35` を実行。出力はSEMrushの実データ由来で「まだ記事化していない・検索ボリューム高×難易度低」のキーワード一覧。この中から今日書く【2本ぶん】を2つ選ぶ。1記事=1キーワードを厳守し、似たキーワードで2本書かない（＝カニバリ防止）。
+            2. 各キーワードに合うジャンルIDを決める。語からの対応: 文庫→001019 / ミステリー→001004001 / SF・ホラー→001004002 / エッセイ→001004003 / 海外・翻訳→001004009 / その他の小説→001004008。なろう系・ラノベ・POD・ハーレクインに該当するキーワードは避け、next-keywordsの次の候補に回す。
+            3. 各ジャンルにつき `node scripts/recent-books.js <ジャンルID> 30` を実行し、文芸らしい本を【3冊】選ぶ。isbn13 と amazon_url を控える。直近のコラムで紹介済みの本は避ける。
+            4. 選んだ計6冊のisbn13をまとめて openBD で1回だけ調べる: `curl -s 'https://api.openbd.jp/v1/get?isbn=<6冊のisbn13をカンマ区切り>'`。内容紹介(TextType=03)を要約に使う。openBDに無い本は、DBのタイトル・著者・出版社・発売日という事実だけで簡潔に紹介する（あらすじの捏造は禁止、WebSearchもしない）。
+            5. 各コラムを `/tmp/column-<slug>.json` に書く。形式: {"slug","title","body_html","excerpt","target_keyword","genre_id","status":"draft"}。
+               - target_keyword には手順1で選んだキーワードを【そのまま】入れる（必須・記事ごとに必ず別のもの）。
+               - title と本文の見出し(h2)に、そのキーワードの語を自然に含める。
+               - slugは半角英数とハイフン+今日の年月（例 bunko-shinkan-2026-06）。キーワードを反映させ、既存slugと被らせない。
+               - body_htmlは1行・h2/p/a/strongなど基本タグのみ・属性はシングルクォート、各本にamazonリンク(<a href='...'>)を本文に貼る。
+               - 文字数は1記事1500〜3500字（最大4000字）。長文化はしない。
             6. すぐに `node scripts/save-column.js /tmp/column-<slug>.json` で保存する。2本とも保存すること。
-            7. 最後に2本の「title / slug / 取り上げた本」を箇条書きで報告。
+            7. 最後に2本の「title / slug / target_keyword / 取り上げた本」を箇条書きで報告。
 
-            重要: 1冊ずつ何度も調べ直さない。openBDは1回のまとめ取得で済ませ、早く書いて早く保存する。
+            重要: 1冊ずつ何度も調べ直さない。openBDは1回のまとめ取得で済ませ、早く書いて早く保存する。next-keywordsが2つ分の良い候補を返さない場合は、無理に2本書かず1本に減らしてよい（重複記事を作らないことを最優先）。

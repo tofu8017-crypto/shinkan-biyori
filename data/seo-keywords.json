@@ -1,0 +1,2432 @@
+[
+ {
+  "keyword": "アマゾン 本",
+  "intent": "Navigational",
+  "volume": 110000,
+  "kd": 39
+ },
+ {
+  "keyword": "文庫本",
+  "intent": "Informational",
+  "volume": 22200,
+  "kd": 38
+ },
+ {
+  "keyword": "本 おすすめ",
+  "intent": "Informational",
+  "volume": 18100,
+  "kd": 36
+ },
+ {
+  "keyword": "週刊 新潮",
+  "intent": "Informational",
+  "volume": 18100,
+  "kd": 52
+ },
+ {
+  "keyword": "おすすめ の 本",
+  "intent": "Informational, Commercial",
+  "volume": 14800,
+  "kd": 30
+ },
+ {
+  "keyword": "単行本",
+  "intent": "Informational",
+  "volume": 14800,
+  "kd": 43
+ },
+ {
+  "keyword": "新潮社",
+  "intent": "Navigational",
+  "volume": 14800,
+  "kd": 81
+ },
+ {
+  "keyword": "おすすめ 本",
+  "intent": "Informational",
+  "volume": 12100,
+  "kd": 37
+ },
+ {
+  "keyword": "デイリー 新潮",
+  "intent": "Navigational",
+  "volume": 12100,
+  "kd": 71
+ },
+ {
+  "keyword": "新刊 文庫",
+  "intent": "Informational",
+  "volume": 9900,
+  "kd": 28
+ },
+ {
+  "keyword": "文庫 新刊",
+  "intent": "Informational",
+  "volume": 9900,
+  "kd": 27
+ },
+ {
+  "keyword": "新潮 文庫",
+  "intent": "Navigational",
+  "volume": 9900,
+  "kd": 66
+ },
+ {
+  "keyword": "amazon ブック",
+  "intent": "Navigational, Transactional",
+  "volume": 8100,
+  "kd": 74
+ },
+ {
+  "keyword": "人気 の 本",
+  "intent": "Commercial",
+  "volume": 6600,
+  "kd": 42
+ },
+ {
+  "keyword": "本 の 雑誌",
+  "intent": "Navigational",
+  "volume": 6600,
+  "kd": 39
+ },
+ {
+  "keyword": "amazon 書籍",
+  "intent": "Navigational, Transactional",
+  "volume": 5400,
+  "kd": 52
+ },
+ {
+  "keyword": "新潮",
+  "intent": "Informational, Commercial",
+  "volume": 5400,
+  "kd": 52
+ },
+ {
+  "keyword": "小説 新刊",
+  "intent": "Informational",
+  "volume": 4400,
+  "kd": 25
+ },
+ {
+  "keyword": "新刊 小説",
+  "intent": "Informational",
+  "volume": 4400,
+  "kd": 26
+ },
+ {
+  "keyword": "新 巻",
+  "intent": "Informational",
+  "volume": 3600,
+  "kd": 27
+ },
+ {
+  "keyword": "文庫本 新刊",
+  "intent": "Commercial",
+  "volume": 3600,
+  "kd": 22
+ },
+ {
+  "keyword": "ラノベ 新刊",
+  "intent": "Informational",
+  "volume": 3600,
+  "kd": 26
+ },
+ {
+  "keyword": "電撃 文庫 新刊",
+  "intent": "Informational, Transactional",
+  "volume": 3600,
+  "kd": 26
+ },
+ {
+  "keyword": "角川 文庫 新刊",
+  "intent": "Informational",
+  "volume": 2900,
+  "kd": 21
+ },
+ {
+  "keyword": "本 の 引き出し",
+  "intent": "Informational, Navigational",
+  "volume": 2400,
+  "kd": 25
+ },
+ {
+  "keyword": "アマゾン ブックス",
+  "intent": "Informational, Transactional",
+  "volume": 2400,
+  "kd": 56
+ },
+ {
+  "keyword": "単行本 発売 日",
+  "intent": "Informational",
+  "volume": 1900,
+  "kd": 42
+ },
+ {
+  "keyword": "本日 発売 の 雑誌",
+  "intent": "Navigational, Commercial",
+  "volume": 1900,
+  "kd": 25
+ },
+ {
+  "keyword": "集英社 文庫",
+  "intent": "Navigational",
+  "volume": 1900,
+  "kd": 48
+ },
+ {
+  "keyword": "時代 小説 新刊",
+  "intent": "Navigational",
+  "volume": 1600,
+  "kd": 30
+ },
+ {
+  "keyword": "小説 新潮",
+  "intent": "Navigational",
+  "volume": 1600,
+  "kd": 36
+ },
+ {
+  "keyword": "新潮 新書",
+  "intent": "Navigational",
+  "volume": 1600,
+  "kd": 38
+ },
+ {
+  "keyword": "本 発売 日",
+  "intent": "Informational",
+  "volume": 1600,
+  "kd": 34
+ },
+ {
+  "keyword": "新刊 情報",
+  "intent": "Informational",
+  "volume": 1300,
+  "kd": 33
+ },
+ {
+  "keyword": "最 新刊",
+  "intent": "Informational",
+  "volume": 1300,
+  "kd": 38
+ },
+ {
+  "keyword": "今日 発売 の 新刊",
+  "intent": "Informational",
+  "volume": 1300,
+  "kd": 38
+ },
+ {
+  "keyword": "4 月 発売 コミックス",
+  "intent": "Informational",
+  "volume": 1300,
+  "kd": 24
+ },
+ {
+  "keyword": "文藝 春秋 新刊",
+  "intent": "Informational, Navigational",
+  "volume": 1300,
+  "kd": 29
+ },
+ {
+  "keyword": "新刊 本 ランキング 小説",
+  "intent": "Commercial",
+  "volume": 1300,
+  "kd": 29
+ },
+ {
+  "keyword": "新潮 オンライン",
+  "intent": "Navigational",
+  "volume": 1300,
+  "kd": 32
+ },
+ {
+  "keyword": "本 新刊",
+  "intent": "Commercial",
+  "volume": 1000,
+  "kd": 35
+ },
+ {
+  "keyword": "新刊 本",
+  "intent": "Commercial",
+  "volume": 1000,
+  "kd": 33
+ },
+ {
+  "keyword": "新刊 の 本",
+  "intent": "Informational, Commercial",
+  "volume": 1000,
+  "kd": 28
+ },
+ {
+  "keyword": "新 本",
+  "intent": "Informational",
+  "volume": 1000,
+  "kd": 46
+ },
+ {
+  "keyword": "本 アマゾン",
+  "intent": "Navigational",
+  "volume": 1000,
+  "kd": 43
+ },
+ {
+  "keyword": "本日 発売",
+  "intent": "Informational",
+  "volume": 1000,
+  "kd": 27
+ },
+ {
+  "keyword": "メディア ワークス 文庫 新刊",
+  "intent": "Informational",
+  "volume": 1000,
+  "kd": 20
+ },
+ {
+  "keyword": "新刊 本 ランキング",
+  "intent": "Commercial",
+  "volume": 1000,
+  "kd": 43
+ },
+ {
+  "keyword": "最新 本 ランキング",
+  "intent": "Commercial",
+  "volume": 1000,
+  "kd": 57
+ },
+ {
+  "keyword": "本 予約",
+  "intent": "Informational",
+  "volume": 1000,
+  "kd": 23
+ },
+ {
+  "keyword": "今日 の 新刊",
+  "intent": "Informational",
+  "volume": 880,
+  "kd": 31
+ },
+ {
+  "keyword": "amazon の 書籍",
+  "intent": "Navigational, Transactional",
+  "volume": 880,
+  "kd": 40
+ },
+ {
+  "keyword": "ポプラ 文庫",
+  "intent": "Navigational",
+  "volume": 880,
+  "kd": 34
+ },
+ {
+  "keyword": "新刊 文庫 ランキング",
+  "intent": "Informational",
+  "volume": 880,
+  "kd": 37
+ },
+ {
+  "keyword": "新刊 絵本",
+  "intent": "Commercial",
+  "volume": 880,
+  "kd": 15
+ },
+ {
+  "keyword": "書籍 おすすめ",
+  "intent": "Commercial",
+  "volume": 880,
+  "kd": 30
+ },
+ {
+  "keyword": "書籍 アマゾン",
+  "intent": "Navigational",
+  "volume": 880,
+  "kd": 40
+ },
+ {
+  "keyword": "経済 本",
+  "intent": "Informational, Commercial",
+  "volume": 880,
+  "kd": 30
+ },
+ {
+  "keyword": "新刊 単行本",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 37
+ },
+ {
+  "keyword": "小説 新刊 単行本",
+  "intent": "Commercial",
+  "volume": 720,
+  "kd": 28
+ },
+ {
+  "keyword": "単行本 新刊",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 38
+ },
+ {
+  "keyword": "今月 の 新刊 文庫",
+  "intent": "Navigational",
+  "volume": 720,
+  "kd": 30
+ },
+ {
+  "keyword": "小学館 新刊",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 24
+ },
+ {
+  "keyword": "文庫 新刊 案内",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 20
+ },
+ {
+  "keyword": "新刊 案内 文庫",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 23
+ },
+ {
+  "keyword": "え で ん ず ゼロ 最 新刊",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 18
+ },
+ {
+  "keyword": "文庫本 発売 日",
+  "intent": "Commercial",
+  "volume": 720,
+  "kd": 15
+ },
+ {
+  "keyword": "文藝 春秋 発売 日",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 29
+ },
+ {
+  "keyword": "新潮 選書",
+  "intent": "Informational",
+  "volume": 720,
+  "kd": 27
+ },
+ {
+  "keyword": "小説 最新",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 34
+ },
+ {
+  "keyword": "最新 小説",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 41
+ },
+ {
+  "keyword": "小説 新刊 おすすめ",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 25
+ },
+ {
+  "keyword": "小説 発売 日",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 18
+ },
+ {
+  "keyword": "新刊 小説 おすすめ",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 35
+ },
+ {
+  "keyword": "amazon 予約",
+  "intent": "Navigational, Transactional",
+  "volume": 590,
+  "kd": 37
+ },
+ {
+  "keyword": "amazon 予約 ランキング 本",
+  "intent": "Navigational, Transactional",
+  "volume": 590,
+  "kd": 42
+ },
+ {
+  "keyword": "web 本 の 雑誌",
+  "intent": "Navigational",
+  "volume": 590,
+  "kd": 41
+ },
+ {
+  "keyword": "今日 発売 の コミックス",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 36
+ },
+ {
+  "keyword": "今日 発売 コミックス",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 33
+ },
+ {
+  "keyword": "今日 発売 単行本",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 33
+ },
+ {
+  "keyword": "幻冬舎 文庫 新刊",
+  "intent": "Informational, Transactional",
+  "volume": 590,
+  "kd": 21
+ },
+ {
+  "keyword": "新刊 小説 ランキング",
+  "intent": "Informational",
+  "volume": 590,
+  "kd": 32
+ },
+ {
+  "keyword": "新潮社 新刊",
+  "intent": "Informational, Navigational",
+  "volume": 590,
+  "kd": 30
+ },
+ {
+  "keyword": "新作 小説",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 32
+ },
+ {
+  "keyword": "話題 の 新刊 本",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 29
+ },
+ {
+  "keyword": "小説 新作",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 32
+ },
+ {
+  "keyword": "小説 新刊 予定",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 33
+ },
+ {
+  "keyword": "今月 の 新刊 小説",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 32
+ },
+ {
+  "keyword": "今月 の 新刊",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 40
+ },
+ {
+  "keyword": "小説 最近",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 35
+ },
+ {
+  "keyword": "本 の 発売 日",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 32
+ },
+ {
+  "keyword": "注目 の 新刊",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 16
+ },
+ {
+  "keyword": "11 月 文庫 新刊",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 39
+ },
+ {
+  "keyword": "3 月 の 新刊 文庫",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 14
+ },
+ {
+  "keyword": "アマゾン 本 購入",
+  "intent": "Navigational, Transactional",
+  "volume": 480,
+  "kd": 41
+ },
+ {
+  "keyword": "単行本 小説",
+  "intent": "Commercial",
+  "volume": 480,
+  "kd": 32
+ },
+ {
+  "keyword": "文庫本 最 新刊",
+  "intent": "Commercial",
+  "volume": 480,
+  "kd": 25
+ },
+ {
+  "keyword": "新刊 発売 日",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 32
+ },
+ {
+  "keyword": "最近 の 小説",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 31
+ },
+ {
+  "keyword": "3 月 文庫 新刊",
+  "intent": "Informational, Transactional",
+  "volume": 480,
+  "kd": 14
+ },
+ {
+  "keyword": "おすすめ 本 紹介",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 30
+ },
+ {
+  "keyword": "小説 単行本",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 30
+ },
+ {
+  "keyword": "小説 文庫",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 37
+ },
+ {
+  "keyword": "文庫 小説",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 40
+ },
+ {
+  "keyword": "文庫 新刊 12 月",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 11
+ },
+ {
+  "keyword": "文庫 新刊 3 月",
+  "intent": "Informational",
+  "volume": 480,
+  "kd": 12
+ },
+ {
+  "keyword": "新潮 文庫 新刊 予定",
+  "intent": "Informational, Transactional",
+  "volume": 480,
+  "kd": 26
+ },
+ {
+  "keyword": "時代 小説 文庫 新刊",
+  "intent": "Navigational",
+  "volume": 480,
+  "kd": 26
+ },
+ {
+  "keyword": "時代 小説 文庫 新刊 発売 予定",
+  "intent": "Navigational",
+  "volume": 480,
+  "kd": 17
+ },
+ {
+  "keyword": "新刊 案内",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 30
+ },
+ {
+  "keyword": "今日 発売 の 本",
+  "intent": "Commercial",
+  "volume": 390,
+  "kd": 29
+ },
+ {
+  "keyword": "最近 の 本",
+  "intent": "Commercial",
+  "volume": 390,
+  "kd": 40
+ },
+ {
+  "keyword": "本 今日 発売",
+  "intent": "Commercial",
+  "volume": 390,
+  "kd": 27
+ },
+ {
+  "keyword": "本日 発売 の 本",
+  "intent": "Commercial",
+  "volume": 390,
+  "kd": 29
+ },
+ {
+  "keyword": "9 月 文庫 新刊",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 20
+ },
+ {
+  "keyword": "7 月 新刊 文庫",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 14
+ },
+ {
+  "keyword": "新刊 おすすめ",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 29
+ },
+ {
+  "keyword": "本日 の 新刊",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 31
+ },
+ {
+  "keyword": "2 月 新刊 文庫",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 11
+ },
+ {
+  "keyword": "6 月 新刊 文庫",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 14
+ },
+ {
+  "keyword": "小説 新刊 発売 日",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 24
+ },
+ {
+  "keyword": "文庫 新刊 6 月",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 14
+ },
+ {
+  "keyword": "文庫 新刊 8 月",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 14
+ },
+ {
+  "keyword": "新刊 文庫 8 月",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 14
+ },
+ {
+  "keyword": "週刊 文春 最新 号 発売 日",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 29
+ },
+ {
+  "keyword": "8 月 文庫 新刊",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 14
+ },
+ {
+  "keyword": "kadokawa 新刊",
+  "intent": "Navigational, Transactional",
+  "volume": 390,
+  "kd": 27
+ },
+ {
+  "keyword": "アマゾン 本 新刊",
+  "intent": "Navigational",
+  "volume": 390,
+  "kd": 36
+ },
+ {
+  "keyword": "カドカワ ブックス 新刊",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 36
+ },
+ {
+  "keyword": "ポプラ 文庫 新刊",
+  "intent": "Informational, Transactional",
+  "volume": 390,
+  "kd": 9
+ },
+ {
+  "keyword": "今 おすすめ の 本",
+  "intent": "Commercial",
+  "volume": 390,
+  "kd": 40
+ },
+ {
+  "keyword": "文庫 化",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 23
+ },
+ {
+  "keyword": "文庫 新刊 4 月",
+  "intent": "Informational, Transactional",
+  "volume": 390,
+  "kd": 14
+ },
+ {
+  "keyword": "文庫 新刊 7 月",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 13
+ },
+ {
+  "keyword": "文庫 新刊 9 月",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 18
+ },
+ {
+  "keyword": "文庫 版",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 43
+ },
+ {
+  "keyword": "新潮 雑誌",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 31
+ },
+ {
+  "keyword": "時代 小説 文庫本 新刊",
+  "intent": "Informational, Transactional",
+  "volume": 390,
+  "kd": 8
+ },
+ {
+  "keyword": "最近 話題 の 本",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 38
+ },
+ {
+  "keyword": "本日 発売 の 単行本 リスト",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 33
+ },
+ {
+  "keyword": "紀伊國屋 ランキング",
+  "intent": "Navigational",
+  "volume": 390,
+  "kd": 40
+ },
+ {
+  "keyword": "角川 ホラー 文庫 新刊",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 28
+ },
+ {
+  "keyword": "角川 文庫 新刊 予定",
+  "intent": "Informational",
+  "volume": 390,
+  "kd": 16
+ },
+ {
+  "keyword": "雑誌 新潮",
+  "intent": "Navigational, Commercial",
+  "volume": 390,
+  "kd": 28
+ },
+ {
+  "keyword": "書籍 新刊",
+  "intent": "Commercial",
+  "volume": 320,
+  "kd": 26
+ },
+ {
+  "keyword": "新刊 書籍",
+  "intent": "Commercial",
+  "volume": 320,
+  "kd": 34
+ },
+ {
+  "keyword": "最新 本",
+  "intent": "Commercial",
+  "volume": 320,
+  "kd": 36
+ },
+ {
+  "keyword": "最新 の 本",
+  "intent": "Commercial",
+  "volume": 320,
+  "kd": 37
+ },
+ {
+  "keyword": "6 月 新刊",
+  "intent": "Informational",
+  "volume": 320,
+  "kd": 22
+ },
+ {
+  "keyword": "近刊",
+  "intent": "Informational",
+  "volume": 320,
+  "kd": 17
+ },
+ {
+  "keyword": "amazon 本 予約 ランキング",
+  "intent": "Navigational, Transactional",
+  "volume": 320,
+  "kd": 50
+ },
+ {
+  "keyword": "アマゾン の 本",
+  "intent": "Navigational",
+  "volume": 320,
+  "kd": 41
+ },
+ {
+  "keyword": "ビジネス 書 新刊",
+  "intent": "Informational",
+  "volume": 320,
+  "kd": 25
+ },
+ {
+  "keyword": "ライトノベル 新刊 チェック",
+  "intent": "Navigational",
+  "volume": 320,
+  "kd": 24
+ },
+ {
+  "keyword": "児童 書 新刊",
+  "intent": "Navigational, Commercial",
+  "volume": 320,
+  "kd": 21
+ },
+ {
+  "keyword": "文庫 新刊 1 月",
+  "intent": "Informational",
+  "volume": 320,
+  "kd": 13
+ },
+ {
+  "keyword": "新刊 ランキング",
+  "intent": "Informational",
+  "volume": 320,
+  "kd": 43
+ },
+ {
+  "keyword": "話題 本",
+  "intent": "Informational",
+  "volume": 320,
+  "kd": 36
+ },
+ {
+  "keyword": "新しい 本",
+  "intent": "Commercial",
+  "volume": 260,
+  "kd": 29
+ },
+ {
+  "keyword": "書籍 新刊 案内",
+  "intent": "Commercial",
+  "volume": 260,
+  "kd": 34
+ },
+ {
+  "keyword": "7 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 27
+ },
+ {
+  "keyword": "9 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 15
+ },
+ {
+  "keyword": "10 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 13
+ },
+ {
+  "keyword": "10 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 24
+ },
+ {
+  "keyword": "8 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 31
+ },
+ {
+  "keyword": "9 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 24
+ },
+ {
+  "keyword": "本日 発売 単行本",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 34
+ },
+ {
+  "keyword": "11 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 23
+ },
+ {
+  "keyword": "11 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 20
+ },
+ {
+  "keyword": "12 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 13
+ },
+ {
+  "keyword": "12 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 21
+ },
+ {
+  "keyword": "3 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 23
+ },
+ {
+  "keyword": "4 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 24
+ },
+ {
+  "keyword": "8 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 13
+ },
+ {
+  "keyword": "新 著",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 35
+ },
+ {
+  "keyword": "4 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 24
+ },
+ {
+  "keyword": "5 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 21
+ },
+ {
+  "keyword": "7 月 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 35
+ },
+ {
+  "keyword": "小学館 漫画 雑誌",
+  "intent": "Informational, Navigational",
+  "volume": 260,
+  "kd": 46
+ },
+ {
+  "keyword": "文春 文庫 新刊 予定",
+  "intent": "Informational, Transactional",
+  "volume": 260,
+  "kd": 23
+ },
+ {
+  "keyword": "5 月 の 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 14
+ },
+ {
+  "keyword": "mira 文庫 新刊 発売 日",
+  "intent": "Navigational",
+  "volume": 260,
+  "kd": 16
+ },
+ {
+  "keyword": "あさのあつこ 新刊 予定",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 17
+ },
+ {
+  "keyword": "アマゾン 本 新刊 予約",
+  "intent": "Navigational",
+  "volume": 260,
+  "kd": 35
+ },
+ {
+  "keyword": "ヒーロー 文庫 新刊",
+  "intent": "Navigational",
+  "volume": 260,
+  "kd": 17
+ },
+ {
+  "keyword": "今 話題 の 小説",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 30
+ },
+ {
+  "keyword": "宝島社 文庫 新刊",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 15
+ },
+ {
+  "keyword": "新潮社 出版 部 文芸",
+  "intent": "Informational",
+  "volume": 260,
+  "kd": 25
+ },
+ {
+  "keyword": "最近 人気 の 本",
+  "intent": "Commercial",
+  "volume": 260,
+  "kd": 28
+ },
+ {
+  "keyword": "本 新刊 ランキング",
+  "intent": "Commercial",
+  "volume": 260,
+  "kd": 45
+ },
+ {
+  "keyword": "東洋 経済 新 報社 書籍",
+  "intent": "Transactional",
+  "volume": 260,
+  "kd": 41
+ },
+ {
+  "keyword": "角川 新刊",
+  "intent": "Navigational",
+  "volume": 260,
+  "kd": 31
+ },
+ {
+  "keyword": "集英社 小説",
+  "intent": "Navigational",
+  "volume": 260,
+  "kd": 47
+ },
+ {
+  "keyword": "集英社 文庫 ナツイチ",
+  "intent": "Informational, Navigational",
+  "volume": 260,
+  "kd": 33
+ },
+ {
+  "keyword": "雑誌 新刊",
+  "intent": "Commercial",
+  "volume": 260,
+  "kd": 37
+ },
+ {
+  "keyword": "今月 の 新刊 単行本",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 34
+ },
+ {
+  "keyword": "今週 の 新刊",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 18
+ },
+ {
+  "keyword": "小説 新刊 文庫",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 26
+ },
+ {
+  "keyword": "新刊 文庫本",
+  "intent": "Commercial",
+  "volume": 210,
+  "kd": 27
+ },
+ {
+  "keyword": "最 新刊 最新 巻",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 24
+ },
+ {
+  "keyword": "1 月 新刊",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 23
+ },
+ {
+  "keyword": "2 月 の 新刊",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 17
+ },
+ {
+  "keyword": "2 月 新刊",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 25
+ },
+ {
+  "keyword": "最新 文庫本",
+  "intent": "Commercial",
+  "volume": 210,
+  "kd": 17
+ },
+ {
+  "keyword": "amazon 新刊",
+  "intent": "Navigational, Transactional",
+  "volume": 210,
+  "kd": 38
+ },
+ {
+  "keyword": "アマソン 本",
+  "intent": "Transactional",
+  "volume": 210,
+  "kd": 38
+ },
+ {
+  "keyword": "アマゾン 新刊 ランキング",
+  "intent": "Navigational",
+  "volume": 210,
+  "kd": 53
+ },
+ {
+  "keyword": "中央 経済 社 新刊",
+  "intent": "Navigational",
+  "volume": 210,
+  "kd": 15
+ },
+ {
+  "keyword": "小説 話題",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 37
+ },
+ {
+  "keyword": "文庫 新刊 カレンダー",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 17
+ },
+ {
+  "keyword": "新刊 ラノベ",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 26
+ },
+ {
+  "keyword": "新潮 文庫 近刊",
+  "intent": "Informational, Transactional",
+  "volume": 210,
+  "kd": 22
+ },
+ {
+  "keyword": "本 話題",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 35
+ },
+ {
+  "keyword": "角川 ライトノベル 新刊",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 16
+ },
+ {
+  "keyword": "話題 小説",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 34
+ },
+ {
+  "keyword": "赤川 次郎 新刊 発売 予定",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 18
+ },
+ {
+  "keyword": "集英社 新刊 予定",
+  "intent": "Informational",
+  "volume": 210,
+  "kd": 27
+ },
+ {
+  "keyword": "新刊 書",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 35
+ },
+ {
+  "keyword": "小説 新刊 情報",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 29
+ },
+ {
+  "keyword": "書籍 新刊 情報",
+  "intent": "Commercial",
+  "volume": 170,
+  "kd": 31
+ },
+ {
+  "keyword": "本 新作",
+  "intent": "Commercial",
+  "volume": 170,
+  "kd": 33
+ },
+ {
+  "keyword": "文芸 書 新刊",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 26
+ },
+ {
+  "keyword": "新刊 本 紹介",
+  "intent": "Commercial",
+  "volume": 170,
+  "kd": 33
+ },
+ {
+  "keyword": "これから 出る 本",
+  "intent": "Commercial",
+  "volume": 170,
+  "kd": 22
+ },
+ {
+  "keyword": "1 月 の 新刊",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 23
+ },
+ {
+  "keyword": "新刊 書店",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 32
+ },
+ {
+  "keyword": "e hon 新刊",
+  "intent": "Navigational",
+  "volume": 170,
+  "kd": 25
+ },
+ {
+  "keyword": "ナツイチ 集英社",
+  "intent": "Informational, Navigational",
+  "volume": 170,
+  "kd": 36
+ },
+ {
+  "keyword": "ポプラ 社 の 本",
+  "intent": "Navigational",
+  "volume": 170,
+  "kd": 42
+ },
+ {
+  "keyword": "ラノベ 最 新刊",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 25
+ },
+ {
+  "keyword": "今月 の おすすめ",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 16
+ },
+ {
+  "keyword": "光 潮 社",
+  "intent": "Navigational",
+  "volume": 170,
+  "kd": 26
+ },
+ {
+  "keyword": "幻冬舎 新刊",
+  "intent": "Navigational",
+  "volume": 170,
+  "kd": 24
+ },
+ {
+  "keyword": "文庫 発売 予定",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 18
+ },
+ {
+  "keyword": "新潮 文庫 一覧",
+  "intent": "Navigational",
+  "volume": 170,
+  "kd": 39
+ },
+ {
+  "keyword": "新潮 新書 新刊",
+  "intent": "Commercial",
+  "volume": 170,
+  "kd": 22
+ },
+ {
+  "keyword": "新潮 最新 号",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 32
+ },
+ {
+  "keyword": "本 ポプラ 社",
+  "intent": "Navigational, Transactional",
+  "volume": 170,
+  "kd": 44
+ },
+ {
+  "keyword": "角川 ソフィア 文庫 新刊",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 15
+ },
+ {
+  "keyword": "話題 書",
+  "intent": "Informational",
+  "volume": 170,
+  "kd": 38
+ },
+ {
+  "keyword": "単行本 新刊 小説",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 29
+ },
+ {
+  "keyword": "新刊 本 情報",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 32
+ },
+ {
+  "keyword": "本 新刊 情報",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 40
+ },
+ {
+  "keyword": "小説 最 新刊",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 27
+ },
+ {
+  "keyword": "新刊 本 小説",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 29
+ },
+ {
+  "keyword": "書店 新刊",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 29
+ },
+ {
+  "keyword": "最 新刊 小説",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 26
+ },
+ {
+  "keyword": "話題 新刊",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 36
+ },
+ {
+  "keyword": "新刊 チェック",
+  "intent": "Navigational",
+  "volume": 140,
+  "kd": 33
+ },
+ {
+  "keyword": "話題 の 新刊",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 31
+ },
+ {
+  "keyword": "小説 新刊 一覧",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 31
+ },
+ {
+  "keyword": "文芸 新刊",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 27
+ },
+ {
+  "keyword": "新刊 本 おすすめ",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 19
+ },
+ {
+  "keyword": "新刊 話題",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 32
+ },
+ {
+  "keyword": "本 発売",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 28
+ },
+ {
+  "keyword": "書籍 発売 日",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 28
+ },
+ {
+  "keyword": "最新 巻",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 30
+ },
+ {
+  "keyword": "小学館 新刊 予定",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 17
+ },
+ {
+  "keyword": "日 発売",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 43
+ },
+ {
+  "keyword": "角川 文庫 新刊 ライトノベル",
+  "intent": "Informational, Transactional",
+  "volume": 140,
+  "kd": 27
+ },
+ {
+  "keyword": "集英社 作品",
+  "intent": "Informational, Transactional",
+  "volume": 140,
+  "kd": 38
+ },
+ {
+  "keyword": "10 月 発売 少女 漫画",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 16
+ },
+ {
+  "keyword": "amazon com books",
+  "intent": "Navigational, Transactional",
+  "volume": 140,
+  "kd": 69
+ },
+ {
+  "keyword": "amazon 予約 ランキング",
+  "intent": "Navigational, Transactional",
+  "volume": 140,
+  "kd": 50
+ },
+ {
+  "keyword": "amazon 予約 本",
+  "intent": "Navigational, Transactional",
+  "volume": 140,
+  "kd": 37
+ },
+ {
+  "keyword": "amazon 本 予約",
+  "intent": "Navigational, Transactional",
+  "volume": 140,
+  "kd": 37
+ },
+ {
+  "keyword": "アマゾン で 本 を 買う",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 36
+ },
+ {
+  "keyword": "デイリー 新潮 評判",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 21
+ },
+ {
+  "keyword": "ビジネス 書 最新",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 21
+ },
+ {
+  "keyword": "ラノベ 新刊 情報",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 26
+ },
+ {
+  "keyword": "人気 小説 最新",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 25
+ },
+ {
+  "keyword": "今 号",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 35
+ },
+ {
+  "keyword": "今 面白い 本",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 42
+ },
+ {
+  "keyword": "単行本 リスト",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 50
+ },
+ {
+  "keyword": "幻冬舎 新書 新刊",
+  "intent": "Transactional",
+  "volume": 140,
+  "kd": 22
+ },
+ {
+  "keyword": "新書 新刊 一覧",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 26
+ },
+ {
+  "keyword": "書籍 の 発売 日",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 23
+ },
+ {
+  "keyword": "本 発売 日 カレンダー",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 30
+ },
+ {
+  "keyword": "角川 文庫 新刊 来 月",
+  "intent": "Informational, Transactional",
+  "volume": 140,
+  "kd": 21
+ },
+ {
+  "keyword": "角川 書店 新刊",
+  "intent": "Navigational",
+  "volume": 140,
+  "kd": 27
+ },
+ {
+  "keyword": "話題 の 書籍",
+  "intent": "Commercial",
+  "volume": 140,
+  "kd": 39
+ },
+ {
+  "keyword": "雑誌 予約 amazon",
+  "intent": "Navigational",
+  "volume": 140,
+  "kd": 35
+ },
+ {
+  "keyword": "電撃 文庫 ラノベ",
+  "intent": "Informational, Transactional",
+  "volume": 140,
+  "kd": 50
+ },
+ {
+  "keyword": "電撃 文庫 作品 一覧",
+  "intent": "Informational",
+  "volume": 140,
+  "kd": 23
+ },
+ {
+  "keyword": "新作 本",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 32
+ },
+ {
+  "keyword": "新刊 図書",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 29
+ },
+ {
+  "keyword": "本 最新",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 45
+ },
+ {
+  "keyword": "本 発売 予定",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 26
+ },
+ {
+  "keyword": "本日 発売 書籍",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 25
+ },
+ {
+  "keyword": "小学館 文庫 新刊 予定",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 19
+ },
+ {
+  "keyword": "文庫 新刊 情報",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 20
+ },
+ {
+  "keyword": "新刊 発売 予定 表",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 29
+ },
+ {
+  "keyword": "本 新刊 発売 日",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 34
+ },
+ {
+  "keyword": "11 月 新刊 小説",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 13
+ },
+ {
+  "keyword": "12 月 新刊 小説",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 12
+ },
+ {
+  "keyword": "おすすめ 新刊 文庫本",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 28
+ },
+ {
+  "keyword": "今日 本",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 31
+ },
+ {
+  "keyword": "今日 発売 の マンガ 本",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 26
+ },
+ {
+  "keyword": "新刊 本 発売 日",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 25
+ },
+ {
+  "keyword": "新刊 発売",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 33
+ },
+ {
+  "keyword": "書籍 情報",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 64
+ },
+ {
+  "keyword": "最新 文庫",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 31
+ },
+ {
+  "keyword": "最新 本 おすすめ",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 38
+ },
+ {
+  "keyword": "本 情報",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 53
+ },
+ {
+  "keyword": "本日 新刊",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 36
+ },
+ {
+  "keyword": "6 月 ラノベ",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 8
+ },
+ {
+  "keyword": "8 月 ラノベ 新刊",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 7
+ },
+ {
+  "keyword": "amazon で 本 を 買う",
+  "intent": "Informational, Transactional",
+  "volume": 110,
+  "kd": 44
+ },
+ {
+  "keyword": "あいうえお か 新刊",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 10
+ },
+ {
+  "keyword": "モンスター 文庫 新刊",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 19
+ },
+ {
+  "keyword": "ライトノベル 文庫",
+  "intent": "Informational, Navigational",
+  "volume": 110,
+  "kd": 38
+ },
+ {
+  "keyword": "ライトノベル 新刊 情報",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 26
+ },
+ {
+  "keyword": "ライトノベル 発売 日 一覧",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 23
+ },
+ {
+  "keyword": "今日 発売 の 漫画 雑誌",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 21
+ },
+ {
+  "keyword": "安田 章 大 小説",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 19
+ },
+ {
+  "keyword": "幻冬舎 新刊 予定",
+  "intent": "Informational, Transactional",
+  "volume": 110,
+  "kd": 19
+ },
+ {
+  "keyword": "文庫 カレンダー",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 16
+ },
+ {
+  "keyword": "文庫本 出版 社",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 22
+ },
+ {
+  "keyword": "文庫本 新刊 おすすめ",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 26
+ },
+ {
+  "keyword": "文藝 春秋 新刊 発売 日",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 22
+ },
+ {
+  "keyword": "新潮 と は",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 42
+ },
+ {
+  "keyword": "新潮社 新刊 予定",
+  "intent": "Informational, Navigational",
+  "volume": 110,
+  "kd": 28
+ },
+ {
+  "keyword": "時代 小説 新刊 単行本",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 6
+ },
+ {
+  "keyword": "書籍 人気",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 35
+ },
+ {
+  "keyword": "最新 おすすめ 本",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 45
+ },
+ {
+  "keyword": "最新 小説 ランキング",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 22
+ },
+ {
+  "keyword": "最近 の ラノベ",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 32
+ },
+ {
+  "keyword": "最近 ラノベ",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 34
+ },
+ {
+  "keyword": "本 の おすすめ",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 29
+ },
+ {
+  "keyword": "本 の 予約",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 25
+ },
+ {
+  "keyword": "本 予約 ネット",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 51
+ },
+ {
+  "keyword": "本屋 おすすめ 文庫本",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 21
+ },
+ {
+  "keyword": "本屋 おすすめ 本",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 18
+ },
+ {
+  "keyword": "楽天 ブックス 新刊",
+  "intent": "Navigational",
+  "volume": 110,
+  "kd": 47
+ },
+ {
+  "keyword": "角川 新書 新刊",
+  "intent": "Commercial",
+  "volume": 110,
+  "kd": 15
+ },
+ {
+  "keyword": "集英社 発売 日",
+  "intent": "Informational",
+  "volume": 110,
+  "kd": 22
+ },
+ {
+  "keyword": "電撃 新刊",
+  "intent": "Informational, Transactional",
+  "volume": 110,
+  "kd": 23
+ },
+ {
+  "keyword": "新刊 予定",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 34
+ },
+ {
+  "keyword": "単行本 最 新刊",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 31
+ },
+ {
+  "keyword": "今日 新刊",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 39
+ },
+ {
+  "keyword": "新刊 検索",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 40
+ },
+ {
+  "keyword": "最新 単行本",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 38
+ },
+ {
+  "keyword": "本日 発売 本",
+  "intent": "Commercial",
+  "volume": 90,
+  "kd": 25
+ },
+ {
+  "keyword": "単行本 最新",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 40
+ },
+ {
+  "keyword": "文庫 最 新刊",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 23
+ },
+ {
+  "keyword": "今月 新刊",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 39
+ },
+ {
+  "keyword": "単行本 発売",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 45
+ },
+ {
+  "keyword": "新 巻 新刊",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 23
+ },
+ {
+  "keyword": "本 リリース",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 25
+ },
+ {
+  "keyword": "daily 新潮",
+  "intent": "Navigational",
+  "volume": 90,
+  "kd": 34
+ },
+ {
+  "keyword": "今月 の ベストセラー",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 39
+ },
+ {
+  "keyword": "刊行 一覧",
+  "intent": "Informational, Transactional",
+  "volume": 90,
+  "kd": 25
+ },
+ {
+  "keyword": "単行本 本日 発売",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 28
+ },
+ {
+  "keyword": "新刊 新 巻",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 19
+ },
+ {
+  "keyword": "新潮 文庫 ロゴ",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 33
+ },
+ {
+  "keyword": "最 新刊 文庫",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 20
+ },
+ {
+  "keyword": "本日 発売 行列",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 27
+ },
+ {
+  "keyword": "30 代 婚 活 ガル ちゃん",
+  "intent": "Navigational",
+  "volume": 90,
+  "kd": 24
+ },
+ {
+  "keyword": "5 月 ラノベ 新刊",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 7
+ },
+ {
+  "keyword": "5 月 発売 ラノベ",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 6
+ },
+ {
+  "keyword": "あさのあつこ 文庫 新刊",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 12
+ },
+ {
+  "keyword": "おすすめ 小説 最新",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 35
+ },
+ {
+  "keyword": "アマゾン 通販 本",
+  "intent": "Navigational, Transactional",
+  "volume": 90,
+  "kd": 46
+ },
+ {
+  "keyword": "ラノベ 10 月",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 9
+ },
+ {
+  "keyword": "ラノベ 8 月",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 8
+ },
+ {
+  "keyword": "今日 発売 の 本 雑誌",
+  "intent": "Commercial",
+  "volume": 90,
+  "kd": 22
+ },
+ {
+  "keyword": "今月 ラノベ",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 22
+ },
+ {
+  "keyword": "幻冬舎 の 本",
+  "intent": "Transactional",
+  "volume": 90,
+  "kd": 24
+ },
+ {
+  "keyword": "文庫 発売",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 23
+ },
+ {
+  "keyword": "文庫本 新刊 11 月",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 12
+ },
+ {
+  "keyword": "新書 新刊 カレンダー",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 15
+ },
+ {
+  "keyword": "最新 新書",
+  "intent": "Commercial",
+  "volume": 90,
+  "kd": 31
+ },
+ {
+  "keyword": "最近 の 面白い 本",
+  "intent": "Commercial",
+  "volume": 90,
+  "kd": 32
+ },
+ {
+  "keyword": "最近 話題 の 小説",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 31
+ },
+ {
+  "keyword": "本 紹介 雑誌",
+  "intent": "Informational",
+  "volume": 90,
+  "kd": 22
+ },
+ {
+  "keyword": "東洋 経済 新 報社 新刊",
+  "intent": "Navigational",
+  "volume": 90,
+  "kd": 45
+ },
+ {
+  "keyword": "紀伊國屋 書店 ベストセラー",
+  "intent": "Navigational",
+  "volume": 90,
+  "kd": 34
+ },
+ {
+  "keyword": "本 最 新刊",
+  "intent": "Commercial",
+  "volume": 70,
+  "kd": 33
+ },
+ {
+  "keyword": "新刊 一覧",
+  "intent": "Commercial",
+  "volume": 70,
+  "kd": 27
+ },
+ {
+  "keyword": "2 月 発売 小説",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 11
+ },
+ {
+  "keyword": "文庫 新刊 11 月",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 12
+ },
+ {
+  "keyword": "新潮 文庫 と は",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 50
+ },
+ {
+  "keyword": "1 月 発売 文庫本",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 22
+ },
+ {
+  "keyword": "10 月 文庫 新刊",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 11
+ },
+ {
+  "keyword": "10 月 新刊 ラノベ",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 8
+ },
+ {
+  "keyword": "12 月 ジャンプ コミックス",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 31
+ },
+ {
+  "keyword": "4 月 ラノベ 新刊",
+  "intent": "Informational, Transactional",
+  "volume": 70,
+  "kd": 11
+ },
+ {
+  "keyword": "8 月 発売 ラノベ",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 8
+ },
+ {
+  "keyword": "9 月 ラノベ",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 7
+ },
+ {
+  "keyword": "tl 小説 新刊",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 7
+ },
+ {
+  "keyword": "ラノベ 新刊 7 月",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 8
+ },
+ {
+  "keyword": "ラノベ 新刊 9 月",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 7
+ },
+ {
+  "keyword": "今月 発売 の ライトノベル",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 21
+ },
+ {
+  "keyword": "出 村 美苗",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 31
+ },
+ {
+  "keyword": "小学館 文芸",
+  "intent": "Navigational",
+  "volume": 70,
+  "kd": 44
+ },
+ {
+  "keyword": "山内 潤一郎",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 13
+ },
+ {
+  "keyword": "文庫 夏",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 30
+ },
+ {
+  "keyword": "文庫 発売 日 11 月",
+  "intent": "Informational, Transactional",
+  "volume": 70,
+  "kd": 7
+ },
+ {
+  "keyword": "文庫本 8 月 新刊",
+  "intent": "Commercial",
+  "volume": 70,
+  "kd": 15
+ },
+ {
+  "keyword": "文庫本 新刊 6 月",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 12
+ },
+ {
+  "keyword": "新書 新刊 11 月",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 12
+ },
+ {
+  "keyword": "新書 新刊 9 月",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 12
+ },
+ {
+  "keyword": "新書 新刊 チェック",
+  "intent": "Navigational",
+  "volume": 70,
+  "kd": 34
+ },
+ {
+  "keyword": "最新 人気 小説",
+  "intent": "Informational",
+  "volume": 70,
+  "kd": 22
+ },
+ {
+  "keyword": "8 月 発売",
+  "intent": "Informational",
+  "volume": 50,
+  "kd": 18
+ }
+]
