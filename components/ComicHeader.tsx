@@ -22,7 +22,7 @@ export default function ComicHeader() {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <form action="/search" method="get" className="flex items-center search-form">
+          <form action="/comics/search" method="get" className="flex items-center search-form">
             <input type="search" name="q" placeholder="作家名・書名で検索" aria-label="作家名・書名で検索" className="search-input" />
             <button type="submit" aria-label="検索" className="search-btn">⌕</button>
           </form>

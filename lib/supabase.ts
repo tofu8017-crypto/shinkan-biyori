@@ -11,6 +11,7 @@ import {
   isReassignedFromBaseNovel,
 } from "./genre-classify";
 import { searchRakutenBooks, fetchRakutenByIsbn } from "./rakuten";
+import { searchAliases } from "./search-aliases";
 import { effectiveGenreId, overrideAuthorsForGenre } from "./author-genre";
 
 // ラノベが紛れ込みやすい「小説系」ジャンル。これらの表示からはラノベを除外し、
@@ -163,10 +164,19 @@ export async function searchBooks(
 
   // DBは新刊しか持たないため、楽天の全カタログ検索で旧作も補う。
   // DB収録分（新刊）を上に、楽天で見つかった未収録分（旧作など）を下に並べる。
+  // さらに、カタカナ⇄英字でズレる人気作は別名（例: ブルージャイアント→BLUE GIANT）でも引く。
   try {
     const seen = new Set(dbBooks.map((b) => b.isbn13));
-    const rakuten = await searchRakutenBooks(q, 60);
-    const extras = rakuten.filter((b) => !seen.has(b.isbn13));
+    const queries = [q, ...searchAliases(q)];
+    const extras: Book[] = [];
+    for (const query of queries) {
+      const r = await searchRakutenBooks(query, 60);
+      for (const b of r) {
+        if (seen.has(b.isbn13)) continue;
+        seen.add(b.isbn13);
+        extras.push(b);
+      }
+    }
     return [...dbBooks, ...extras].slice(0, limit);
   } catch {
     // 楽天が落ちていてもDB結果は返す
