@@ -151,6 +151,9 @@ export default async function GenrePage({
           )}
         </section>
 
+        {/* 発売日カレンダー（本日発売の直下に置き、戻らず別の日へ移動できる） */}
+        <MonthCalendarSection />
+
         {/* 最近の新刊・近刊（検索流入を支える一覧。常設） */}
         <section>
           <div className="flex items-baseline gap-4 mb-6">
@@ -189,9 +192,6 @@ export default async function GenrePage({
           )}
         </section>
       </main>
-
-      {/* 発売日カレンダー（階層下ページでも最下部に表示） */}
-      <MonthCalendarSection />
     </div>
   );
 }
