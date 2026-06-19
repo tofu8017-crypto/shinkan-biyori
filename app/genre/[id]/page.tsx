@@ -5,8 +5,9 @@ import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
 import GenreChips from "@/components/GenreChips";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
-import { getBooksByGenre, getBooksByDateAndGenre } from "@/lib/supabase";
+import { getBooksByGenre, getBooksByDateAndGenre, getBookCountByDate } from "@/lib/supabase";
 import { GENRES } from "@/types/book";
+import DateStrip from "@/components/DateStrip";
 import { notFound } from "next/navigation";
 
 function todayJST(): string {
@@ -15,6 +16,11 @@ function todayJST(): string {
 function todayLabelJP(iso: string): string {
   const [, m, d] = iso.split("-").map(Number);
   return `${m}月${d}日`;
+}
+function shiftDate(iso: string, n: number): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
 }
 
 export async function generateMetadata({
@@ -59,9 +65,12 @@ export default async function GenrePage({
   }
 
   const today = todayJST();
-  const [todayBooks, books] = await Promise.all([
+  // TOPと同じ ±5日の日付バー用（その日「全体」の冊数。ジャンル別ではなく日付ナビ）
+  const stripDates = Array.from({ length: 11 }, (_, i) => shiftDate(today, i - 5));
+  const [todayBooks, books, stripCounts] = await Promise.all([
     getBooksByDateAndGenre(today, id),
     getBooksByGenre(id),
+    getBookCountByDate(shiftDate(today, -5), shiftDate(today, 5)),
   ]);
 
   // パンくずの構造化データ：ホーム > ジャンル
@@ -112,6 +121,9 @@ export default async function GenrePage({
 
         {/* 全ジャンルへの切替（現在のジャンルを強調） */}
         <GenreChips activeId={id} />
+
+        {/* TOPと同じ横並びの日付バー（±5日）。クリックでその日の新刊一覧へ。 */}
+        <DateStrip dates={stripDates} counts={stripCounts} activeDate={today} />
 
         {/* 本日発売（このジャンル）。発売がない日は下のカレンダーから別日へ。 */}
         <section className="mb-14">
