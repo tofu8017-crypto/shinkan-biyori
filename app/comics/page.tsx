@@ -6,6 +6,7 @@ import Link from "next/link";
 import BookCard from "@/components/BookCard";
 import MonthCalendar from "@/components/MonthCalendar";
 import ComicHeader from "@/components/ComicHeader";
+import DateStripScroller from "@/components/DateStripScroller";
 import { getComicsByDate, getComicCountByDate } from "@/lib/supabase";
 
 export const metadata: Metadata = {
@@ -74,8 +75,9 @@ async function TodaysComicsSection() {
         </p>
       </div>
 
-      {/* 前後の日付ストリップ（±5日。クリックでその日のコミック一覧へ） */}
-      <div className="flex items-stretch gap-2 mb-8 overflow-x-auto" style={{ paddingBottom: "4px" }}>
+      {/* 前後の日付ストリップ（±5日。クリックでその日のコミック一覧へ）。
+          スマホでは本日が中央に来るよう自動スクロールする。 */}
+      <DateStripScroller className="flex items-stretch gap-2 mb-8 overflow-x-auto" style={{ paddingBottom: "4px" }}>
         {stripDates.map((d) => {
           const f = formatDateJP(d);
           const c = counts[d] ?? 0;
@@ -84,6 +86,7 @@ async function TodaysComicsSection() {
             <Link
               key={d}
               href={isCur ? "/comics" : `/comics/date/${d}`}
+              data-active={isCur ? "true" : undefined}
               className="flex flex-col items-center justify-center flex-shrink-0"
               style={{
                 width: "60px",
@@ -103,7 +106,7 @@ async function TodaysComicsSection() {
             </Link>
           );
         })}
-      </div>
+      </DateStripScroller>
 
       {books.length === 0 ? (
         <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
