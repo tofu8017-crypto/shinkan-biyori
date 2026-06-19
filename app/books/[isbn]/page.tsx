@@ -9,6 +9,7 @@ import MonthCalendarSection from "@/components/MonthCalendarSection";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
+import { ebookjapanUrl } from "@/lib/ebookjapan";
 import { splitAuthors, authorSlug } from "@/lib/normalize-author";
 import { hiResCover } from "@/lib/cover";
 import {
@@ -73,6 +74,7 @@ export default async function BookDetailPage({
   const authors = splitAuthors(book.author);
   const pub = formatDateJP(book.published_date);
   const azUrl = amazonUrl(book);
+  const ebjUrl = ebookjapanUrl(book); // 提携設定が無ければ null＝ボタン非表示
 
   const [sameAuthor, sameDay] = await Promise.all([
     getBooksBySameAuthor(book, 6),
@@ -251,6 +253,17 @@ export default async function BookDetailPage({
                   style={{ background: "#111", color: "#fff", textDecoration: "none" }}
                 >
                   楽天ブックスで見る
+                </a>
+              )}
+              {ebjUrl && (
+                <a
+                  href={ebjUrl}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="text-sm font-bold rounded-full px-7 py-3 transition-opacity hover:opacity-80"
+                  style={{ background: "#D7000F", color: "#fff", textDecoration: "none" }}
+                >
+                  ebookjapanで見る
                 </a>
               )}
               <a

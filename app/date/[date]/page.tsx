@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import DateBooksFilter from "@/components/DateBooksFilter";
+import DateStripScroller from "@/components/DateStripScroller";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
 import { getBooksByDate, getBookCountByDate } from "@/lib/supabase";
 import { notFound } from "next/navigation";
@@ -132,8 +133,9 @@ export default async function DatePage({
           </p>
         </div>
 
-        {/* 前後の日付ナビ（±5日。カレンダーに戻らず行き来できる） */}
-        <div
+        {/* 前後の日付ナビ（±5日。カレンダーに戻らず行き来できる）。
+            スマホでは表示中の日付が中央に来るよう自動スクロールする。 */}
+        <DateStripScroller
           className="flex items-stretch gap-2 mb-8 overflow-x-auto"
           style={{ paddingBottom: "4px" }}
         >
@@ -145,6 +147,7 @@ export default async function DatePage({
               <Link
                 key={d}
                 href={`/date/${d}`}
+                data-active={isCur ? "true" : undefined}
                 className="flex flex-col items-center justify-center flex-shrink-0"
                 style={{
                   width: "60px",
@@ -164,7 +167,7 @@ export default async function DatePage({
               </Link>
             );
           })}
-        </div>
+        </DateStripScroller>
 
         {books.length === 0 ? (
           <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>

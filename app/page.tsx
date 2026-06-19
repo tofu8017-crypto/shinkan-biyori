@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getBooksByDate, getBookCountByDate } from "@/lib/supabase";
 import BookCard from "@/components/BookCard";
 import GenreChips from "@/components/GenreChips";
+import DateStripScroller from "@/components/DateStripScroller";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
 
 function todayJST(): string {
@@ -67,8 +68,9 @@ async function TodaySection() {
         </p>
       </div>
 
-      {/* 前後の日付ストリップ（±5日。クリックでその日の新刊一覧へ） */}
-      <div
+      {/* 前後の日付ストリップ（±5日。クリックでその日の新刊一覧へ）。
+          スマホでは本日が中央に来るよう自動スクロールする。 */}
+      <DateStripScroller
         className="flex items-stretch gap-2 mb-8 overflow-x-auto"
         style={{ paddingBottom: "4px" }}
       >
@@ -80,6 +82,7 @@ async function TodaySection() {
             <Link
               key={d}
               href={isCur ? "/" : `/date/${d}`}
+              data-active={isCur ? "true" : undefined}
               className="flex flex-col items-center justify-center flex-shrink-0"
               style={{
                 width: "60px",
@@ -99,7 +102,7 @@ async function TodaySection() {
             </Link>
           );
         })}
-      </div>
+      </DateStripScroller>
 
       {/* 全ジャンルへの導線（クリックで各ジャンルページへ） */}
       <GenreChips activeId="all" />

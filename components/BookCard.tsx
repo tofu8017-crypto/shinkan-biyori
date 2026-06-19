@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Book } from "@/types/book";
 import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
+import { ebookjapanUrl } from "@/lib/ebookjapan";
 import { hiResCover } from "@/lib/cover";
 import { effectiveGenreId } from "@/lib/author-genre";
 
@@ -67,6 +68,7 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
   // 作家オーバーライドを反映した実効ジャンルでラベルを出す（伊坂幸太郎→ミステリー等）
   const genre = GENRES.find((g) => g.id === effectiveGenreId(book.author, book.genre_id));
   const azUrl = amazonUrl(book);
+  const ebjUrl = ebookjapanUrl(book); // 提携設定が無ければ null＝ボタン非表示
   const href = azUrl; // 表紙画像クリックの飛び先＝Amazon（楽天は黒の楽天ボタンから）
 
   if (featured) {
@@ -152,6 +154,13 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
                 楽天ブックス
               </a>
             )}
+            {ebjUrl && (
+              <a href={ebjUrl} target="_blank" rel="noopener noreferrer sponsored"
+                className="text-sm font-bold rounded-full py-2.5 px-4 text-center whitespace-nowrap transition-opacity hover:opacity-80"
+                style={{ background: "#D7000F", color: "#fff", textDecoration: "none", flex: "1 1 110px", minWidth: 0 }}>
+                ebookjapan
+              </a>
+            )}
             <a href={azUrl} target="_blank" rel="noopener noreferrer sponsored"
               className="text-sm font-bold rounded-full py-2.5 px-4 text-center whitespace-nowrap transition-opacity hover:opacity-80"
               style={{ background: "#ED8A22", color: "#fff", textDecoration: "none", flex: "1 1 110px", minWidth: 0 }}>
@@ -219,6 +228,13 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
             className="flex-1 text-center text-xs font-bold rounded-full py-2 transition-opacity hover:opacity-80"
             style={{ background: "#111", color: "#fff", textDecoration: "none" }}>
             楽天
+          </a>
+        )}
+        {ebjUrl && (
+          <a href={ebjUrl} target="_blank" rel="noopener noreferrer"
+            className="flex-1 text-center text-xs font-bold rounded-full py-2 transition-opacity hover:opacity-80"
+            style={{ background: "#D7000F", color: "#fff", textDecoration: "none" }}>
+            ebook
           </a>
         )}
         <a href={azUrl} target="_blank" rel="noopener noreferrer"
