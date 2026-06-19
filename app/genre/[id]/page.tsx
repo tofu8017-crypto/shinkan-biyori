@@ -103,8 +103,8 @@ export default async function GenrePage({
       />
       <SiteHeader />
 
-      <main className="max-w-6xl mx-auto w-full px-4 py-14">
-        <div className="flex items-baseline gap-6 mb-8">
+      <main className="max-w-6xl mx-auto w-full px-4 pt-5 pb-14">
+        <div className="flex items-baseline gap-6 mb-5">
           <h1
             style={{
               fontFamily: "var(--font-serif)",
