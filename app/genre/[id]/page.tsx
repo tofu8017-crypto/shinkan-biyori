@@ -5,9 +5,17 @@ import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
 import GenreChips from "@/components/GenreChips";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
-import { getBooksByGenre } from "@/lib/supabase";
+import { getBooksByGenre, getBooksByDateAndGenre } from "@/lib/supabase";
 import { GENRES } from "@/types/book";
 import { notFound } from "next/navigation";
+
+function todayJST(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
+}
+function todayLabelJP(iso: string): string {
+  const [, m, d] = iso.split("-").map(Number);
+  return `${m}月${d}日`;
+}
 
 export async function generateMetadata({
   params,
@@ -50,7 +58,11 @@ export default async function GenrePage({
     notFound();
   }
 
-  const books = await getBooksByGenre(id);
+  const today = todayJST();
+  const [todayBooks, books] = await Promise.all([
+    getBooksByDateAndGenre(today, id),
+    getBooksByGenre(id),
+  ]);
 
   // パンくずの構造化データ：ホーム > ジャンル
   const breadcrumbJsonLd = {
@@ -96,31 +108,86 @@ export default async function GenrePage({
           >
             {genre.label}
           </h1>
-          <span className="font-bold" style={{ color: "var(--text-muted)" }}>
-            新刊・近刊 {books.length}冊
-          </span>
         </div>
 
         {/* 全ジャンルへの切替（現在のジャンルを強調） */}
         <GenreChips activeId={id} />
 
-        {books.length === 0 ? (
-          <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-新刊・近刊は今のところありません。
-          </p>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-              gap: "18px",
-            }}
-          >
-            {books.map((book) => (
-              <BookCard key={book.id} book={book} />
-            ))}
+        {/* 本日発売（このジャンル）。発売がない日は下のカレンダーから別日へ。 */}
+        <section className="mb-14">
+          <div className="flex items-baseline gap-4 mb-6">
+            <h2
+              style={{
+                fontFamily: "var(--font-serif)",
+                fontSize: "24px",
+                fontWeight: 500,
+                letterSpacing: "0.1em",
+                color: "var(--text-main)",
+                margin: 0,
+              }}
+            >
+              本日発売（{todayLabelJP(today)}）
+            </h2>
+            <span className="font-bold" style={{ color: "var(--text-muted)" }}>
+              {todayBooks.length}冊
+            </span>
           </div>
-        )}
+          {todayBooks.length === 0 ? (
+            <p className="py-4 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+              本日発売の{genre.label}はありません。下のカレンダーから発売日を選べます。
+            </p>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                gap: "18px",
+              }}
+            >
+              {todayBooks.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* 最近の新刊・近刊（検索流入を支える一覧。常設） */}
+        <section>
+          <div className="flex items-baseline gap-4 mb-6">
+            <h2
+              style={{
+                fontFamily: "var(--font-serif)",
+                fontSize: "24px",
+                fontWeight: 500,
+                letterSpacing: "0.1em",
+                color: "var(--text-main)",
+                margin: 0,
+              }}
+            >
+              最近の新刊・近刊
+            </h2>
+            <span className="font-bold" style={{ color: "var(--text-muted)" }}>
+              {books.length}冊
+            </span>
+          </div>
+          {books.length === 0 ? (
+            <p className="py-4 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+              新刊・近刊は今のところありません。
+            </p>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                gap: "18px",
+              }}
+            >
+              {books.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
+            </div>
+          )}
+        </section>
       </main>
 
       {/* 発売日カレンダー（階層下ページでも最下部に表示） */}

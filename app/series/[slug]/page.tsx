@@ -8,6 +8,7 @@ import BookCard from "@/components/BookCard";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { seriesSlug, detectSeries } from "@/lib/detect-series";
 import { getSeriesBySlug } from "@/lib/supabase";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 
 function formatDateJP(dateStr: string): string {
   const [y, m, dd] = dateStr.split("-").map(Number);
@@ -130,6 +131,9 @@ export default async function SeriesPage({
           ))}
         </div>
       </main>
+
+      {/* 発売日カレンダー（戻らず別の日へ行けるよう常設） */}
+      <MonthCalendarSection />
     </div>
   );
 }

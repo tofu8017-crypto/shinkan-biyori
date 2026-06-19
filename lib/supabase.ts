@@ -357,6 +357,30 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
   return rows.slice(0, 120);
 }
 
+// 指定日に発売の、指定ジャンルの本だけを取得する。ジャンルページの「本日発売」用。
+// 派生ジャンル（時代/成人/SF・FT）も bookMatchesGenre のキーワード分類で対応する。
+export async function getBooksByDateAndGenre(
+  date: string,
+  genreId: string
+): Promise<Book[]> {
+  if (useMock) {
+    return MOCK_BOOKS.filter(
+      (b) => b.published_date === date && bookMatchesGenre(b, genreId)
+    ).sort((a, b) => a.title.localeCompare(b.title, "ja"));
+  }
+  const sb = await getClient();
+  const { data, error } = await sb!
+    .from("books")
+    .select("*")
+    .eq("published_date", date)
+    .not("title", "ilike", "%写真集%")
+    .not("title", "ilike", "%グラビア%")
+    .not("title", "ilike", "%アイドル%")
+    .order("title");
+  if (error) throw new Error(error.message);
+  return (data ?? []).filter((b) => bookMatchesGenre(b, genreId));
+}
+
 export async function getBooksByDateRange(
   from: string,
   to: string

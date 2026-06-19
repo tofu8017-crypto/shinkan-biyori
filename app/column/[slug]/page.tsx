@@ -3,6 +3,7 @@ export const revalidate = 1800;
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import ColumnHero from "@/components/ColumnHero";
+import MonthCalendarSection from "@/components/MonthCalendarSection";
 import { getColumnBySlug } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
@@ -166,6 +167,9 @@ export default async function ColumnDetailPage({
           dangerouslySetInnerHTML={{ __html: column.body_html }}
         />
       </article>
+
+      {/* 発売日カレンダー（戻らず別の日へ行けるよう常設） */}
+      <MonthCalendarSection />
     </div>
   );
 }
