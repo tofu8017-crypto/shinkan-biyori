@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 // コミック版の共通ヘッダー。文芸版SiteHeaderと同じ作り（明朝ロゴ＋検索＋リンク）で、
 // 色だけ青系（comic-theme側のCSS変数）、リンク先はコミック文脈にする。
 export default function ComicHeader() {
@@ -26,9 +24,6 @@ export default function ComicHeader() {
             <input type="search" name="q" placeholder="作家名・書名で検索" aria-label="作家名・書名で検索" className="search-input" />
             <button type="submit" aria-label="検索" className="search-btn">⌕</button>
           </form>
-          <Link href="/comics/favorites" className="text-sm font-bold flex-shrink-0 whitespace-nowrap" style={{ color: "var(--text-main)", textDecoration: "none" }}>
-            ♡ お気に入り
-          </Link>
         </div>
       </div>
     </header>
