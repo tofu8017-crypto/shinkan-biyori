@@ -78,8 +78,8 @@ export default async function ColumnDetailPage({
     },
     author: {
       "@type": "Organization",
-      name: "新刊日和",
-      url: BASE_URL,
+      name: "新刊日和編集部",
+      url: `${BASE_URL}/about`,
     },
     publisher: {
       "@type": "Organization",
@@ -87,7 +87,7 @@ export default async function ColumnDetailPage({
       url: BASE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${BASE_URL}/hero.jpg`,
+        url: `${BASE_URL}/icon.png`,
       },
     },
   };
@@ -152,14 +152,17 @@ export default async function ColumnDetailPage({
           {column.title}
         </h1>
 
-        {dateJP && (
-          <p
-            className="text-sm font-bold"
-            style={{ color: "var(--text-muted)", margin: "0 0 36px" }}
-          >
-            {dateJP}
-          </p>
-        )}
+        {/* 著者バイライン＋日付（可視の著者表記もE-E-A-Tの信頼性シグナルになる） */}
+        <p
+          className="text-sm font-bold"
+          style={{ color: "var(--text-muted)", margin: "0 0 36px" }}
+        >
+          文：
+          <a href="/about" style={{ color: "var(--text-muted)", textDecoration: "underline" }}>
+            新刊日和編集部
+          </a>
+          {dateJP && <>　|　{dateJP}</>}
+        </p>
 
         {/* body_html は自社のAIが生成し人間がレビュー済みの信頼できる内部コンテンツ */}
         <div

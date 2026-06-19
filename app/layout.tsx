@@ -59,8 +59,10 @@ const siteJsonLd = {
     {
       "@type": "Organization",
       name: "新刊日和",
+      alternateName: "新刊日和編集部",
       url: "https://shinkanbiyori.com",
-      logo: "https://shinkanbiyori.com/hero.jpg",
+      logo: "https://shinkanbiyori.com/icon.png",
+      publishingPrinciples: "https://shinkanbiyori.com/about",
     },
   ],
 };

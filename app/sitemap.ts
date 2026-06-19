@@ -38,6 +38,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.8,
     })),
+    {
+      url: `${BASE_URL}/about`,
+      lastModified: today,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
   ];
 
   // 直近30日のうち、実際に新刊がある日付ページだけを追加する。

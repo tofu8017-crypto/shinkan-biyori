@@ -98,6 +98,9 @@ export default function SiteHeader() {
             <a href="/favorites" className="hidden sm:inline" style={{ color: "var(--text-main)", textDecoration: "none" }}>
               ♡ お気に入り
             </a>
+            <a href="/about" className="hidden sm:inline" style={{ color: "var(--text-main)", textDecoration: "none" }}>
+              運営者情報
+            </a>
           </div>
         </div>
       </div>
