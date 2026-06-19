@@ -26,7 +26,9 @@ export default async function ComicSearchPage({
 }) {
   const { q } = await searchParams;
   const query = (q ?? "").trim();
-  const books = query ? await searchBooks(query) : [];
+  // コミック検索なのでコミック(genre_id=001001)だけに絞る。文芸の本は除外する。
+  const all = query ? await searchBooks(query) : [];
+  const books = all.filter((b) => b.genre_id === "001001");
 
   return (
     <div className="comic-theme min-h-screen flex flex-col">
