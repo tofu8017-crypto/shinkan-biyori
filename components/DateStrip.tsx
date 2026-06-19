@@ -17,10 +17,13 @@ export default function DateStrip({
   dates,
   counts,
   activeDate,
+  hrefBase = "/date",
 }: {
   dates: string[];
   counts: Record<string, number>;
   activeDate: string;
+  // 各日付のリンク先ベース。文芸版は "/date"、コミック版は "/comics/date"。
+  hrefBase?: string;
 }) {
   return (
     <DateStripScroller
@@ -34,7 +37,7 @@ export default function DateStrip({
         return (
           <Link
             key={d}
-            href={`/date/${d}`}
+            href={`${hrefBase}/${d}`}
             data-active={isCur ? "true" : undefined}
             className="flex flex-col items-center justify-center flex-shrink-0"
             style={{

@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BookCard from "@/components/BookCard";
 import ComicHeader from "@/components/ComicHeader";
-import { getComicsByDate } from "@/lib/supabase";
+import DateStrip from "@/components/DateStrip";
+import ComicCalendarSection from "@/components/ComicCalendarSection";
+import { getComicsByDate, getComicCountByDate } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
 function formatDateJP(dateStr: string) {
@@ -43,9 +45,14 @@ export default async function ComicDatePage({ params }: { params: Promise<{ date
   if (!isValidDateStr(date)) notFound();
 
   const fmt = formatDateJP(date);
-  const books = await getComicsByDate(date);
   const prev = shiftDate(date, -1);
   const next = shiftDate(date, 1);
+  // ±5日の日付バー（表示中の日を中央に）。コミックの発売数で色付け。
+  const stripDates = Array.from({ length: 11 }, (_, i) => shiftDate(date, i - 5));
+  const [books, stripCounts] = await Promise.all([
+    getComicsByDate(date),
+    getComicCountByDate(shiftDate(date, -5), shiftDate(date, 5)),
+  ]);
 
   return (
     <div className="comic-theme min-h-screen flex flex-col">
@@ -55,9 +62,12 @@ export default async function ComicDatePage({ params }: { params: Promise<{ date
         <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "34px", fontWeight: 500, letterSpacing: "0.14em", color: "var(--text-main)", margin: "0 0 4px" }}>
           {fmt.full}の新刊コミック
         </h1>
-        <p className="text-sm font-bold mb-8" style={{ color: "var(--text-muted)" }}>
+        <p className="text-sm font-bold mb-6" style={{ color: "var(--text-muted)" }}>
           全{books.length}冊
         </p>
+
+        {/* TOPと同じ横並びの日付バー（±5日。表示中の日が中央） */}
+        <DateStrip dates={stripDates} counts={stripCounts} activeDate={date} hrefBase="/comics/date" />
 
         {books.length === 0 ? (
           <p className="py-8 text-sm" style={{ color: "var(--text-muted)" }}>この日の新刊コミックはありません。</p>
@@ -75,6 +85,9 @@ export default async function ComicDatePage({ params }: { params: Promise<{ date
           <Link href={`/comics/date/${next}`} style={{ color: "inherit", textDecoration: "none" }}>翌日 →</Link>
         </div>
       </main>
+
+      {/* 発売日カレンダー（戻らず別の日へ行けるよう常設） */}
+      <ComicCalendarSection />
 
       <footer className="text-center border-t mt-8" style={{ background: "var(--bg-subtle)", padding: "48px 0 36px", borderColor: "var(--border)" }}>
         <p className="font-bold" style={{ color: "var(--text-muted)" }}>新刊日和 COMIC — 毎日更新の新刊コミックカレンダー</p>

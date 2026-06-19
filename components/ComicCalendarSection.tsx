@@ -1,0 +1,109 @@
+import Link from "next/link";
+import { Suspense } from "react";
+import MonthCalendar from "@/components/MonthCalendar";
+import { getComicCountByDate } from "@/lib/supabase";
+
+// コミック版の発売日カレンダー（当月＋前後月）。文芸版 MonthCalendarSection の
+// コミック版。集計を getComicCountByDate に、リンク先を /comics/date・/comics/calendar に。
+// コミックの各階層下ページの最下部に常設できるよう、見出し・取得・Suspenseを内包する。
+
+function todayJST(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
+}
+function shiftMonth(yyyymm: string, delta: number): string {
+  const [y, m] = yyyymm.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+function monthLabel(yyyymm: string): string {
+  const [y, m] = yyyymm.split("-").map(Number);
+  return `${y}年${m}月`;
+}
+function monthRange(yyyymm: string): { from: string; to: string } {
+  const [y, m] = yyyymm.split("-").map(Number);
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return { from: `${yyyymm}-01`, to: `${yyyymm}-${String(last).padStart(2, "0")}` };
+}
+
+async function CalendarBody() {
+  const today = todayJST();
+  const yyyymm = today.slice(0, 7);
+  const prev = shiftMonth(yyyymm, -1);
+  const next = shiftMonth(yyyymm, 1);
+
+  const cur = monthRange(yyyymm);
+  const pr = monthRange(prev);
+  const nx = monthRange(next);
+  const [counts, prevCounts, nextCounts] = await Promise.all([
+    getComicCountByDate(cur.from, cur.to),
+    getComicCountByDate(pr.from, pr.to),
+    getComicCountByDate(nx.from, nx.to),
+  ]);
+
+  const SideMonth = ({ ym, c }: { ym: string; c: Record<string, number> }) => (
+    <Link
+      href={`/comics/calendar/${ym}`}
+      aria-label={`${monthLabel(ym)}のカレンダーへ`}
+      className="hidden lg:block flex-1 self-start transition-opacity hover:opacity-90"
+      style={{ opacity: 0.45, textDecoration: "none", filter: "grayscale(0.2)" }}
+    >
+      <div
+        className="text-center mb-2 font-bold"
+        style={{ color: "var(--text-muted)", fontFamily: "var(--font-serif)", fontSize: "15px" }}
+      >
+        {monthLabel(ym)}
+      </div>
+      <MonthCalendar yyyymm={ym} counts={c} today={today} muted hrefBase="/comics/date" />
+    </Link>
+  );
+
+  return (
+    <div className="flex items-start justify-center gap-6">
+      <SideMonth ym={prev} c={prevCounts} />
+
+      <div className="w-full max-w-md flex-shrink-0">
+        <div className="flex lg:hidden items-center justify-between mb-4 text-sm font-bold" style={{ color: "var(--highlight)" }}>
+          <Link href={`/comics/calendar/${prev}`} style={{ color: "inherit", textDecoration: "none" }}>
+            ← {monthLabel(prev)}
+          </Link>
+          <span style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px" }}>
+            {monthLabel(yyyymm)}
+          </span>
+          <Link href={`/comics/calendar/${next}`} style={{ color: "inherit", textDecoration: "none" }}>
+            {monthLabel(next)} →
+          </Link>
+        </div>
+        <div
+          className="hidden lg:block text-center mb-2"
+          style={{ color: "var(--text-main)", fontFamily: "var(--font-serif)", fontSize: "18px", fontWeight: 700 }}
+        >
+          {monthLabel(yyyymm)}
+        </div>
+        <MonthCalendar yyyymm={yyyymm} counts={counts} today={today} hrefBase="/comics/date" />
+      </div>
+
+      <SideMonth ym={next} c={nextCounts} />
+    </div>
+  );
+}
+
+export default function ComicCalendarSection() {
+  return (
+    <section className="max-w-6xl mx-auto w-full px-4 pt-4 pb-14">
+      <div className="mb-5">
+        <h2
+          className="section-title"
+          style={{ fontFamily: "var(--font-serif)", fontSize: "30px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)", margin: "0 0 4px", whiteSpace: "nowrap" }}
+        >
+          発売日カレンダー
+        </h2>
+        <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+          色のついた日に新刊コミックがあります。日付をクリックでその日の新刊一覧へ。
+        </p>
+      </div>
+      <Suspense fallback={null}>
+        <CalendarBody />
+      </Suspense>
+    </section>
+  );
+}
