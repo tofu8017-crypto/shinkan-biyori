@@ -4,6 +4,7 @@ import { GENRES } from "@/types/book";
 import { amazonUrl } from "@/lib/amazon";
 import { ebookjapanUrl } from "@/lib/ebookjapan";
 import { hiResCover } from "@/lib/cover";
+import FavoriteButton from "@/components/FavoriteButton";
 import { effectiveGenreId } from "@/lib/author-genre";
 
 type Props = { book: Book; featured?: boolean; featuredLabel?: string };
@@ -70,6 +71,17 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
   const azUrl = amazonUrl(book);
   const ebjUrl = ebookjapanUrl(book); // 提携設定が無ければ null＝ボタン非表示
   const href = azUrl; // 表紙画像クリックの飛び先＝Amazon（楽天は黒の楽天ボタンから）
+  // お気に入り保存に必要な最小限の書誌（localStorageに入れる）
+  const favBook = {
+    isbn13: book.isbn13,
+    isbn10: book.isbn10,
+    title: book.title,
+    author: book.author,
+    image_url: book.image_url,
+    genre_id: book.genre_id,
+    rakuten_url: book.rakuten_url,
+    amazon_url: azUrl,
+  };
 
   if (featured) {
     return (
@@ -99,14 +111,17 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
         </div>
 
         {/* 書影 */}
-        <a href={href} target="_blank" rel="noopener noreferrer" className="featured-cover self-start" style={{ borderRadius: "4px", overflow: "hidden", boxShadow: "0 10px 20px rgba(61,53,48,0.12)", display: "block" }}>
-          {book.image_url ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={hiResCover(book.image_url) ?? undefined} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} loading="lazy" />
-          ) : (
-            <CoverPlaceholder book={book} genre={genre} large />
-          )}
-        </a>
+        <div className="featured-cover self-start" style={{ position: "relative", borderRadius: "4px", overflow: "hidden", boxShadow: "0 10px 20px rgba(61,53,48,0.12)" }}>
+          <FavoriteButton book={favBook} />
+          <a href={href} target="_blank" rel="noopener noreferrer" style={{ display: "block" }}>
+            {book.image_url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={hiResCover(book.image_url) ?? undefined} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} loading="lazy" />
+            ) : (
+              <CoverPlaceholder book={book} genre={genre} large />
+            )}
+          </a>
+        </div>
 
         {/* 書誌（書影が高いので右側は縦中央寄せにして空白の偏りを防ぐ）
             min-w-0: グリッド列が内容の最小幅で広がってカードからはみ出すのを防ぐ */}
@@ -182,15 +197,17 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
         padding: "18px 14px 22px",
       }}
     >
-      <a href={href} target="_blank" rel="noopener noreferrer"
-        style={{ borderRadius: "4px", overflow: "hidden", display: "block" }}>
-        {book.image_url ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={hiResCover(book.image_url) ?? undefined} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} loading="lazy" />
-        ) : (
-          <CoverPlaceholder book={book} genre={genre} />
-        )}
-      </a>
+      <div style={{ position: "relative", borderRadius: "4px", overflow: "hidden" }}>
+        <FavoriteButton book={favBook} />
+        <a href={href} target="_blank" rel="noopener noreferrer" style={{ display: "block" }}>
+          {book.image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={hiResCover(book.image_url) ?? undefined} alt={book.title} className="w-full object-cover" style={{ aspectRatio: "3/4" }} loading="lazy" />
+          ) : (
+            <CoverPlaceholder book={book} genre={genre} />
+          )}
+        </a>
+      </div>
       <h3
         className="line-clamp-3 card-title"
         style={{

@@ -230,8 +230,12 @@ html, body {
   cursor: pointer;
   flex-shrink: 0;
 }
+/* コミック版は「文芸版へ」リンクを外した分、検索窓を広げて使いやすくする */
+.comic-theme .search-input { width: 320px; }
+
 @media (max-width: 640px) {
   .search-input { width: 110px; font-size: 12px; }
+  .comic-theme .search-input { width: 150px; }
   .search-form { padding-left: 10px; height: 34px; }
   .search-btn { width: 26px; height: 26px; font-size: 14px; }
 }

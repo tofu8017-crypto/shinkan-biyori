@@ -95,7 +95,9 @@ export default function SiteHeader() {
             <a href="/column" style={{ color: "var(--text-main)", textDecoration: "none" }}>
               コラム
             </a>
-            <span className="hidden sm:inline">♡ お気に入り</span>
+            <a href="/favorites" className="hidden sm:inline" style={{ color: "var(--text-main)", textDecoration: "none" }}>
+              ♡ お気に入り
+            </a>
           </div>
         </div>
       </div>

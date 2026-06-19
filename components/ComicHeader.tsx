@@ -26,8 +26,8 @@ export default function ComicHeader() {
             <input type="search" name="q" placeholder="作家名・書名で検索" aria-label="作家名・書名で検索" className="search-input" />
             <button type="submit" aria-label="検索" className="search-btn">⌕</button>
           </form>
-          <Link href="/" className="text-sm font-bold flex-shrink-0" style={{ color: "var(--highlight)", textDecoration: "none" }}>
-            文芸版へ →
+          <Link href="/comics/favorites" className="text-sm font-bold flex-shrink-0 whitespace-nowrap" style={{ color: "var(--text-main)", textDecoration: "none" }}>
+            ♡ お気に入り
           </Link>
         </div>
       </div>
