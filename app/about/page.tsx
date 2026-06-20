@@ -120,8 +120,11 @@ export default function AboutPage() {
 
         <Section title="お問い合わせ">
           <p>
-            掲載内容に関するご指摘・ご連絡は、運営者までお寄せください
-            （連絡先は準備中です）。誤りのご指摘には可能な範囲で対応します。
+            掲載内容の誤りのご指摘・ご要望などは、
+            <a href="/contact" style={{ color: "var(--highlight)", textDecoration: "underline" }}>
+              お問い合わせフォーム
+            </a>
+            からお寄せください。可能な範囲で対応します。
           </p>
         </Section>
       </main>
