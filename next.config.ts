@@ -10,3 +10,8 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+// Cloudflare(OpenNext)のローカル開発用初期化。`next dev` 時に
+// getCloudflareContext() でバインディングを使えるようにする。本番ビルドには影響しない。
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+initOpenNextCloudflareForDev();
