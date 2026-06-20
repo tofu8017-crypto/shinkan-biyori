@@ -1,4 +1,4 @@
-export const revalidate = 1800;
+export const revalidate = 3600;
 
 import type { Metadata } from "next";
 import { Suspense } from "react";
