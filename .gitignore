@@ -47,3 +47,4 @@ README.md.bak
 .dev.vars
 cloudflare-env.d.ts
 .cf-token
+.wrangler/
