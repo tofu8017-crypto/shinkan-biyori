@@ -6,11 +6,13 @@ user_invocable: true
 
 # 新刊日和 コラム執筆スキル（薄いラッパー）
 
-新刊日和（shinkanbiyori.com）のSEOコラムを書く。**執筆はサブエージェント「ナカノ」に委譲する**。このスキルは指揮役（データ収集 → ナカノに委譲 → 保存 → 確認 → 公開）に徹し、文体・禁止表現・2パス推敲などの執筆ルールは持たない（すべてナカノ側＝`.claude/agents/nakano.md` が持つ）。サブスクのClaudeで動くので追加API費用はかからない。ラッコAPIは不要（Googleサジェストで代替）。
+新刊日和（shinkanbiyori.com）のSEOコラムを書く。**執筆は DeepSeek API に委譲する**（Claudeのトークンを使わない）。このスキルは指揮役（データ収集 → DeepSeekに執筆させる → 保存 → 確認 → 公開）に徹し、文体・禁止表現・SEO構成などの執筆ルールは持たない（すべて SEOペルソナのプロンプト＝`scripts/prompts/seo-column-writer.md` が持つ）。Googleサジェスト＋既存のSEMrushキーワード（`data/seo-keywords.json`）で検索意図を把握する。
 
-作業ディレクトリ: `/Users/Lifehack/shinkan-biyori`
+作業ディレクトリ: `/Users/fujisawakanna/Projects/shinkan-biyori`
 
-**設計**: ラッパー（本スキル）＝薄い。執筆者ペルソナ＝サブエージェント `nakano`。執筆ルールを直したいときは `nakano.md` を編集する（このスキルは触らない）。
+**設計**: ラッパー（本スキル）＝薄い。執筆者ペルソナ＝SEOライター「セオ」＝`scripts/prompts/seo-column-writer.md`。執筆ルール（文体・SEO構成）を直したいときはこのプロンプトを編集する。
+**前提**: `.env.local` に `DEEPSEEK_API_KEY` が必要。
+**ナカノについて**: 旧ペルソナ「ナカノ」（`.claude/agents/nakano.md`）は **はてブ記事用に転用**。新刊日和のコラムでは使わない。
 
 ## 手順
 
@@ -26,17 +28,27 @@ user_invocable: true
    - openBDに無い新刊は **WebSearchで「著者名 書名 あらすじ」** を調べ、あらすじ・テーマ・著者の実績・評価を把握する。
    - ※検索はサブエージェントに委任せず自分で行う（FJさんルール）。
 
-5. **執筆をナカノに委譲**: Agentツールで `subagent_type: nakano` を起動し、手順2〜4で集めた資料を**そのまま渡して**コラムを書かせる。スキル側は文体・禁止表現・2パス推敲などのルールを指示しない（それはナカノが持っている）。渡すもの＝捏造防止の生命線：
-   - 対象書籍のDBレコード（タイトル/著者/版元/レーベル/発売日/価格/openBD内容紹介/amazon_url/rakuten_url/isbn13）を選んだ本ぶん
-   - 著者の過去作リスト（分かる範囲）／受賞歴等のファクトシート（手順4で確認したもの。無ければ「未確認」と添える）
-   - target_keyword と genre_id
-   - ナカノは**最終稿のみ**を、§6の形（slug/title/body_html/excerpt/target_keyword/genre_id/status のJSON）で返す。資料に無いことは書かない契約になっている。
+5. **執筆をDeepSeekに委譲**: 手順2〜4で集めた資料を「素材JSON」にまとめ、`/tmp/column-materials.json` に書き出してから DeepSeek 執筆スクリプトを実行する。スキル側は文体・SEO構成を指示しない（それは `scripts/prompts/seo-column-writer.md` が持つ）。
+   - 素材JSONの形（捏造防止の生命線。資料に無いことは書かせない）:
+     ```json
+     {
+       "target_keyword": "...", "genre_id": "001004001",
+       "suggests": ["手順2のサジェスト語"],
+       "books": [
+         { "title": "...", "author": "...", "publisher": "...", "label": "...",
+           "published_date": "YYYY-MM-DD", "price": "...", "isbn13": "...",
+           "amazon_url": "...", "rakuten_url": "...",
+           "summary": "openBD等の内容紹介（手順4）",
+           "author_facts": "著者の過去作・受賞歴など。無ければ『未確認』" }
+       ]
+     }
+     ```
+   - 実行: `node -r dotenv/config scripts/write-column-deepseek.js /tmp/column-materials.json dotenv_config_path=.env.local`
+   - 成功すると `/tmp/column-<slug>.json`（slug/title/body_html/excerpt/target_keyword/genre_id/status）が生成される。資料に無いURL・事実は出力しない契約。
 
-6. **下書き保存**: ナカノが返したJSONをそのまま `/tmp/column-<slug>.json` に書く。形式:
-   `{ "slug": "...", "title": "...", "body_html": "...", "excerpt": "...", "target_keyword": "...", "genre_id": "...", "status": "draft" }`
-   - slugは半角英数とハイフン（例: `osusume-mystery-2026-07`）。body_htmlは1行（改行を入れない）。
+6. **下書き保存**: 手順5で生成された `/tmp/column-<slug>.json` をDBへ保存する。
    - 実行: `node -r dotenv/config scripts/save-column.js /tmp/column-<slug>.json dotenv_config_path=.env.local`
-   - ナカノの出力に許可外タグ・ダブルクォート属性・禁止表現が混じっていないか軽く目視チェック（基本はナカノのパス2で除去済み）。
+   - DeepSeekの出力に許可外タグ・禁止表現・資料に無い事実が混じっていないか軽く目視チェック（基本はプロンプトで抑止済み）。怪しければ素材JSONを直して手順5から再実行。
 
 7. **レビュー**: 記事の要点（タイトル・取り上げた本・狙うKW・文字量）をFJさんに見せ、**公開してよいか確認**する。
 
