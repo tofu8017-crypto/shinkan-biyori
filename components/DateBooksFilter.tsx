@@ -4,19 +4,9 @@ import { useState } from "react";
 import BookCard from "./BookCard";
 import { GENRES } from "@/types/book";
 import type { Book } from "@/types/book";
-import { isLikelyLightNovel } from "@/lib/is-light-novel";
-
 // その日の新刊を、上部のジャンルタブで絞り込んで表示する。
-// ラノベは出版社/レーベル/タイトルで判定し、小説（日本）等から分離して
-// 「ライトノベル」タブに寄せる。
-
-const RANOBE_ID = "001017";
 
 function effectiveGenre(b: Book): string {
-  // 小説系に紛れたラノベはラノベ扱い
-  if (b.genre_id !== "001006" && b.genre_id !== "001001" && isLikelyLightNovel(b)) {
-    return RANOBE_ID;
-  }
   return b.genre_id;
 }
 
