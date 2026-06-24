@@ -137,7 +137,7 @@ export default async function ColumnDetailPage({
 
       <article className="max-w-3xl mx-auto w-full px-4 py-14">
         <div style={{ borderRadius: "8px", overflow: "hidden", marginBottom: "28px" }}>
-          <ColumnHero slug={column.slug} genreId={column.genre_id} variant="detail" />
+          <ColumnHero slug={column.slug} genreId={column.genre_id} heroImageUrl={column.hero_image_url} variant="detail" />
         </div>
         <h1
           style={{

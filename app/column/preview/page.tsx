@@ -69,7 +69,7 @@ export default async function ColumnPreviewListPage() {
                   textDecoration: "none",
                 }}
               >
-                <ColumnHero slug={col.slug} genreId={col.genre_id} variant="list" />
+                <ColumnHero slug={col.slug} genreId={col.genre_id} heroImageUrl={col.hero_image_url} variant="list" />
                 <div style={{ padding: "16px 18px 18px" }}>
                   <span
                     className="inline-block text-xs font-bold mb-2"
