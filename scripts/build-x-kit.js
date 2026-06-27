@@ -218,7 +218,12 @@ async function main() {
         `📚 ${label}発売の文芸書は${count}冊。\n` +
         `注目は${names} など。\n` +
         `#新刊 #読書 #本好きと繋がりたい`;
-      posts.push({ kind: "new_books_digest", content, image_url: picks[0] ? bookCardUrl(picks[0]) : null });
+      posts.push({
+        kind: "new_books_digest",
+        content,
+        image_url: picks[0] ? bookCardUrl(picks[0]) : null,
+        isbns: picks.map((b) => b.isbn13).filter(Boolean), // 見出しに出した本も重複防止対象に
+      });
     }
   } catch (e) {
     console.error("digest生成スキップ:", e.message);
@@ -345,14 +350,23 @@ async function main() {
   // ---- x_posts に「素材として出した」記録（重複出し防止） ----
   if (SERVICE_KEY) {
     const sbW = createClient(SUPABASE_URL, SERVICE_KEY);
-    const rows = posts.map((p) => ({
-      kind: p.kind,
-      isbn13: p.isbn13 || null,
-      slug: p.slug || null,
-      content: p.content,
-      image_url: p.image_url || null,
-      status: "queued",
-    }));
+    const rows = [];
+    for (const p of posts) {
+      rows.push({
+        kind: p.kind,
+        isbn13: p.isbn13 || null,
+        slug: p.slug || null,
+        content: p.content,
+        image_url: p.image_url || null,
+        status: "queued",
+      });
+      // ダイジェストで取り上げた本も個別に記録（recentIsbnで再出題を防ぐ）
+      if (Array.isArray(p.isbns)) {
+        for (const isbn of p.isbns) {
+          rows.push({ kind: "digest_book", isbn13: isbn, slug: null, content: p.content, image_url: null, status: "queued" });
+        }
+      }
+    }
     const { error } = await sbW.from("x_posts").insert(rows);
     if (error) console.error("x_posts記録スキップ:", error.message);
     else console.log(`x_posts に ${rows.length}件 記録しました。`);
