@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新刊日和 — 人手ゼロの自律編集メディア｜提出資料</title>
+<style>
+  :root{
+    --bg:#FAF6EF; --card:#FFFFFF; --ink:#3D352F; --sub:#6E635A; --muted:#9A8E83;
+    --beige:#C9B79B; --sage:#8FA98C; --rose:#C99CA6; --lav:#A99CC0; --line:#E7DECE;
+    --serif:"Hiragino Mincho ProN","Yu Mincho",serif;
+    --sans:"Hiragino Sans","Yu Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.85;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px;}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:.04em;line-height:1.4;}
+  a{color:#7A6A8E;}
+  .hero{text-align:center;padding:72px 22px 36px;}
+  .hero .badge{display:inline-block;font-size:13px;letter-spacing:.18em;color:var(--muted);}
+  .hero h1{font-size:40px;margin:14px 0 8px;}
+  .hero .lead{font-size:18px;color:var(--sub);font-family:var(--serif);}
+  .hero .one{margin:22px auto 0;max-width:660px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 22px;font-size:15px;color:var(--sub);}
+  .sec{padding:30px 0;}
+  .sec h2{font-size:24px;margin:0 0 12px;}
+  .sec h2 .deco{display:inline-block;width:26px;height:3px;background:var(--sage);border-radius:2px;vertical-align:middle;margin-right:10px;}
+  .sec p{color:var(--sub);margin:.4em 0;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
+  .card h3{font-size:17px;margin:0 0 6px;}
+  .card p{font-size:14px;margin:0;color:var(--sub);}
+  /* flow */
+  .flow{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;}
+  .flow .step{flex:1 1 0;min-width:120px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 14px;text-align:center;}
+  .flow .step .n{font-family:var(--serif);font-size:13px;color:var(--beige);}
+  .flow .step .t{font-family:var(--serif);font-size:16px;margin:4px 0 6px;}
+  .flow .step .d{font-size:12.5px;color:var(--muted);line-height:1.6;}
+  .flow .arrow{display:flex;align-items:center;color:var(--beige);font-size:20px;}
+  /* timeline infographic */
+  .tl{position:relative;margin:8px 0 0;padding:0;}
+  .tl .bar{height:4px;background:linear-gradient(90deg,var(--sage),var(--beige),var(--rose));border-radius:2px;margin:24px 6px 18px;}
+  .tl .items{display:flex;gap:12px;}
+  .tl .it{flex:1 1 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;position:relative;}
+  .tl .it .dot{position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:var(--sage);border:3px solid var(--bg);}
+  .tl .it .time{font-family:var(--serif);font-size:20px;color:var(--ink);}
+  .tl .it .what{font-size:13px;color:var(--sub);margin-top:4px;}
+  .tl .it .tag{display:inline-block;margin-top:8px;font-size:11px;color:#fff;background:var(--beige);border-radius:999px;padding:2px 10px;}
+  /* bar chart */
+  .bars{display:flex;flex-direction:column;gap:10px;}
+  .row{display:grid;grid-template-columns:96px 1fr 56px;align-items:center;gap:10px;}
+  .row .lbl{font-size:13px;color:var(--sub);text-align:right;}
+  .row .track{background:#F0E9DC;border-radius:999px;height:18px;overflow:hidden;}
+  .row .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sage),#A9C0A5);}
+  .row .num{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  /* stat callouts */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;}
+  .stats .s{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 8px;}
+  .stats .s .v{font-family:var(--serif);font-size:30px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stats .s .l{font-size:12px;color:var(--muted);margin-top:2px;}
+  /* architecture */
+  .arch{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;}
+  .arch .node{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center;min-width:108px;}
+  .arch .node .h{font-family:var(--serif);font-size:14px;}
+  .arch .node .s{font-size:11px;color:var(--muted);}
+  .arch .ar{color:var(--beige);font-size:18px;}
+  .arch .fan{display:flex;flex-direction:column;gap:6px;}
+  .arch .fan .node{min-width:140px;}
+  /* axis */
+  .axis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .axis .a{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;}
+  .axis .a .tag{display:inline-block;font-size:12px;color:#fff;border-radius:999px;padding:3px 12px;letter-spacing:.06em;}
+  .axis .a:nth-child(1) .tag{background:var(--sage);}
+  .axis .a:nth-child(2) .tag{background:var(--beige);}
+  .axis .a:nth-child(3) .tag{background:var(--rose);}
+  .axis .a h3{font-size:15px;margin:10px 0 6px;}
+  .axis .a p{font-size:13px;margin:0;color:var(--sub);}
+  .tech{display:flex;flex-wrap:wrap;gap:8px;}
+  .tech span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--sub);}
+  .links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .links a{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 18px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:bold;}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:40px 22px 60px;}
+  .note{font-size:12px;color:var(--muted);}
+  @media(max-width:680px){
+    .grid2,.axis,.stats{grid-template-columns:1fr;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .hero h1{font-size:30px;}
+    .flow .arrow,.arch .ar{display:none;}
+    .tl .items{flex-direction:column;}
+    .tl .bar{display:none;}
+    .tl .it .dot{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="badge">新刊日和 ・ SHINKAN BIYORI</div>
+    <h1>人手ゼロの自律編集メディア</h1>
+    <div class="lead">文芸書の新刊情報を、AIが毎日横断収集して「今日の一冊」を選書・紹介する。</div>
+    <div class="one">
+      <strong>課題：</strong>文芸（本）の新刊情報は各社・各店にバラバラで、一読者として「今日なにが出たか」を一望できない。
+      その不便を、<strong>収集→執筆→公開→拡散→改善</strong>を無人で回す自律メディアで解く。
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- 稼働数値 -->
+    <section class="sec">
+      <h2><span class="deco"></span>いま動いている規模</h2>
+      <div class="stats">
+        <div class="s"><div class="v">20,213</div><div class="l">掲載冊数（累計）</div></div>
+        <div class="s"><div class="v">2,601</div><div class="l">今月の新刊</div></div>
+        <div class="s"><div class="v">20,000+</div><div class="l">生成ページ数</div></div>
+        <div class="s"><div class="v">毎日</div><div class="l">自動更新</div></div>
+      </div>
+      <p class="note" style="margin-top:10px;">最新値とアフィリエイトクリック数は <a href="https://shinkanbiyori.com/stats">/stats ダッシュボード</a>（リアルタイム）。</p>
+    </section>
+
+    <!-- 自律フロー -->
+    <section class="sec">
+      <h2><span class="deco"></span>自律フロー（無人で回る5ステップ）</h2>
+      <div class="flow">
+        <div class="step"><div class="n">01</div><div class="t">収集</div><div class="d">楽天API・openBDで新刊をDBへ</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">02</div><div class="t">執筆</div><div class="d">選書→DeepSeekでSEOコラム生成</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">03</div><div class="t">公開</div><div class="d">品質ゲート通過分を翌日1本公開</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">04</div><div class="t">拡散</div><div class="d">IndexNow＋X原稿をDiscord配信</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">05</div><div class="t">改善</div><div class="d">検索データを次の執筆へ反映</div></div>
+      </div>
+    </section>
+
+    <!-- タイムライン infographic -->
+    <section class="sec">
+      <h2><span class="deco"></span>毎日のタイムライン（JST）</h2>
+      <div class="tl">
+        <div class="items">
+          <div class="it"><span class="dot"></span><div class="time">00:30</div><div class="what">日付が変わってすぐ、楽天APIから当日の新刊データを収集</div><span class="tag">収集</span></div>
+          <div class="it"><span class="dot"></span><div class="time">06:00</div><div class="what">コラムを生成し、前日分を1本自動公開 → IndexNow通知</div><span class="tag">自律性</span></div>
+          <div class="it"><span class="dot"></span><div class="time">07:00</div><div class="what">X投稿原稿4種を生成し、Discordへ配信</div><span class="tag">反応</span></div>
+        </div>
+        <div class="bar"></div>
+      </div>
+      <p class="note" style="margin-top:6px;">人の関与は「前日ドラフトの確認」と「X原稿のコピペ投稿」だけ＝1日10分未満。</p>
+    </section>
+
+    <!-- ジャンル別 bar chart -->
+    <section class="sec">
+      <h2><span class="deco"></span>ジャンル別の掲載冊数</h2>
+      <div class="bars">
+        <div class="row"><div class="lbl">日本の小説</div><div class="track"><div class="fill" style="width:100%"></div></div><div class="num">3,237</div></div>
+        <div class="row"><div class="lbl">海外小説</div><div class="track"><div class="fill" style="width:95%"></div></div><div class="num">3,065</div></div>
+        <div class="row"><div class="lbl">エッセイ</div><div class="track"><div class="fill" style="width:94%"></div></div><div class="num">3,036</div></div>
+        <div class="row"><div class="lbl">ミステリー</div><div class="track"><div class="fill" style="width:83%"></div></div><div class="num">2,694</div></div>
+        <div class="row"><div class="lbl">SF・ホラー</div><div class="track"><div class="fill" style="width:24%"></div></div><div class="num">764</div></div>
+        <div class="row"><div class="lbl">文庫</div><div class="track"><div class="fill" style="width:15%"></div></div><div class="num">471</div></div>
+      </div>
+    </section>
+
+    <!-- 差別化 -->
+    <section class="sec">
+      <h2><span class="deco"></span>差別化</h2>
+      <p>「網羅」だけなら大手と被り、Googleにも評価されない。価値の核は <strong>集約＋選書＋オリジナルの語り＋自律運用</strong>。
+      毎日の新刊から文芸書だけを選び、AIが要約と見立てを添えて発信する。</p>
+    </section>
+
+    <!-- 安全装置 -->
+    <section class="sec">
+      <h2><span class="deco"></span>暴走させない安全装置</h2>
+      <div class="grid2">
+        <div class="card"><h3>機械品質ゲート</h3><p>字数・キーワード・許可タグ・リンク・禁止語・重複を自動判定。不合格は公開しない。</p></div>
+        <div class="card"><h3>遅延公開（取消し窓）</h3><p>生成翌日・1日1本のみ。量産ペナルティを避ける設計。</p></div>
+        <div class="card"><h3>除外フィルタ</h3><p>成人向け・ラノベ/なろう系・ハーレクイン・データ破損を自動除外。</p></div>
+        <div class="card"><h3>事実厳守</h3><p>あらすじは要約のみ。原文転載・捏造は禁止。</p></div>
+      </div>
+    </section>
+
+    <!-- アーキテクチャ infographic -->
+    <section class="sec">
+      <h2><span class="deco"></span>データの流れ</h2>
+      <div class="arch">
+        <div class="node"><div class="h">楽天API / openBD</div><div class="s">書誌・あらすじ</div></div>
+        <div class="ar">→</div>
+        <div class="node"><div class="h">Supabase</div><div class="s">書籍・コラムDB</div></div>
+        <div class="ar">→</div>
+        <div class="node"><div class="h">GitHub Actions</div><div class="s">日次スケジューラ</div></div>
+        <div class="ar">→</div>
+        <div class="node"><div class="h">DeepSeek</div><div class="s">執筆AI</div></div>
+        <div class="ar">→</div>
+        <div class="fan">
+          <div class="node"><div class="h">サイト公開</div><div class="s">Next.js / Cloudflare</div></div>
+          <div class="node"><div class="h">X配信</div><div class="s">Discord経由</div></div>
+          <div class="node"><div class="h">IndexNow</div><div class="s">即時インデックス</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 審査軸 -->
+    <section class="sec">
+      <h2><span class="deco"></span>審査軸への当てこみ</h2>
+      <div class="axis">
+        <div class="a"><span class="tag">① 自律性</span><h3>無人の編集ループ</h3><p>収集→執筆→公開→拡散を毎日自動実行。承認ゲートのみ人間。</p></div>
+        <div class="a"><span class="tag">② 事業性</span><h3>散らばる情報の集約</h3><p>楽天/Amazonアフィリ導線＋クリック計測。将来は出版社・作家向けB2Bへ。</p></div>
+        <div class="a"><span class="tag">③ 反応</span><h3>即効の流入チャネル</h3><p>IndexNow＋X半自動キット＋Discord配信で初動を作り、/statsで可視化。</p></div>
+      </div>
+    </section>
+
+    <!-- 技術 -->
+    <section class="sec">
+      <h2><span class="deco"></span>技術構成</h2>
+      <div class="tech">
+        <span>Next.js（App Router）</span><span>Supabase</span><span>楽天ブックスAPI</span><span>openBD</span>
+        <span>GitHub Actions</span><span>DeepSeek API</span><span>IndexNow</span><span>Cloudflare（OpenNext）</span>
+      </div>
+    </section>
+
+    <!-- リンク -->
+    <section class="sec" style="text-align:center;">
+      <h2 style="display:block;"><span class="deco"></span>リンク</h2>
+      <div class="links">
+        <a href="https://shinkanbiyori.com">🌸 サイト</a>
+        <a href="https://shinkanbiyori.com/column">📖 コラム</a>
+        <a href="https://shinkanbiyori.com/stats">📊 稼働状況</a>
+        <a href="https://x.com/shinkanbiyori">X</a>
+        <a href="https://www.instagram.com/shinkan.biyori/">Instagram</a>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>新刊日和 — 文芸書の新刊カレンダー ／ 提出資料</footer>
+
+</body>
+</html>
