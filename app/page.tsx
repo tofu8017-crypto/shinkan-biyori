@@ -150,25 +150,7 @@ export default async function HomePage() {
 
       {/* 発売日カレンダー（ページ最下部） */}
       <MonthCalendarSection />
-
-      {/* フッター */}
-      <footer
-        className="text-center relative border-t mt-8"
-        style={{
-          background: "var(--bg-subtle)",
-          padding: "64px 0 40px",
-          borderColor: "var(--border)",
-        }}
-      >
-        <h2
-          style={{ fontFamily: "var(--font-serif)", fontSize: "28px", fontWeight: 500, letterSpacing: "0.12em", color: "var(--text-main)" }}
-        >
-          新刊日和 — 毎日更新の文芸書新刊カレンダー
-        </h2>
-        <p className="mt-2 font-bold" style={{ color: "var(--text-muted)" }}>
-          書誌データ提供：楽天ブックスAPI・openBD
-        </p>
-      </footer>
+      {/* フッターは全ページ共通の <SiteFooter />（app/layout.tsx）に統一 */}
     </div>
   );
 }

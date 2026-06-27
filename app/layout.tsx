@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Serif_JP, M_PLUS_Rounded_1c } from "next/font/google";
 import "./globals.css";
 import ModeSwitchFloat from "@/components/ModeSwitchFloat";
+import SiteFooter from "@/components/SiteFooter";
 
 const notoSerifJP = Noto_Serif_JP({
   variable: "--font-serif",
@@ -63,6 +64,8 @@ const siteJsonLd = {
       url: "https://shinkanbiyori.com",
       logo: "https://shinkanbiyori.com/icon.png",
       publishingPrinciples: "https://shinkanbiyori.com/about",
+      // SNSプロフィール（Googleのエンティティ理解用）。Instagram URL確定後に追記
+      sameAs: ["https://x.com/shinkanbiyori"],
     },
   ],
 };
@@ -89,6 +92,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <SiteFooter />
         <ModeSwitchFloat />
       </body>
     </html>
