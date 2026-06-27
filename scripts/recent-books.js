@@ -39,15 +39,16 @@ async function main() {
   const today = jstToday();
   const since = addDaysUTC(today, -days);
   const sb = createClient(SUPABASE_URL, KEY);
-  const { data, error } = await sb
+  let q = sb
     .from("books")
     .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date")
     .eq("genre_id", genreId)
     .gte("published_date", since)
-    .lte("published_date", today)
-    .not("title", "ilike", "%写真集%")
-    .not("title", "ilike", "%グラビア%")
-    .not("title", "ilike", "%アイドル%")
+    .lte("published_date", today);
+  // 文芸コラムに不適切なタイトルを除外（写真集・グラビア・成人向け等）
+  const NG = ["写真集", "グラビア", "アイドル", "射精", "官能", "エロ", "18禁", "成人向け", "ヌード", "av編集", "撮影会"];
+  for (const w of NG) q = q.not("title", "ilike", `%${w}%`);
+  const { data, error } = await q
     .order("published_date", { ascending: false })
     .limit(20);
 

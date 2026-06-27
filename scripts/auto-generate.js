@@ -76,18 +76,20 @@ async function pickKeywords(sb) {
     .sort((a, b) => b.volume - a.volume);
 }
 
+// 文芸コラムに不適切なタイトルを除外（写真集・グラビア・成人向け等）
+const NG_TITLE = ["写真集", "グラビア", "アイドル", "射精", "官能", "エロ", "18禁", "成人向け", "ヌード", "av編集", "撮影会"];
+
 async function getBooks(sb, genreId) {
   const today = jstToday();
   const since = addDaysUTC(today, -BOOK_DAYS);
-  const { data } = await sb
+  let q = sb
     .from("books")
     .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date")
     .eq("genre_id", genreId)
     .gte("published_date", since)
-    .lte("published_date", today)
-    .not("title", "ilike", "%写真集%")
-    .not("title", "ilike", "%グラビア%")
-    .not("title", "ilike", "%アイドル%")
+    .lte("published_date", today);
+  for (const w of NG_TITLE) q = q.not("title", "ilike", `%${w}%`);
+  const { data } = await q
     .order("published_date", { ascending: false })
     .limit(12);
   return (data || []).map((b) => ({

@@ -2,12 +2,20 @@
 // 写真を増やしたいときは、ファイルを public/columns/pool/ に追加し、
 // 下のリストにそのパスを1行足すだけでよい（記事ごとのバリエーションが増える）。
 export const COLUMN_IMAGE_POOL = [
+  // 01-06: 本・本棚・ページ系
   "/columns/pool/01.jpg",
   "/columns/pool/02.jpg",
   "/columns/pool/03.jpg",
   "/columns/pool/04.jpg",
   "/columns/pool/05.jpg",
   "/columns/pool/06.jpg",
+  // 07-11: 本以外（机+コーヒー / カフェ / ティーポット+花 / フィヨルド / 滝）。
+  // 「本だけ」にならないよう被写体を多様化（Unsplashライセンス・商用可）。
+  "/columns/pool/07.jpg",
+  "/columns/pool/08.jpg",
+  "/columns/pool/09.jpg",
+  "/columns/pool/10.jpg",
+  "/columns/pool/11.jpg",
 ];
 
 // slug（記事の識別名）から安定して1枚を選ぶ。
