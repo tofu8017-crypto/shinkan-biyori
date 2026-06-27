@@ -21,7 +21,7 @@ const SUPABASE_KEY =
 
 // 安全性（捏造防止・リンク・関連性・HTML安全）優先で、最低品質を機械的に担保する。
 // 完璧な文体までは求めない（厳しすぎると毎日公開が成立しない）。
-const MIN_CHARS = Number(process.env.QC_MIN_CHARS) || 2500; // 下限。プロンプト目標は3,500
+const MIN_CHARS = Number(process.env.QC_MIN_CHARS) || 1800; // 下限。プロンプト目標は3,500だがDeepSeek実出力は1600-2800。要・記事厚み改善（フォローアップ）
 const ALLOWED_TAGS = ["h2", "h3", "p", "a", "strong", "em", "ul", "ol", "li", "br"];
 const BANNED_WORDS = [
   "魅力", "必見", "ぜひ", "いかがでしょうか", "話題沸騰", "今すぐ",
