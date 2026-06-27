@@ -3,6 +3,7 @@ import { Noto_Serif_JP, M_PLUS_Rounded_1c } from "next/font/google";
 import "./globals.css";
 import ModeSwitchFloat from "@/components/ModeSwitchFloat";
 import SiteFooter from "@/components/SiteFooter";
+import ClickTracker from "@/components/ClickTracker";
 
 const notoSerifJP = Noto_Serif_JP({
   variable: "--font-serif",
@@ -96,6 +97,7 @@ export default function RootLayout({
         />
         {children}
         <SiteFooter />
+        <ClickTracker />
         <ModeSwitchFloat />
       </body>
     </html>

@@ -1,4 +1,5 @@
-export const revalidate = 86400;
+// ダッシュボードは「動いている」を見せる場なので毎回最新を表示（クリック数などを即反映）
+export const revalidate = 0;
 
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
@@ -80,6 +81,7 @@ export default async function StatsPage() {
           <StatCard label="今月の新刊" value={stats.thisMonthBooks.toLocaleString()} sub="自動収集された当月発売分" />
           <StatCard label="生成ページ数（概算）" value={stats.pages.toLocaleString()} sub="書籍・コラム・ジャンル等" />
           <StatCard label="公開コラム" value={stats.publishedColumns.toLocaleString()} sub="AI執筆＋人の確認後に公開" />
+          <StatCard label="アフィリエイトクリック" value={stats.affiliateClicks.toLocaleString()} sub="楽天・Amazon導線のクリック累計" />
         </div>
 
         {/* ジャンル別 */}

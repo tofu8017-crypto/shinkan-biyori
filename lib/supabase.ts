@@ -847,6 +847,7 @@ export type SiteStats = {
   byGenre: { id: string; count: number }[];
   pages: number;          // 生成ページ数の概算（書籍+コラム+ジャンル+カレンダー等）
   lastSyncedAt: string | null;
+  affiliateClicks: number; // アフィリエイトリンクのクリック数（累計・click_events）
 };
 
 export async function getSiteStats(): Promise<SiteStats> {
@@ -872,6 +873,7 @@ export async function getSiteStats(): Promise<SiteStats> {
       byGenre,
       pages: MOCK_BOOKS.length + GENRE_IDS.length,
       lastSyncedAt: null,
+      affiliateClicks: 0,
     };
   }
 
@@ -910,8 +912,17 @@ export async function getSiteStats(): Promise<SiteStats> {
     lastSyncedAt = null;
   }
 
+  // アフィリエイトクリック数（click_eventsが無い環境でも壊れないようtry/catch）
+  let affiliateClicks = 0;
+  try {
+    const ce = await sb!.from("click_events").select("*", { count: "exact", head: true });
+    affiliateClicks = ce.count ?? 0;
+  } catch {
+    affiliateClicks = 0;
+  }
+
   // 生成ページ概算: 書籍詳細 + コラム + ジャンル7 + 今月カレンダー1
   const pages = totalBooks + publishedColumns + GENRE_IDS.length + 1;
 
-  return { totalBooks, thisMonthBooks, publishedColumns, byGenre, pages, lastSyncedAt };
+  return { totalBooks, thisMonthBooks, publishedColumns, byGenre, pages, lastSyncedAt, affiliateClicks };
 }
