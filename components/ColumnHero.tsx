@@ -19,15 +19,17 @@ type Props = {
   /** 記事の識別名。これを元に表示する写真を決める */
   slug: string;
   genreId?: string | null;
+  /** DBに保存されたアイキャッチURL。指定があればプール画像より優先 */
+  heroImageUrl?: string | null;
   /** list: 一覧カード用 / detail: 記事ページ用（大きめ） */
   variant?: "list" | "detail";
 };
 
-export default function ColumnHero({ slug, genreId, variant = "list" }: Props) {
+export default function ColumnHero({ slug, genreId, heroImageUrl, variant = "list" }: Props) {
   const genre = GENRES.find((g) => g.id === genreId);
   const accent = (genreId && ACCENTS[genreId]) || "#9c8f86";
   const isDetail = variant === "detail";
-  const src = pickColumnImage(slug);
+  const src = heroImageUrl || pickColumnImage(slug);
 
   return (
     <div

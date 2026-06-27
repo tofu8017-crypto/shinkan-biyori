@@ -13,10 +13,11 @@ const TITLE_KEYWORDS = [
 ];
 
 // ラノベ系レーベル・出版社名（楽天のpublisherNameに現れる代表例）
+// 注意: "KADOKAWA" は角川文庫など一般文芸も含むため除外し、ラノベ専門レーベル名で絞る
 const PUBLISHER_KEYWORDS = [
   "SBクリエイティブ", "GAノベル", "GA文庫", "電撃文庫", "MF文庫", "ファンタジア文庫",
   "オーバーラップ", "ヒーロー文庫", "アース・スター", "TOブックス", "マイクロマガジン",
-  "一二三書房", "ホビージャパン", "KADOKAWA", "ドラゴンノベルス", "スニーカー文庫",
+  "一二三書房", "ホビージャパン", "ドラゴンノベルス", "スニーカー文庫",
   "ダッシュエックス", "角川スニーカー", "Mノベルス", "ツギクルブックス", "PASH!",
 ];
 
@@ -26,10 +27,6 @@ export function isLikelyLightNovel(book: Pick<Book, "title" | "publisher">): boo
 
   const pub = book.publisher ?? "";
   if (PUBLISHER_KEYWORDS.some((k) => pub.includes(k))) return true;
-
-  // 「〜した4」のように長めのタイトル末尾に巻数が付くのもラノベの典型。
-  // ただし短い文芸シリーズもあるため、20文字以上 かつ 末尾巻数 のときだけ該当とする。
-  if (title.length >= 20 && /[0-9０-９]\s*$/.test(title)) return true;
 
   return false;
 }

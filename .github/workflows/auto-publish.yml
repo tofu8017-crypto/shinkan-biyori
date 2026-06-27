@@ -1,0 +1,55 @@
+name: コラム自動生成・遅延公開
+
+# 【有効化は手動で】マージしただけで自動公開が走らないよう、初期は schedule を無効化。
+# 準備（①DEEPSEEK_API_KEY等のSecrets追加 ②npm run cf:deploy ③SupabaseでSQL実行）が
+# 済み、workflow_dispatch で動作確認できたら、下の schedule のコメントを外して有効化する。
+on:
+  # schedule:
+  #   - cron: "0 21 * * *"   # 毎朝6:00 JST = UTC 21:00（前日）／準備完了後に有効化
+  workflow_dispatch:
+
+jobs:
+  generate-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:  ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DEEPSEEK_API_KEY:          ${{ secrets.DEEPSEEK_API_KEY }}
+      INDEXNOW_KEY:              ${{ secrets.INDEXNOW_KEY }}
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 依存関係インストール
+        run: npm install --omit=dev --no-audit --no-fund
+
+      # ① 下書きを生成（2本）。失敗しても後段の公開は走らせる。
+      - name: コラム下書きを生成
+        run: node scripts/auto-generate.js 2
+        continue-on-error: true
+
+      # ② 前日以前の下書きから、品質ゲートを通った最良1本だけを公開。
+      #    公開URLは published-urls.txt に1行ずつ出る。
+      - name: 遅延公開（1日1本・品質ゲート通過分のみ）
+        run: |
+          node scripts/auto-publish-due.js > published-urls.txt || true
+          echo "=== 公開URL ==="
+          cat published-urls.txt || true
+
+      # ③ 公開URLがあれば IndexNow に通知（Bing/Yandex 即時）
+      - name: IndexNow へ送信
+        run: |
+          if [ -s published-urls.txt ]; then
+            node scripts/notify-indexnow.js $(tr '\n' ' ' < published-urls.txt)
+          else
+            echo "公開URLなし。IndexNow送信はスキップ。"
+          fi
