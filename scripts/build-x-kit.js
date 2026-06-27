@@ -89,16 +89,22 @@ function xWeight(s) {
   for (const ch of s) w += ch.codePointAt(0) <= 0x7f ? 1 : 2;
   return w;
 }
-
-function bookCardUrl(b) {
-  const q = new URLSearchParams({
-    title: b.title || "",
-    author: b.author || "",
-    publisher: b.publisher || "",
-    date: b.published_date || "",
-    cover: b.image_url || "",
-  });
-  return `${SITE}/api/book-card?${q.toString()}`;
+// X上限(280)を超えたら文(。)単位で末尾を削って収める
+function trimToWeight(text, limit) {
+  if (xWeight(text) <= limit) return text;
+  const parts = text.split("。").filter(Boolean);
+  let out = "";
+  for (const p of parts) {
+    const next = out + p + "。";
+    if (xWeight(next) > limit) break;
+    out = next;
+  }
+  return out || text.slice(0, 120);
+}
+// 楽天の書影URL。手動添付用に少し大きめ(_ex)にする
+function coverImg(url) {
+  if (!url) return null;
+  return /_ex=\d+x\d+/.test(url) ? url.replace(/_ex=\d+x\d+/, "_ex=300x300") : url;
 }
 
 // 禁止語（quality-check と同じ思想。原稿のlint用・警告のみ）
@@ -134,7 +140,7 @@ async function craftEditorialPost(book, summary) {
     "# 声・事実\n" +
     "- 落ち着いた編集者の「見立て」。煽らない。与えられた『内容紹介』の事実だけを使い、捏造・脚色しない。内容紹介が無い場合は書名・著者・版元だけで簡潔に。\n" +
     "# 制約\n" +
-    "- 日本語、100〜135字（全角）。改行は2〜3回まで。\n" +
+    "- 日本語、90〜120字（全角）。絶対に130字を超えない。改行は2〜3回まで。\n" +
     "- ハッシュタグは付けない。絵文字は使わない。『』「」は可。\n" +
     "- 使ってはいけない語: 魅力 必見 ぜひ いかがでしょうか 話題沸騰 今すぐ 絶対 神 感動必至 涙腺崩壊\n" +
     "- 本文だけを返す（説明・引用符・コードブロックなし）。";
@@ -155,7 +161,8 @@ async function craftEditorialPost(book, summary) {
     const d = await res.json();
     let t = d?.choices?.[0]?.message?.content?.trim();
     if (!t) return null;
-    return t.replace(/^["'`]+|["'`]+$/g, "").trim();
+    t = t.replace(/^["'`]+|["'`]+$/g, "").trim();
+    return trimToWeight(t, 278); // X上限を超えたら文単位で削る
   } catch (_) {
     return null;
   }
@@ -182,7 +189,8 @@ async function postToDiscord(webhook, posts, today, kindLabel) {
     const w = xWeight(p.content);
     const label = kindLabel[p.kind] || p.kind;
     let msg = `**${label}**（${w}/280）\n\`\`\`\n${p.content}\n\`\`\``;
-    if (p.image_url) msg += `画像候補(任意): <${p.image_url}>`;
+    // <>で囲まないとDiscordが書影をインライン表示する→長押しで保存→Xに添付しやすい
+    if (p.image_url) msg += `\n📎 書影（保存してXに添付）: ${p.image_url}`;
     await send(msg);
     await new Promise((r) => setTimeout(r, 600)); // Discordレート制限対策
   }
@@ -286,7 +294,7 @@ async function main() {
       posts.push({
         kind: "new_books_digest",
         content,
-        image_url: null, // book-card画像APIはCloudflareで未対応(500)のため当面なし
+        image_url: coverImg(picks[0] && picks[0].image_url), // 1冊目の書影を手動添付用に
         isbns: picks.map((b) => b.isbn13).filter(Boolean), // 見出しに出した本も重複防止対象に
       });
     }
@@ -328,7 +336,7 @@ async function main() {
       const content =
         crafted ||
         `『${chosen.title}』${author}（${chosen.publisher}）\n${mdJP(chosen.published_date)}発売。`;
-      posts.push({ kind: "spotlight", isbn13: chosen.isbn13, content, image_url: null });
+      posts.push({ kind: "spotlight", isbn13: chosen.isbn13, content, image_url: coverImg(chosen.image_url) });
     }
     // あらすじのある本が見つからなければ②は出さない（中身の薄い投稿を作らない）
   } catch (e) {
@@ -397,7 +405,7 @@ async function main() {
     md += "```\n" + p.content + "\n```\n";
     md += `- 文字数(X換算): ${w}/280${over}\n`;
     if (banned.length) md += `- ⚠️ 禁止語: ${banned.join(", ")}（言い換え推奨）\n`;
-    if (p.image_url) md += `- 画像候補(任意): ${p.image_url}\n  ※X本文にこのURLを貼っても画像展開はされません。使うならブラウザで開いて保存→手動添付。\n`;
+    if (p.image_url) md += `- 📎 書影（開いて保存→Xに添付）: ${p.image_url}\n`;
     md += `\n`;
   }
 
