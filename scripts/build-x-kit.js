@@ -35,6 +35,25 @@ const LITERARY_GENRES = [
   "001019",    // 文庫
 ];
 
+// Xの見出しに出す「コア文芸」ジャンル（ロマンス=ハーレクイン中心は看板に合わないため除外）
+const HIGHLIGHT_GENRES = [
+  "001004008", // 小説（日本）
+  "001004009", // 小説（海外）
+  "001004001", // ミステリー
+  "001004002", // SF・ホラー
+  "001004003", // エッセイ
+  "001004004", // ノンフィクション
+];
+
+// 文芸らしくないタイトルを除外（成人向け＋ラノベ/なろう/異世界系＋極端に長い題名）。
+// 楽天の「小説」ジャンルにはこれらが大量に混ざるため、Xの見出しから外す。
+const NG_RE = /射精|官能|エロ|18禁|成人向け|ヌード|AV編集|撮影会/;
+const LN_RE = /異世界|転生|転移|令嬢|公爵|侯爵|伯爵|婚約|聖女|勇者|魔王|魔導|スキル|チート|最強|追放|ハーレム|ヤンデレ|ダンジョン|迷宮|攻略|冒険者|辺境|領地|王太子|王女|騎士団|召喚|やり直し|無職|無双|モブ|な件|ざまぁ|二度目|スローライフ|悪役|ギルド|レベル|奴隷|VRMMO|ステータス|側妃|竜帝|世継ぎ|寵愛|嫁いで/;
+function looksLikeJunk(title) {
+  const t = title || "";
+  return NG_RE.test(t) || LN_RE.test(t) || t.length > 32;
+}
+
 // ---- 日付ユーティリティ（既存スクリプトと同じJST基準） ----
 function jstToday() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
@@ -47,6 +66,10 @@ function addDaysUTC(isoDate, n) {
 function mdJP(isoDate) {
   const [, m, d] = isoDate.split("-");
   return `${Number(m)}/${Number(d)}`;
+}
+// 日付からの通日番号（毎日+1）。紹介本を日替わりでローテーションするのに使う。
+function dayNum(isoDate) {
+  return Math.floor(new Date(isoDate + "T00:00:00Z").getTime() / 86400000);
 }
 
 // X は全角を2文字としてカウントするため、重み付きで概算する（上限280）
@@ -118,15 +141,15 @@ async function main() {
     );
   } catch (_) {}
 
-  // 最近 spotlight に出した本（重複出し防止。14日以内のisbn13を除外）
-  const recentSpotlightIsbn = new Set();
+  // 最近キットに出した本（重複出し防止。14日以内の全isbn13を除外）。
+  // x_posts テーブルがあれば本物の重複防止、無ければ空＝下のローテーションで日替わりにする。
+  const recentIsbn = new Set();
   try {
     const { data } = await sb
       .from("x_posts")
-      .select("isbn13,created_at,kind")
-      .eq("kind", "spotlight")
+      .select("isbn13,created_at")
       .gte("created_at", since14 + "T00:00:00Z");
-    for (const r of data || []) if (r.isbn13) recentSpotlightIsbn.add(r.isbn13);
+    for (const r of data || []) if (r.isbn13) recentIsbn.add(r.isbn13);
   } catch (_) {}
 
   const posts = []; // {kind, isbn13?, slug?, content, image_url?}
@@ -136,47 +159,59 @@ async function main() {
   try {
     // 今日の文芸書（正確な冊数はcountで取得し、見出し用に数冊だけ実体を引く）
     const SEL = "title,author,publisher,isbn13,image_url,published_date";
-    const NOT_PHOTO = (q) =>
-      q.not("title", "ilike", "%写真集%").not("title", "ilike", "%グラビア%");
+    // 写真集/グラビア＋ハーレクイン（恋愛輸入）を除外して文芸らしさを保つ
+    const CLEAN = (q) =>
+      q.not("title", "ilike", "%写真集%")
+        .not("title", "ilike", "%グラビア%")
+        .not("publisher", "ilike", "%ハーレクイン%")
+        .not("publisher", "ilike", "%ハーパーコリンズ%"); // 現ハーレクイン日本（恋愛輸入）を除外
 
     let label = `今日 ${mdJP(today)}`;
     let count = 0;
     let pool = [];
 
-    const todayCountQ = NOT_PHOTO(
+    const todayCountQ = CLEAN(
       sb.from("books").select("*", { count: "exact", head: true })
-        .eq("published_date", today).in("genre_id", LITERARY_GENRES)
+        .eq("published_date", today).in("genre_id", HIGHLIGHT_GENRES)
     );
     count = (await todayCountQ).count || 0;
 
     if (count > 0) {
-      const { data } = await NOT_PHOTO(
-        sb.from("books").select(SEL).eq("published_date", today).in("genre_id", LITERARY_GENRES)
-      ).limit(60);
+      const { data } = await CLEAN(
+        sb.from("books").select(SEL).eq("published_date", today).in("genre_id", HIGHLIGHT_GENRES)
+      ).limit(120);
       pool = data || [];
     } else {
       // 今日が0冊なら直近7日に切替
       label = "今週";
       const wkStart = addDaysUTC(today, -7);
       count =
-        (await NOT_PHOTO(
+        (await CLEAN(
           sb.from("books").select("*", { count: "exact", head: true })
             .gte("published_date", wkStart).lte("published_date", today)
-            .in("genre_id", LITERARY_GENRES)
+            .in("genre_id", HIGHLIGHT_GENRES)
         )).count || 0;
-      const { data } = await NOT_PHOTO(
+      const { data } = await CLEAN(
         sb.from("books").select(SEL)
           .gte("published_date", wkStart).lte("published_date", today)
-          .in("genre_id", LITERARY_GENRES)
+          .in("genre_id", HIGHLIGHT_GENRES)
           .order("published_date", { ascending: false })
-      ).limit(100);
+      ).limit(200);
       pool = data || [];
     }
 
+    // ラノベ/なろう/成人/長すぎ題名を除外（文芸らしさを保つ）
+    pool = pool.filter((b) => !looksLikeJunk(b.title));
+
     if (pool.length > 0) {
-      // 見出しは有名著者の本を優先、無ければ先頭から
-      const famous = pool.filter((b) => notable.some((n) => (b.author || "").includes(n)));
-      const picks = (famous.length ? famous : pool).slice(0, 2);
+      // 既出本（recentIsbn）を除外し、プール全体から日付でローテーション（毎日違う本に）。
+      // 有名著者縛りはしない（該当が少ないと同じ本ばかりになるため。注目著者は②で扱う）
+      let fresh = pool.filter((b) => b.isbn13 && !recentIsbn.has(b.isbn13));
+      if (fresh.length === 0) fresh = pool; // 全部既出なら諦めてpool全体から
+      const base = fresh;
+      const off = dayNum(today) % base.length;
+      const rotated = base.slice(off).concat(base.slice(0, off));
+      const picks = [...new Map(rotated.slice(0, 2).map((b) => [b.isbn13, b])).values()];
       for (const b of picks) if (b.isbn13) usedIsbn.add(b.isbn13);
       const names = picks.map((b) => `『${b.title}』(${(b.author || "").split("/")[0]})`).join("、");
       const content =
@@ -194,15 +229,20 @@ async function main() {
     const { data: recent } = await sb
       .from("books")
       .select("title,author,publisher,isbn13,image_url,published_date")
-      .in("genre_id", LITERARY_GENRES)
+      .in("genre_id", HIGHLIGHT_GENRES)
+      .not("publisher", "ilike", "%ハーレクイン%")
+      .not("publisher", "ilike", "%ハーパーコリンズ%")
       .gte("published_date", since21)
       .lte("published_date", today)
       .order("published_date", { ascending: false })
       .limit(200);
-    const hit = (recent || []).find((b) => {
-      if (!b.isbn13 || recentSpotlightIsbn.has(b.isbn13) || usedIsbn.has(b.isbn13)) return false;
+    // 注目著者の本を全部集めて、既出・キット内既出を除外し、日付でローテーション
+    const hits = (recent || []).filter((b) => {
+      if (!b.isbn13 || recentIsbn.has(b.isbn13) || usedIsbn.has(b.isbn13)) return false;
+      if (looksLikeJunk(b.title)) return false;
       return notable.some((n) => (b.author || "").includes(n));
     });
+    const hit = hits.length ? hits[dayNum(today) % hits.length] : null;
     if (hit) {
       const author = (hit.author || "").split("/")[0];
       const content =
