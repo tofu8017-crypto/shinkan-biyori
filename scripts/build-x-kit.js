@@ -48,11 +48,6 @@ function mdJP(isoDate) {
   const [, m, d] = isoDate.split("-");
   return `${Number(m)}/${Number(d)}`;
 }
-// 日付からの決定的インデックス（Math.randomを使わず日替わりにする）
-function dayIndex(isoDate) {
-  const [y, m, d] = isoDate.split("-").map(Number);
-  return Math.floor(Date.UTC(y, m - 1, d) / 86400000);
-}
 
 // X は全角を2文字としてカウントするため、重み付きで概算する（上限280）
 function xWeight(s) {
@@ -71,17 +66,6 @@ function bookCardUrl(b) {
   });
   return `${SITE}/api/book-card?${q.toString()}`;
 }
-
-const OPINIONS = [
-  "本が売れない時代と言われるけれど、新刊は毎日驚くほど出ている。読者が減ったのではなく、本との出会い方が変わっただけなのかもしれない。",
-  "積読は罪じゃないと思う。買った時点でその本との縁はもう始まっている。読むのはいつだっていい。",
-  "書店で平台をぼんやり眺める時間が好きだ。検索では出会えない一冊が、そこには並んでいる。",
-  "新刊を毎日追いかけていると、世の中が今なにを語りたがっているのかが、なんとなく見えてくる。",
-  "誰かに教わって読む本もいいけれど、誰にも勧められず自分で見つけた一冊は、やっぱり特別だ。",
-  "文庫を待つか、単行本で先に読むか。その迷いも含めて読書の時間だと思っている。",
-  "読みたい本が多すぎて困る、という贅沢な悩みを、今日もまた抱えている。",
-  "発売日に本屋へ行く理由が、また一つ増えた。新刊の棚はいつ見ても景色が違う。",
-];
 
 // 禁止語（quality-check と同じ思想。原稿のlint用・警告のみ）
 const BANNED = ["魅力", "必見", "ぜひ", "いかがでしょうか", "話題沸騰", "今すぐ", "間違いなし"];
@@ -250,10 +234,22 @@ async function main() {
     console.error("column_promo生成スキップ:", e.message);
   }
 
-  // ---- (4) 視点ポスト（リンク無し・フォロワー獲得用・日替わり） ----
-  {
-    const op = OPINIONS[dayIndex(today) % OPINIONS.length];
-    posts.push({ kind: "opinion", content: op });
+  // ---- (4) 今日が誕生日の作家（事実ベース・リンク無し・フォロワー獲得用） ----
+  try {
+    const birthdays = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "data", "author-birthdays.json"), "utf8")
+    );
+    const bd = birthdays[today.slice(5)]; // MM-DD
+    if (bd) {
+      const [, m, d] = today.split("-");
+      let c = `📚 今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
+      if (bd.note) c += `\n${bd.note}。`;
+      c += `\n#今日は何の日 #読書 #本好きと繋がりたい`;
+      posts.push({ kind: "birthday", content: c });
+    }
+    // 該当作家がいない日は④を出さない（無理に思想ポストを作らない）
+  } catch (e) {
+    console.error("誕生日ポスト生成スキップ:", e.message);
   }
 
   // ---- 出力（Job Summary or stdout） ----
@@ -261,7 +257,7 @@ async function main() {
     new_books_digest: "① 今日の新刊ダイジェスト（リンク無し）",
     spotlight: "② 注目著者スポットライト（リンク無し）",
     column_promo: "③ コラム告知（★今日の1リンク）",
-    opinion: "④ 視点ポスト（リンク無し・フォロワー獲得用）",
+    birthday: "④ 今日が誕生日の作家（事実）",
   };
 
   let md = `# 🐦 X投稿キット（${today}）\n\n`;
