@@ -221,7 +221,7 @@ async function main() {
       posts.push({
         kind: "new_books_digest",
         content,
-        image_url: picks[0] ? bookCardUrl(picks[0]) : null,
+        image_url: null, // book-card画像APIはCloudflareで未対応(500)のため当面なし
         isbns: picks.map((b) => b.isbn13).filter(Boolean), // 見出しに出した本も重複防止対象に
       });
     }
@@ -255,7 +255,7 @@ async function main() {
         `『${hit.title}』${author}（${hit.publisher}）\n` +
         `${mdJP(hit.published_date)}発売。${author}さんの新作です。\n` +
         `#新刊 #読書 #${author}`;
-      posts.push({ kind: "spotlight", isbn13: hit.isbn13, content, image_url: bookCardUrl(hit) });
+      posts.push({ kind: "spotlight", isbn13: hit.isbn13, content, image_url: null });
     }
   } catch (e) {
     console.error("spotlight生成スキップ:", e.message);
