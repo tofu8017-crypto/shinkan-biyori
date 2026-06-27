@@ -56,6 +56,14 @@ function looksLikeJunk(title) {
   const t = title || "";
   return NG_RE.test(t) || LN_RE.test(t) || t.length > 32;
 }
+// 著者データが壊れている本を弾く（著者が空 / 出版社名が著者欄に入っている等）
+function goodMeta(b) {
+  const a = (b.author || "").trim();
+  if (!a) return false;
+  if (a === (b.publisher || "")) return false;
+  if (/(社|出版|書房|新聞|編集部|刊行会|文庫|新書)$/.test(a)) return false;
+  return true;
+}
 
 // ---- 日付ユーティリティ（既存スクリプトと同じJST基準） ----
 function jstToday() {
@@ -119,15 +127,17 @@ async function craftEditorialPost(book, summary) {
   if (!DEEPSEEK_API_KEY) return null;
   const sys =
     "あなたは文芸書にくわしい編集者です。X(旧Twitter)用に新刊を紹介する短い投稿を1つ書きます。\n" +
-    "# 声・スタイル\n" +
-    "- 落ち着いた編集者の「見立て」。煽らない。事実だけ。\n" +
-    "- 構成: (1)どんな本か（著者の位置づけ＋内容を1〜2文）(2)どんな人に響くか を簡潔に。\n" +
-    "- 与えられた『内容紹介』に書かれた事実だけを使う。あらすじの捏造・脚色は禁止。内容紹介が無ければ書誌事実（著者・版元）だけで簡潔に。\n" +
+    "# 必須要素（この順で自然に）\n" +
+    "1. 冒頭で『書名』と著者名を必ず出す（例: 『書名』(著者名)。）\n" +
+    "2. どんな本か＝主題やジャンルを、内容紹介を“要約”して1〜2文（あらすじの丸写しは禁止）。\n" +
+    "3. 末尾に「どんな読者に響くか」を一言（例: 〜が好きな人に。/〜したい夜に。）。\n" +
+    "# 声・事実\n" +
+    "- 落ち着いた編集者の「見立て」。煽らない。与えられた『内容紹介』の事実だけを使い、捏造・脚色しない。内容紹介が無い場合は書名・著者・版元だけで簡潔に。\n" +
     "# 制約\n" +
-    "- 日本語、全体で140字以内。改行は2〜3回まで。\n" +
-    "- 末尾に半角スペース区切りで「#新刊 #読書」だけ付ける。\n" +
+    "- 日本語、100〜135字（全角）。改行は2〜3回まで。\n" +
+    "- ハッシュタグは付けない。絵文字は使わない。『』「」は可。\n" +
     "- 使ってはいけない語: 魅力 必見 ぜひ いかがでしょうか 話題沸騰 今すぐ 絶対 神 感動必至 涙腺崩壊\n" +
-    "- 絵文字は使わない。『』「」は可。本文だけを返す（説明・引用符・コードブロックなし）。";
+    "- 本文だけを返す（説明・引用符・コードブロックなし）。";
   const user =
     `書名: ${book.title}\n著者: ${(book.author || "").split("/")[0]}\n出版社: ${book.publisher}\n発売日: ${book.published_date}\n内容紹介: ${summary || "(なし)"}`;
   try {
@@ -255,8 +265,8 @@ async function main() {
       pool = data || [];
     }
 
-    // ラノベ/なろう/成人/長すぎ題名を除外（文芸らしさを保つ）
-    pool = pool.filter((b) => !looksLikeJunk(b.title));
+    // ラノベ/なろう/成人/長すぎ題名＋著者データ壊れを除外（文芸らしさを保つ）
+    pool = pool.filter((b) => !looksLikeJunk(b.title) && goodMeta(b));
 
     if (pool.length > 0) {
       // 既出本（recentIsbn）を除外し、プール全体から日付でローテーション（毎日違う本に）。
@@ -272,7 +282,7 @@ async function main() {
       const content =
         `📚 ${label}発売の文芸書は${count}冊。\n` +
         `注目は${names} など。\n` +
-        `#新刊 #読書`;
+        `#本好きと繋がりたい`;
       posts.push({
         kind: "new_books_digest",
         content,
@@ -296,22 +306,31 @@ async function main() {
       .lte("published_date", today)
       .order("published_date", { ascending: false })
       .limit(200);
-    // 良質な候補（ジャンク/既出/①使用を除外）。注目著者を優先、無ければ新しい順から。日付でローテ。
+    // 良質な候補（ジャンク/著者データ壊れ/既出/①使用を除外）。注目著者を優先、日付でローテ。
     const cands = (recent || []).filter(
-      (b) => b.isbn13 && !recentIsbn.has(b.isbn13) && !usedIsbn.has(b.isbn13) && !looksLikeJunk(b.title)
+      (b) =>
+        b.isbn13 && !recentIsbn.has(b.isbn13) && !usedIsbn.has(b.isbn13) && !looksLikeJunk(b.title) && goodMeta(b)
     );
     const notableCands = cands.filter((b) => notable.some((n) => (b.author || "").includes(n)));
-    const pool2 = notableCands.length ? notableCands : cands;
-    const book = pool2.length ? pool2[dayNum(today) % pool2.length] : null;
-    if (book) {
-      const author = (book.author || "").split("/")[0];
-      const summary = await fetchOpenBDSummary(book.isbn13);
-      const crafted = await craftEditorialPost(book, summary); // 編集者の見立て（DeepSeek）
+    const ordered = notableCands.length ? notableCands : cands;
+    const start = ordered.length ? dayNum(today) % ordered.length : 0;
+    const rotated = ordered.slice(start).concat(ordered.slice(0, start));
+    // あらすじ(openBD)がある本を先頭から探す（最大5冊試す）。見立てには内容が要る。
+    let chosen = null;
+    let summary = "";
+    for (const b of rotated.slice(0, 5)) {
+      const s = await fetchOpenBDSummary(b.isbn13);
+      if (s) { chosen = b; summary = s; break; }
+    }
+    if (chosen) {
+      const author = (chosen.author || "").split("/")[0];
+      const crafted = await craftEditorialPost(chosen, summary); // 編集者の見立て（DeepSeek）
       const content =
         crafted ||
-        `『${book.title}』${author}（${book.publisher}）\n${mdJP(book.published_date)}発売。${author}さんの新作です。\n#新刊 #読書`;
-      posts.push({ kind: "spotlight", isbn13: book.isbn13, content, image_url: null });
+        `『${chosen.title}』${author}（${chosen.publisher}）\n${mdJP(chosen.published_date)}発売。`;
+      posts.push({ kind: "spotlight", isbn13: chosen.isbn13, content, image_url: null });
     }
+    // あらすじのある本が見つからなければ②は出さない（中身の薄い投稿を作らない）
   } catch (e) {
     console.error("spotlight生成スキップ:", e.message);
   }
@@ -327,7 +346,7 @@ async function main() {
     const c = (cols || [])[0];
     if (c) {
       const url = `${SITE}/column/${c.slug}?${UTM}`;
-      const content = `コラムを公開しました。\n「${c.title}」\n${url}\n#読書 #本好きと繋がりたい`;
+      const content = `コラムを公開しました。\n「${c.title}」\n${url}\n#本好きと繋がりたい`;
       posts.push({ kind: "column_promo", slug: c.slug, content });
     }
   } catch (e) {
@@ -351,7 +370,7 @@ async function main() {
       const [, m, d] = today.split("-");
       let c = `📚 今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
       if (bd.note) c += `\n${bd.note}。`;
-      c += `\n#今日は何の日 #読書 #本好きと繋がりたい`;
+      c += `\n#今日は何の日`;
       posts.push({ kind: "birthday", content: c });
     }
     // 該当作家がいない日は④を出さない（無理に思想ポストを作らない）
