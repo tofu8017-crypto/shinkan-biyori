@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // 下書きプレビューは非公開。クロール・インデックスさせない
-      disallow: "/column/preview",
+      // 下書きプレビュー・稼働状況ダッシュボードは非公開。クロール・インデックスさせない
+      disallow: ["/column/preview", "/stats"],
     },
     sitemap: "https://shinkanbiyori.com/sitemap.xml",
     host: "https://shinkanbiyori.com",

@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   title: "サイトの稼働状況｜新刊日和",
   description: "新刊日和の掲載冊数・ページ数・公開コラム数・更新状況をリアルタイムに表示します。",
   alternates: { canonical: "/stats" },
+  // 運用状況の内部ダッシュボード。検索には出さない（URLを知る人向け＝審査提示用）
+  robots: { index: false, follow: false },
 };
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
