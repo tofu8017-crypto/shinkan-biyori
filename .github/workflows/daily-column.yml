@@ -1,10 +1,11 @@
-name: 日次コラム自動執筆（下書き）
+name: 日次コラム自動執筆（下書き・旧/手動のみ）
 
+# 【停止中】このワークフローは auto-publish.yml（DeepSeek純Node＋遅延公開）に置き換えた。
+# Claude(claude-code-action)でのトークン消費を止めるため schedule を無効化し、
+# 手動実行(workflow_dispatch)だけ残す。緊急時の手動下書き生成用に温存。
 on:
-  schedule:
-    # 毎朝6:00 JST = UTC 21:00（前日）
-    - cron: "0 21 * * *"
-  # 手動実行ボタン（テスト用）
+  # schedule:
+  #   - cron: "0 21 * * *"   # ← auto-publish.yml に移行のため停止
   workflow_dispatch:
 
 jobs:

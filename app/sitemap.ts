@@ -141,7 +141,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const col of columns) {
     entries.push({
       url: `${BASE_URL}/column/${col.slug}`,
-      lastModified: today,
+      // 実際の更新日を出す（全コラムを"今日更新"扱いにすると新規ドメインで逆効果）
+      lastModified: (col.updated_at || col.published_at || today).slice(0, 10),
       changeFrequency: "monthly",
       priority: 0.6,
     });

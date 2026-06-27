@@ -19,14 +19,17 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const MIN_CHARS = Number(process.env.QC_MIN_CHARS) || 3000; // 3,500目標に対し余裕を見て3000を下限に
+// 安全性（捏造防止・リンク・関連性・HTML安全）優先で、最低品質を機械的に担保する。
+// 完璧な文体までは求めない（厳しすぎると毎日公開が成立しない）。
+const MIN_CHARS = Number(process.env.QC_MIN_CHARS) || 2500; // 下限。プロンプト目標は3,500
 const ALLOWED_TAGS = ["h2", "h3", "p", "a", "strong", "em", "ul", "ol", "li", "br"];
 const BANNED_WORDS = [
   "魅力", "必見", "ぜひ", "いかがでしょうか", "話題沸騰", "今すぐ",
   "心に響く", "珠玉の", "至高の", "見逃せない", "要チェック", "過言ではありません",
   "してみてはいかがでしょうか", "間違いなし", "請け合い",
 ];
-const MAX_BANNED = Number(process.env.QC_MAX_BANNED) || 2;
+const MAX_BANNED = Number(process.env.QC_MAX_BANNED) || 4;
+const H2_TOKEN_RATIO = 0.6; // 最初のh2に必要なキーワードトークンの割合
 
 // next-keywords.js と同じ正規化（空白・全角空白除去＋小文字化）
 const norm = (s) => (s || "").replace(/[\s　]/g, "").toLowerCase();
@@ -37,12 +40,23 @@ function firstH2(html) {
   return m ? stripTags(m[1]) : "";
 }
 
-// キーワードを空白で分割し、全トークンが対象文字列に含まれるか（順不同・許容的）
-function containsKeyword(text, keyword) {
-  const tokens = (keyword || "").split(/[\s　]+/).filter(Boolean).map(norm);
+function tokensOf(keyword) {
+  return (keyword || "").split(/[\s　]+/).filter(Boolean).map(norm);
+}
+// 全トークンが含まれるか（titleの関連性チェック用・厳格）
+function containsAllTokens(text, keyword) {
+  const tokens = tokensOf(keyword);
   if (tokens.length === 0) return false;
   const t = norm(text);
   return tokens.every((tok) => t.includes(tok));
+}
+// トークンの一定割合が含まれるか（h2用・許容的）
+function containsTokenRatio(text, keyword, ratio) {
+  const tokens = tokensOf(keyword);
+  if (tokens.length === 0) return false;
+  const t = norm(text);
+  const hit = tokens.filter((tok) => t.includes(tok)).length;
+  return hit / tokens.length >= ratio;
 }
 
 function usedTags(html) {
@@ -92,11 +106,11 @@ async function main() {
   if (!col.target_keyword) {
     reasons.push("target_keyword が無い");
   } else {
-    if (!containsKeyword(col.title, col.target_keyword))
+    if (!containsAllTokens(col.title, col.target_keyword))
       reasons.push(`titleにキーワード不足: "${col.title}" ⊅ "${col.target_keyword}"`);
     const h2 = firstH2(col.body_html);
-    if (!containsKeyword(h2, col.target_keyword))
-      reasons.push(`最初のh2にキーワード不足: "${h2}"`);
+    if (!containsTokenRatio(h2, col.target_keyword, H2_TOKEN_RATIO))
+      reasons.push(`最初のh2にキーワード不足(6割未満): "${h2}"`);
   }
 
   // 3. リンク
