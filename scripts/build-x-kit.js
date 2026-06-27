@@ -236,10 +236,17 @@ async function main() {
 
   // ---- (4) 今日が誕生日の作家（事実ベース・リンク無し・フォロワー獲得用） ----
   try {
+    const dataDir = path.join(__dirname, "..", "data");
     const birthdays = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "..", "data", "author-birthdays.json"), "utf8")
+      fs.readFileSync(path.join(dataDir, "author-birthdays.json"), "utf8")
     );
-    const bd = birthdays[today.slice(5)]; // MM-DD
+    // 手動上書きを優先（自動で拾えない作家・差し替え用）
+    let override = {};
+    try {
+      override = JSON.parse(fs.readFileSync(path.join(dataDir, "author-birthdays-override.json"), "utf8"));
+    } catch (_) {}
+    const md = today.slice(5); // MM-DD
+    const bd = override[md] || birthdays[md];
     if (bd) {
       const [, m, d] = today.split("-");
       let c = `📚 今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
