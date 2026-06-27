@@ -1,0 +1,32 @@
+name: 日次X投稿キット生成
+
+on:
+  schedule:
+    # 毎朝7:00 JST = UTC 22:00（前日）。1日かけて好きな時間に貼れるよう朝に用意する。
+    - cron: "0 22 * * *"
+  # 手動実行ボタン（テスト用）
+  workflow_dispatch:
+
+jobs:
+  build-kit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 依存関係インストール
+        run: npm install --omit=dev --no-audit --no-fund
+
+      - name: X投稿キットを生成（Job Summaryに出力）
+        env:
+          NEXT_PUBLIC_SUPABASE_URL:    ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY:   ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/build-x-kit.js
