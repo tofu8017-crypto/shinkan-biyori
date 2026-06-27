@@ -64,8 +64,11 @@ const siteJsonLd = {
       url: "https://shinkanbiyori.com",
       logo: "https://shinkanbiyori.com/icon.png",
       publishingPrinciples: "https://shinkanbiyori.com/about",
-      // SNSプロフィール（Googleのエンティティ理解用）。Instagram URL確定後に追記
-      sameAs: ["https://x.com/shinkanbiyori"],
+      // SNSプロフィール（Googleのエンティティ理解用）
+      sameAs: [
+        "https://x.com/shinkanbiyori",
+        "https://www.instagram.com/shinkan.biyori/",
+      ],
     },
   ],
 };

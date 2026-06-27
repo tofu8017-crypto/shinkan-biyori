@@ -4,8 +4,7 @@ import Link from "next/link";
 // SNSアカウントが増えたら下の配列に1行足すだけ。URLが空の項目は表示しない。
 const SOCIALS: { name: string; url: string; icon: "x" | "instagram" }[] = [
   { name: "X (旧Twitter)", url: "https://x.com/shinkanbiyori", icon: "x" },
-  // InstagramのURLが分かったらここに設定する（空のうちは非表示）
-  { name: "Instagram", url: "", icon: "instagram" },
+  { name: "Instagram", url: "https://www.instagram.com/shinkan.biyori/", icon: "instagram" },
 ];
 
 function Icon({ kind }: { kind: "x" | "instagram" }) {
