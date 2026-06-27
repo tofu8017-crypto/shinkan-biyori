@@ -21,6 +21,9 @@ const READ_KEY = SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SITE = "https://shinkanbiyori.com";
 const UTM = "utm_source=x&utm_medium=social&utm_campaign=daily";
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK_URL || ""; // 設定があればDiscordにも送る
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
+const DEEPSEEK_API_URL = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-chat";
 
 // 文芸ジャンルのみ（ビジネス001006・コミック001001・ラノベ001017は除外）。
 // fetch-books.js の GENRES と対応。"文芸書"の看板に合うものだけをXに出す。
@@ -94,6 +97,58 @@ function bookCardUrl(b) {
 const BANNED = ["魅力", "必見", "ぜひ", "いかがでしょうか", "話題沸騰", "今すぐ", "間違いなし"];
 function lintBanned(text) {
   return BANNED.filter((w) => text.includes(w));
+}
+
+// openBDから内容紹介(あらすじ)を1冊ぶん取得（編集者の見立てを書く素材）
+async function fetchOpenBDSummary(isbn) {
+  try {
+    const res = await fetch(`https://api.openbd.jp/v1/get?isbn=${isbn}`);
+    if (!res.ok) return "";
+    const arr = await res.json();
+    const tc = (arr || [])[0]?.onix?.CollateralDetail?.TextContent;
+    if (Array.isArray(tc)) {
+      const hit = tc.find((x) => x.TextType === "03" && x.Text) || tc.find((x) => x.Text);
+      if (hit?.Text) return String(hit.Text).replace(/\s+/g, " ").trim();
+    }
+  } catch (_) {}
+  return "";
+}
+
+// DeepSeekで「編集者の見立て」型のX投稿を1つ生成（事実ベース・煽らない）。失敗時はnull。
+async function craftEditorialPost(book, summary) {
+  if (!DEEPSEEK_API_KEY) return null;
+  const sys =
+    "あなたは文芸書にくわしい編集者です。X(旧Twitter)用に新刊を紹介する短い投稿を1つ書きます。\n" +
+    "# 声・スタイル\n" +
+    "- 落ち着いた編集者の「見立て」。煽らない。事実だけ。\n" +
+    "- 構成: (1)どんな本か（著者の位置づけ＋内容を1〜2文）(2)どんな人に響くか を簡潔に。\n" +
+    "- 与えられた『内容紹介』に書かれた事実だけを使う。あらすじの捏造・脚色は禁止。内容紹介が無ければ書誌事実（著者・版元）だけで簡潔に。\n" +
+    "# 制約\n" +
+    "- 日本語、全体で140字以内。改行は2〜3回まで。\n" +
+    "- 末尾に半角スペース区切りで「#新刊 #読書」だけ付ける。\n" +
+    "- 使ってはいけない語: 魅力 必見 ぜひ いかがでしょうか 話題沸騰 今すぐ 絶対 神 感動必至 涙腺崩壊\n" +
+    "- 絵文字は使わない。『』「」は可。本文だけを返す（説明・引用符・コードブロックなし）。";
+  const user =
+    `書名: ${book.title}\n著者: ${(book.author || "").split("/")[0]}\n出版社: ${book.publisher}\n発売日: ${book.published_date}\n内容紹介: ${summary || "(なし)"}`;
+  try {
+    const res = await fetch(DEEPSEEK_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${DEEPSEEK_API_KEY}` },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [{ role: "system", content: sys }, { role: "user", content: user }],
+        temperature: 0.7,
+        max_tokens: 400,
+      }),
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    let t = d?.choices?.[0]?.message?.content?.trim();
+    if (!t) return null;
+    return t.replace(/^["'`]+|["'`]+$/g, "").trim();
+  } catch (_) {
+    return null;
+  }
 }
 
 // Discord Webhook に投稿キットを送る。各投稿を個別メッセージ（コードブロック）にして
@@ -217,7 +272,7 @@ async function main() {
       const content =
         `📚 ${label}発売の文芸書は${count}冊。\n` +
         `注目は${names} など。\n` +
-        `#新刊 #読書 #本好きと繋がりたい`;
+        `#新刊 #読書`;
       posts.push({
         kind: "new_books_digest",
         content,
@@ -229,7 +284,7 @@ async function main() {
     console.error("digest生成スキップ:", e.message);
   }
 
-  // ---- (2) 注目著者スポットライト（リンク無し・事実ベース） ----
+  // ---- (2) 編集者の見立て（注目の新刊）：あらすじ→DeepSeekで1冊を紹介 ----
   try {
     const { data: recent } = await sb
       .from("books")
@@ -241,21 +296,21 @@ async function main() {
       .lte("published_date", today)
       .order("published_date", { ascending: false })
       .limit(200);
-    // 注目著者の本を全部集めて、既出・キット内既出を除外し、日付でローテーション
-    const hits = (recent || []).filter((b) => {
-      if (!b.isbn13 || recentIsbn.has(b.isbn13) || usedIsbn.has(b.isbn13)) return false;
-      if (looksLikeJunk(b.title)) return false;
-      return notable.some((n) => (b.author || "").includes(n));
-    });
-    const hit = hits.length ? hits[dayNum(today) % hits.length] : null;
-    if (hit) {
-      const author = (hit.author || "").split("/")[0];
+    // 良質な候補（ジャンク/既出/①使用を除外）。注目著者を優先、無ければ新しい順から。日付でローテ。
+    const cands = (recent || []).filter(
+      (b) => b.isbn13 && !recentIsbn.has(b.isbn13) && !usedIsbn.has(b.isbn13) && !looksLikeJunk(b.title)
+    );
+    const notableCands = cands.filter((b) => notable.some((n) => (b.author || "").includes(n)));
+    const pool2 = notableCands.length ? notableCands : cands;
+    const book = pool2.length ? pool2[dayNum(today) % pool2.length] : null;
+    if (book) {
+      const author = (book.author || "").split("/")[0];
+      const summary = await fetchOpenBDSummary(book.isbn13);
+      const crafted = await craftEditorialPost(book, summary); // 編集者の見立て（DeepSeek）
       const content =
-        `【注目の新刊】\n` +
-        `『${hit.title}』${author}（${hit.publisher}）\n` +
-        `${mdJP(hit.published_date)}発売。${author}さんの新作です。\n` +
-        `#新刊 #読書 #${author}`;
-      posts.push({ kind: "spotlight", isbn13: hit.isbn13, content, image_url: null });
+        crafted ||
+        `『${book.title}』${author}（${book.publisher}）\n${mdJP(book.published_date)}発売。${author}さんの新作です。\n#新刊 #読書`;
+      posts.push({ kind: "spotlight", isbn13: book.isbn13, content, image_url: null });
     }
   } catch (e) {
     console.error("spotlight生成スキップ:", e.message);
@@ -307,7 +362,7 @@ async function main() {
   // ---- 出力（Job Summary or stdout） ----
   const kindLabel = {
     new_books_digest: "① 今日の新刊ダイジェスト（リンク無し）",
-    spotlight: "② 注目著者スポットライト（リンク無し）",
+    spotlight: "② 編集者の見立て（注目の新刊・リンク無し）",
     column_promo: "③ コラム告知（★今日の1リンク）",
     birthday: "④ 今日が誕生日の作家（事実）",
   };
