@@ -20,6 +20,7 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const READ_KEY = SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SITE = "https://shinkanbiyori.com";
 const UTM = "utm_source=x&utm_medium=social&utm_campaign=daily";
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK_URL || ""; // 設定があればDiscordにも送る
 
 // 文芸ジャンルのみ（ビジネス001006・コミック001001・ラノベ001017は除外）。
 // fetch-books.js の GENRES と対応。"文芸書"の看板に合うものだけをXに出す。
@@ -86,6 +87,33 @@ const OPINIONS = [
 const BANNED = ["魅力", "必見", "ぜひ", "いかがでしょうか", "話題沸騰", "今すぐ", "間違いなし"];
 function lintBanned(text) {
   return BANNED.filter((w) => text.includes(w));
+}
+
+// Discord Webhook に投稿キットを送る。各投稿を個別メッセージ（コードブロック）にして
+// スマホで長押しコピー→Xに貼りやすくする。
+async function postToDiscord(webhook, posts, today, kindLabel) {
+  const send = async (content) => {
+    const res = await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+    });
+    if (!res.ok && res.status !== 204) {
+      const t = await res.text().catch(() => "");
+      throw new Error(`Discord ${res.status} ${t.slice(0, 150)}`);
+    }
+  };
+  await send(
+    `🐦 **今日のX投稿キット（${today}）**\n下の枠を長押しコピー → @shinkanbiyori に貼って投稿。リンク付きは③だけ・1日2回まで（朝/夕）。`
+  );
+  for (const p of posts) {
+    const w = xWeight(p.content);
+    const label = kindLabel[p.kind] || p.kind;
+    let msg = `**${label}**（${w}/280）\n\`\`\`\n${p.content}\n\`\`\``;
+    if (p.image_url) msg += `画像候補(任意): <${p.image_url}>`;
+    await send(msg);
+    await new Promise((r) => setTimeout(r, 600)); // Discordレート制限対策
+  }
 }
 
 async function main() {
@@ -259,6 +287,16 @@ async function main() {
     console.log("Job Summary に投稿キットを出力しました。");
   } else {
     console.log(md);
+  }
+
+  // ---- Discordにも送る（Webhook設定時） ----
+  if (DISCORD_WEBHOOK) {
+    try {
+      await postToDiscord(DISCORD_WEBHOOK, posts, today, kindLabel);
+      console.log("Discordに投稿キットを送信しました。");
+    } catch (e) {
+      console.error("Discord送信スキップ:", e.message);
+    }
   }
 
   // ---- x_posts に「素材として出した」記録（重複出し防止） ----
