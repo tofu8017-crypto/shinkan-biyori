@@ -15,11 +15,18 @@ const { createClient } = require("@supabase/supabase-js");
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SITE = "https://shinkanbiyori.com";
-const DELAY_HOURS = Number(process.env.PUBLISH_DELAY_HOURS) || 18;
+const DELAY_HOURS = Number(process.env.PUBLISH_DELAY_HOURS) || 12;
 const MAX_PER_RUN = Number(process.env.PUBLISH_MAX_PER_RUN) || 1; // 1日1本（量産ペナルティ低減）
 
 function hoursAgoISO(h) {
   return new Date(Date.now() - h * 3600 * 1000).toISOString();
+}
+
+// 「本日（JST）公開済みか」を正しく判定するためのJST午前0時（UTC表現）。
+// cronは06:00 JST=21:00 UTCに動くため、UTC日付で判定すると同一UTC日の手動公開と衝突して誤スキップする。
+function jstMidnightISO() {
+  const jstDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
+  return new Date(jstDate + "T00:00:00+09:00").toISOString();
 }
 
 function passesQualityGate(col) {
@@ -47,8 +54,8 @@ async function main() {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY);
   const cutoff = hoursAgoISO(DELAY_HOURS);
 
-  // 既に今日公開済みなら二重公開しない（1日1本ガード）
-  const todayStart = new Date().toISOString().slice(0, 10) + "T00:00:00Z";
+  // 既に今日公開済みなら二重公開しない（1日1本ガード）。JST基準で判定。
+  const todayStart = jstMidnightISO();
   const { count: publishedToday } = await sb
     .from("columns")
     .select("*", { count: "exact", head: true })

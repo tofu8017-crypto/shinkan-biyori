@@ -1,11 +1,9 @@
 name: コラム自動生成・遅延公開
 
-# 【有効化は手動で】マージしただけで自動公開が走らないよう、初期は schedule を無効化。
-# 準備（①DEEPSEEK_API_KEY等のSecrets追加 ②npm run cf:deploy ③SupabaseでSQL実行）が
-# 済み、workflow_dispatch で動作確認できたら、下の schedule のコメントを外して有効化する。
+# 全自動公開を有効化済み（2026-06-27）。毎朝6:00 JSTに生成→遅延公開→IndexNow。
 on:
-  # schedule:
-  #   - cron: "0 21 * * *"   # 毎朝6:00 JST = UTC 21:00（前日）／準備完了後に有効化
+  schedule:
+    - cron: "0 21 * * *"   # 毎朝6:00 JST = UTC 21:00（前日）
   workflow_dispatch:
 
 jobs:
