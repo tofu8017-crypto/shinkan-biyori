@@ -141,10 +141,30 @@
           <div class="it"><span class="dot"></span><div class="time">00:30</div><div class="what">日付が変わってすぐ、楽天APIから当日の新刊データを収集</div><span class="tag">収集</span></div>
           <div class="it"><span class="dot"></span><div class="time">06:00</div><div class="what">コラムを生成し、前日分を1本自動公開 → IndexNow通知</div><span class="tag">自律性</span></div>
           <div class="it"><span class="dot"></span><div class="time">07:00</div><div class="what">X投稿原稿4種を生成し、Discordへ配信</div><span class="tag">反応</span></div>
+          <div class="it"><span class="dot"></span><div class="time">08:00</div><div class="what">はてなブログに独自記事を1本公開し、本サイトへ被リンクを張る</div><span class="tag">被リンク</span></div>
         </div>
         <div class="bar"></div>
       </div>
       <p class="note" style="margin-top:6px;">人の関与は「前日ドラフトの確認」と「X原稿のコピペ投稿」だけ＝1日10分未満。</p>
+    </section>
+
+    <!-- 被リンク獲得ループ -->
+    <section class="sec">
+      <h2><span class="deco"></span>もう1つの無人ループ：被リンク獲得</h2>
+      <p>集客の土台＝<strong>ドメインパワー</strong>を、外部からも底上げする。編集者「ナカノ」名義の<strong>読んで役立つ独自記事</strong>を、はてなブログに毎日1本自動投稿し、本文から新刊日和へ自然な <strong>dofollow リンク</strong>を張る。リンク目的の薄い記事は逆効果なので、記事の質を最優先にしている。</p>
+      <div class="flow" style="margin-top:12px;">
+        <div class="step"><div class="n">01</div><div class="t">テーマ選定</div><div class="d">過去記事と重複しない切り口を自動選択</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">02</div><div class="t">執筆</div><div class="d">ナカノ文体でDeepSeekが独自記事を生成</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">03</div><div class="t">画像</div><div class="d">Geminiでアイキャッチ生成→直アップ</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">04</div><div class="t">公開</div><div class="d">はてなAtomPubで投稿＋dofollow被リンク</div></div>
+      </div>
+      <div class="grid2" style="margin-top:14px;">
+        <div class="card"><h3>暴走させない安全装置</h3><p>1日1本ガード／本文リンクの実在(200)確認／AI臭チェック／投稿記録の自動引き継ぎ。</p></div>
+        <div class="card"><h3>実績</h3><p>初稿を実際に公開済み。本文内3リンクすべて dofollow を確認＝外部ドメインからの被リンク獲得をスタート。</p></div>
+      </div>
     </section>
 
     <!-- ジャンル別 bar chart -->
@@ -202,8 +222,8 @@
     <section class="sec">
       <h2><span class="deco"></span>審査軸への当てこみ</h2>
       <div class="axis">
-        <div class="a"><span class="tag">① 自律性</span><h3>無人の編集ループ</h3><p>収集→執筆→公開→拡散を毎日自動実行。承認ゲートのみ人間。</p></div>
-        <div class="a"><span class="tag">② 事業性</span><h3>散らばる情報の集約</h3><p>楽天/Amazonアフィリ導線＋クリック計測。将来は出版社・作家向けB2Bへ。</p></div>
+        <div class="a"><span class="tag">① 自律性</span><h3>無人の編集ループ ×2</h3><p>「収集→執筆→公開→拡散」に加え「被リンク獲得」も毎日自動。2つの無人ループが回る。承認ゲートのみ人間。</p></div>
+        <div class="a"><span class="tag">② 事業性</span><h3>集約＋ドメインパワー</h3><p>楽天/Amazonアフィリ導線＋クリック計測。さらに被リンクで集客の土台を底上げ。将来は出版社・作家向けB2Bへ。</p></div>
         <div class="a"><span class="tag">③ 反応</span><h3>即効の流入チャネル</h3><p>IndexNow＋X半自動キット＋Discord配信で初動を作り、/statsで可視化。</p></div>
       </div>
     </section>
@@ -214,6 +234,7 @@
       <div class="tech">
         <span>Next.js（App Router）</span><span>Supabase</span><span>楽天ブックスAPI</span><span>openBD</span>
         <span>GitHub Actions</span><span>DeepSeek API</span><span>IndexNow</span><span>Cloudflare（OpenNext）</span>
+        <span>はてなブログ AtomPub</span><span>Gemini（画像生成）</span><span>Google Search Console</span>
       </div>
     </section>
 
@@ -224,6 +245,7 @@
         <a href="https://shinkanbiyori.com">🌸 サイト</a>
         <a href="https://shinkanbiyori.com/column">📖 コラム</a>
         <a href="https://shinkanbiyori.com/stats">📊 稼働状況</a>
+        <a href="https://shinkanbiyori.hatenablog.com">📝 はてな（被リンク）</a>
         <a href="https://x.com/shinkanbiyori">X</a>
         <a href="https://www.instagram.com/shinkan.biyori/">Instagram</a>
       </div>
