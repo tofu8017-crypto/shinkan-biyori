@@ -4,10 +4,13 @@ import { useState } from "react";
 import BookCard from "./BookCard";
 import { GENRES } from "@/types/book";
 import type { Book } from "@/types/book";
+import { effectiveGenreOfBook } from "@/lib/author-genre";
 // その日の新刊を、上部のジャンルタブで絞り込んで表示する。
+// ラノベは楽天で「日本の小説」等にまとめられるため、実効ジャンルで振り分けて
+// 「ライトノベル」タブでも絞り込めるようにする（BookCardのラベルと一致させる）。
 
 function effectiveGenre(b: Book): string {
-  return b.genre_id;
+  return effectiveGenreOfBook(b);
 }
 
 export default function DateBooksFilter({ books }: { books: Book[] }) {

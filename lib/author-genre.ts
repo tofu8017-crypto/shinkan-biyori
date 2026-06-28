@@ -1,4 +1,6 @@
 import type { Genre } from "@/types/book";
+import { RANOBE_GENRE_ID } from "@/types/book";
+import { isLikelyLightNovel } from "@/lib/is-light-novel";
 
 // ───────── 作家→ジャンルの手動オーバーライド ─────────
 //
@@ -56,6 +58,29 @@ export function effectiveGenreId(author: string | null | undefined, fallback: Ge
     if (a.includes(key)) return genre;
   }
   return fallback;
+}
+
+// ラノベ判定を適用してよい「小説系」ジャンル（コミック・ビジネス等は対象外＝誤判定防止）
+const NOVELISH_FOR_RANOBE = new Set<string>([
+  "001004008", "001004009", "001004001", "001004002", "001019",
+]);
+
+// 本の「実効ジャンルID」（著者オーバーライド＋ラノベ判定こみ）。
+// 楽天は無双系・なろう系ラノベを「日本の小説」等にまとめてしまうため、
+// タイトル/レーベルで isLikelyLightNovel なら「ライトノベル(001017)」に振り分ける。
+// 著者オーバーライド（例:東野圭吾→ミステリー）が最優先。
+export function effectiveGenreOfBook(
+  book: { author?: string | null; title?: string | null; publisher?: string | null; genre_id: Genre }
+): Genre {
+  const ov = effectiveGenreId(book.author, book.genre_id);
+  if (ov !== book.genre_id) return ov; // 著者オーバーライドを最優先
+  if (
+    NOVELISH_FOR_RANOBE.has(ov) &&
+    isLikelyLightNovel({ title: book.title ?? "", publisher: book.publisher ?? "" })
+  ) {
+    return RANOBE_GENRE_ID as Genre;
+  }
+  return ov;
 }
 
 // 指定ジャンルに「オーバーライドで割り当てた作家名」の一覧（元の表記のまま）。
