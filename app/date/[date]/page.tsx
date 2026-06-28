@@ -173,7 +173,7 @@ export default async function DatePage({
         {books.length === 0 ? (
           <div>
             <p className="pt-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-              この日は新刊がお休みのようです。猫が伸びをしています。
+              この日は新刊がお休みのようです。
             </p>
             <NoBooksCat />
           </div>
