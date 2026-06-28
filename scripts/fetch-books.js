@@ -15,9 +15,11 @@ const RAKUTEN_AFFILIATE_ID = process.env.RAKUTEN_AFFILIATE_ID ?? "";
 const SUPABASE_URL         = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY         = process.env.SUPABASE_SERVICE_ROLE_KEY; // バッチはservice_role
 
+// split:true のジャンルは巨大すぎて -releaseDate ページングが不安定になり最近日の本を取りこぼす。
+// 楽天の子サブジャンル（著者名の読み等）に分割して収集し、保存時は genre_id を親IDに正規化する。
 const GENRES = [
-  { id: "001004008", label: "小説（日本）" },
-  { id: "001004009", label: "小説（海外）" },
+  { id: "001004008", label: "小説（日本）", split: true },
+  { id: "001004009", label: "小説（海外）", split: true },
   { id: "001004001", label: "ミステリー"  },
   { id: "001004002", label: "SF・ホラー"  },
   { id: "001004003", label: "エッセイ"    },
@@ -34,6 +36,10 @@ const GENRES = [
 const WINDOW_PAST_DAYS   = 95;   // 何日前まで保存するか（過去約3ヶ月）
 const WINDOW_FUTURE_DAYS = 45;   // 何日先（近刊）まで保存するか（約1ヶ月半先）
 const FAR_FUTURE_DAYS    = 120;  // これより先は「発売日未定」のプレースホルダ(例:2225年)とみなし除外
+
+const MAX_PAGE              = 100; // 親ジャンルのページ安全上限（楽天APIの上限）
+const MAX_PAGE_CHILD        = 40;  // 子サブジャンルのページ安全上限（小さいので通常はこれより手前で止まる）
+const PAST_WINDOW_STREAK_MAX = 2;  // 「ページ内の最新日<窓開始」が連続このページ数続いたら停止（非単調ソートの揺れ吸収）
 
 // ===== ユーティリティ =====
 
@@ -127,30 +133,50 @@ async function fetchGenrePage(genreId, page) {
   throw lastErr;
 }
 
-async function fetchAllBooksForGenre(genreId, label, win) {
+// 親ジャンルの子サブジャンルID一覧を楽天から取得（split対象のフォールバック兼用）
+async function getChildGenres(parentId) {
+  const params = new URLSearchParams({
+    applicationId: RAKUTEN_APP_ID,
+    accessKey:     RAKUTEN_ACCESS_KEY,
+    booksGenreId:  parentId,
+  });
+  const url = `https://openapi.rakuten.co.jp/services/api/BooksGenre/Search/20121128?${params}`;
+  const res = await fetch(url, { headers: { Referer: "https://shinkanbiyori.com" } });
+  if (!res.ok) throw new Error(`Rakuten Genre API ${res.status}`);
+  const data = await res.json();
+  return (data.children ?? [])
+    .map((c) => (c.child ?? c).booksGenreId)
+    .filter(Boolean);
+}
+
+// queryGenreId を -releaseDate でページングし、窓内の本を集める。
+// storeGenreId に保存用ジャンルID（子分割時は親IDへ正規化）。maxPage は安全上限。
+async function fetchAllBooksForGenre(queryGenreId, label, win, storeGenreId = queryGenreId, maxPage = MAX_PAGE) {
   const books = [];
   let page = 1;
-  const MAX_PAGE = 100; // 楽天APIのページ上限
+  let pastWindowStreak = 0; // 「ページ全体が窓より過去」が続いた回数
 
-  while (page <= MAX_PAGE) {
-    const data = await fetchGenrePage(genreId, page);
+  while (page <= maxPage) {
+    const data = await fetchGenrePage(queryGenreId, page);
     const items = data.Items ?? [];
     if (items.length === 0) break;
 
-    let minRealDate = null; // このページで見た「未定でない最古の発売日」
+    let maxRealDate = null;  // このページの「未定でない最新の発売日」
+    let pageWindowHits = 0;
 
     for (const Item of items) {
       const { isbn13, isbn10 } = parseISBN(Item.isbn ?? "");
       const publishedDate = parseSalesDate(Item.salesDate ?? "");
       if (!isbn13 || !publishedDate) continue;
 
-      // 遠すぎる未来（2225年等）は「発売日未定」のプレースホルダなので除外
+      // 遠すぎる未来（2225年等）は「発売日未定」のプレースホルダなので除外（保存もページング判定もしない）
       if (publishedDate > win.farFuture) continue;
 
-      if (minRealDate === null || publishedDate < minRealDate) minRealDate = publishedDate;
+      if (maxRealDate === null || publishedDate > maxRealDate) maxRealDate = publishedDate;
 
       // 保存するのは「直近〜近刊」の窓内だけ
       if (publishedDate >= win.start && publishedDate <= win.end) {
+        pageWindowHits++;
         books.push({
           isbn13,
           isbn10:         isbn10 ?? null,
@@ -158,7 +184,7 @@ async function fetchAllBooksForGenre(genreId, label, win) {
           author:         Item.author ?? "",
           publisher:      Item.publisherName ?? "",
           published_date: publishedDate,
-          genre_id:       genreId,
+          genre_id:       storeGenreId,
           image_url:      Item.largeImageUrl ?? Item.mediumImageUrl ?? null,
           rakuten_url:    Item.affiliateUrl || Item.itemUrl || null,
           amazon_url:     isbn10 ? `https://www.amazon.co.jp/dp/${isbn10}` : null,
@@ -168,12 +194,20 @@ async function fetchAllBooksForGenre(genreId, label, win) {
       }
     }
 
-    console.log(`  📖 ${label} — ページ${String(page).padStart(3)}（窓内累計 ${books.length}冊 / 最古 ${minRealDate ?? "-"}）`);
+    console.log(`  📖 ${label} — ページ${String(page).padStart(3)}（窓内 +${pageWindowHits} / 累計 ${books.length}冊 / 最新 ${maxRealDate ?? "-"}）`);
 
     // 末尾ページに到達したら終了
     if (page >= (data.pageCount ?? 1)) break;
-    // -releaseDate降順なので、窓の開始より古い日付が出たら以降は全て窓外 → 停止
-    if (minRealDate !== null && minRealDate < win.start) break;
+
+    // ページ内の最新日すら窓開始より古い＝以降は全て窓より過去。
+    // 非単調ソートの揺れを吸収するため、連続 PAST_WINDOW_STREAK_MAX 回で停止。
+    // （未来側のページは maxRealDate>=win.start なので、ここでは早期停止しない＝窓に必ず到達する）
+    if (maxRealDate !== null && maxRealDate < win.start) {
+      pastWindowStreak++;
+      if (pastWindowStreak >= PAST_WINDOW_STREAK_MAX) break;
+    } else {
+      pastWindowStreak = 0;
+    }
 
     page++;
     await sleep(1100); // 楽天API規約: 1秒1リクエスト
@@ -232,9 +266,33 @@ async function main() {
 
   for (const genre of targetGenres) {
     try {
-      const books = await fetchAllBooksForGenre(genre.id, genre.label, win);
-      console.log(`  ✅ ${genre.label}: 窓内 ${books.length}冊取得\n`);
-      allBooks.push(...books);
+      // split対象: 子サブジャンル単位で収集し、genre_id は親IDへ正規化して保存
+      let childIds = null;
+      if (genre.split) {
+        try {
+          childIds = await getChildGenres(genre.id);
+          await sleep(1100);
+        } catch (e) {
+          console.error(`  ⚠️ ${genre.label} 子ジャンル取得失敗(${e.message}) → 親ジャンルで収集`);
+          childIds = null;
+        }
+      }
+
+      if (childIds && childIds.length) {
+        console.log(`  🔀 ${genre.label}: ${childIds.length}個の子ジャンルで収集`);
+        let genreCount = 0;
+        for (const cid of childIds) {
+          const books = await fetchAllBooksForGenre(cid, `${genre.label}/${cid.slice(-3)}`, win, genre.id, MAX_PAGE_CHILD);
+          genreCount += books.length;
+          allBooks.push(...books);
+          await sleep(1100);
+        }
+        console.log(`  ✅ ${genre.label}: 窓内 ${genreCount}冊取得（子${childIds.length}個合計）\n`);
+      } else {
+        const books = await fetchAllBooksForGenre(genre.id, genre.label, win, genre.id, MAX_PAGE);
+        console.log(`  ✅ ${genre.label}: 窓内 ${books.length}冊取得\n`);
+        allBooks.push(...books);
+      }
     } catch (err) {
       console.error(`  ⚠️ ${genre.label} 取得エラー: ${err.message}`);
     }
