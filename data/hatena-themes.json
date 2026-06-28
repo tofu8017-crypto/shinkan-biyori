@@ -1,0 +1,13 @@
+{
+  "_comment": "はてな自動投稿のテーマプール。捏造リスクの低い『主張・選び方・入門・読書論』中心。hatena-auto-run.sh が posts.log と照合して未投稿のものを順に使う。internal_links は本文に張る候補（実在確認は実行時に行う）。",
+  "themes": [
+    { "keyword": "海外文学 入門 最初の一冊", "angle": "海外文学は『読みやすい一冊』からではなく代表作から入るべき、という主張", "internal_links": ["https://shinkanbiyori.com/genre/001004009", "https://shinkanbiyori.com/column", "https://shinkanbiyori.com"] },
+    { "keyword": "ミステリー 読む順番", "angle": "シリーズものを刊行順で読むべきか、評価の高い巻から入るべきか", "internal_links": ["https://shinkanbiyori.com/genre/001004001", "https://shinkanbiyori.com/column", "https://shinkanbiyori.com"] },
+    { "keyword": "本 積読 解消", "angle": "積読は悪ではない。新刊を追う読書から降りると読書が楽しくなる、という読書論", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
+    { "keyword": "文庫化 待つべきか", "angle": "単行本で買うか文庫を待つか。編集者視点での損得と判断軸", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
+    { "keyword": "エッセイ おすすめ 入門", "angle": "エッセイの『最初の一冊』の選び方。何を基準に選ぶか", "internal_links": ["https://shinkanbiyori.com/genre/001004003", "https://shinkanbiyori.com/column", "https://shinkanbiyori.com"] },
+    { "keyword": "読書 習慣 続かない", "angle": "読書が続かない人へ。冊数より『1日5分』の設計、という主張", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
+    { "keyword": "翻訳 違い 読み比べ", "angle": "海外文学は翻訳者で読み心地が変わる。訳者から本を選ぶという入口", "internal_links": ["https://shinkanbiyori.com/genre/001004009", "https://shinkanbiyori.com/column"] },
+    { "keyword": "本 選び方 失敗しない", "angle": "ベストセラーや帯の煽りに頼らない、自分に合う本の見つけ方", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] }
+  ]
+}
