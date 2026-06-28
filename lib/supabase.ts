@@ -104,6 +104,7 @@ export async function getLatestBooks(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .not("title", "ilike", "%Top Yell%")
     .not("genre_id", "in", HOME_EXCLUDED_IN)
     .order("published_date", { ascending: false })
     .order("title")
@@ -156,6 +157,7 @@ export async function searchBooks(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .not("title", "ilike", "%Top Yell%")
     .order("published_date", { ascending: false })
     .limit(limit);
 
@@ -204,6 +206,7 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .not("title", "ilike", "%Top Yell%")
     .not("genre_id", "in", HOME_EXCLUDED_IN)
     .order("title");
 
@@ -311,6 +314,7 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .not("title", "ilike", "%Top Yell%")
     .order("published_date", { ascending: false })
     .limit(200);
 
@@ -386,6 +390,7 @@ export async function getBooksByDateAndGenre(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .not("title", "ilike", "%Top Yell%")
     .order("title");
   if (error) throw new Error(error.message);
   return (data ?? []).filter((b) => bookMatchesGenre(b, genreId));
@@ -414,6 +419,7 @@ export async function getBooksByDateRange(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .not("title", "ilike", "%Top Yell%")
     .not("genre_id", "in", HOME_EXCLUDED_IN)
     .order("published_date");
 
@@ -752,6 +758,7 @@ export async function getBooksByMonth(
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
+    .not("title", "ilike", "%Top Yell%")
     .order("published_date")
     .limit(2000);
   if (error) throw new Error(error.message);

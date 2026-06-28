@@ -103,7 +103,7 @@ export function parseSalesDate(salesDate: string): string {
 // ───────── 全カタログ検索（DBに無い旧作も楽天APIから補う） ─────────
 
 const KNOWN_GENRE_IDS = GENRES.map((g) => g.id);
-const EXCLUDE_TITLE_WORDS = ["写真集", "グラビア", "アイドル"];
+const EXCLUDE_TITLE_WORDS = ["写真集", "グラビア", "アイドル", "Top Yell"];
 
 // 楽天のbooksGenreId（"001004008"等、複数なら"/"区切り）を当サイトのジャンルに寄せる。
 // 該当が無ければ「小説（日本）」をデフォルトにする。
