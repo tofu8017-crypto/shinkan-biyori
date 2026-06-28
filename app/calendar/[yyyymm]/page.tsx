@@ -67,8 +67,8 @@ export default async function CalendarMonthPage({
   const prev = shiftMonth(yyyymm, -1);
   const next = shiftMonth(yyyymm, 1);
 
-  // ジャンルごとに仕分け（GENRESの並び順を維持。ビジネスは母集団から除外済み）
-  const byGenre = GENRES.filter((g) => g.id !== "001006").map((g) => ({
+  // ジャンルごとに仕分け（GENRESの並び順を維持）
+  const byGenre = GENRES.map((g) => ({
     genre: g,
     items: books.filter((b) => b.genre_id === g.id),
   }));

@@ -118,7 +118,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     });
     for (const g of GENRES) {
-      if (g.id === "001006") continue;
       entries.push({
         url: `${BASE_URL}/calendar/${ym}/${g.id}`,
         lastModified: today,

@@ -38,9 +38,9 @@ function isValidSupabaseUrl(url: string | undefined): boolean {
 const useMock = !isValidSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 // トップ（今日の新刊・直近・日付ページ・カレンダー）から除外するジャンル。
-// ・ビジネス・実用書(001006): 看板が「文芸書の新刊カレンダー」なので専用タブ(/genre/001006)からのみ
 // ・コミック(001001): コミックは別サイト(/comic)に完全分離するため文芸版トップには出さない
-const HOME_EXCLUDED_GENRES = ["001006", "001001"];
+// （ビジネス・実用書(001006)は2026-06-28から書籍側にも表示する=除外しない）
+const HOME_EXCLUDED_GENRES = ["001001"];
 // Supabaseの .not("genre_id","in",...) 用の文字列  例: "(001006,001001)"
 const HOME_EXCLUDED_IN = `(${HOME_EXCLUDED_GENRES.join(",")})`;
 

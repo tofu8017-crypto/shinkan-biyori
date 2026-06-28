@@ -27,7 +27,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { yyyymm, genreId } = await params;
   const genre = GENRES.find((g) => g.id === genreId);
-  if (!isValidYearMonth(yyyymm) || !genre || genre.id === "001006") {
+  if (!isValidYearMonth(yyyymm) || !genre) {
     return { title: "ページが見つかりません", robots: { index: false, follow: false } };
   }
   const label = labelJP(yyyymm);
@@ -52,7 +52,7 @@ export default async function CalendarGenrePage({
 }) {
   const { yyyymm, genreId } = await params;
   const genre = GENRES.find((g) => g.id === genreId);
-  if (!isValidYearMonth(yyyymm) || !genre || genre.id === "001006") notFound();
+  if (!isValidYearMonth(yyyymm) || !genre) notFound();
 
   const label = labelJP(yyyymm);
   const books = await getBooksByMonth(yyyymm, genreId);
