@@ -19,7 +19,7 @@ const SUPABASE_KEY         = process.env.SUPABASE_SERVICE_ROLE_KEY; // バッチ
 // 楽天の子サブジャンル（著者名の読み等）に分割して収集し、保存時は genre_id を親IDに正規化する。
 const GENRES = [
   { id: "001004008", label: "小説（日本）", split: true },
-  { id: "001004009", label: "小説（海外）", split: true },
+  { id: "001004009", label: "小説（海外）" }, // 子ジャンル無し・総数1.5万で親収集でも取りこぼし無し（検証済）
   { id: "001004001", label: "ミステリー"  },
   { id: "001004002", label: "SF・ホラー"  },
   { id: "001004003", label: "エッセイ"    },
