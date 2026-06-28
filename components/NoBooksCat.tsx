@@ -18,7 +18,7 @@ export default function NoBooksCat() {
       </div>
       <style>{`
         .nbc-mover { position: absolute; bottom: 0; left: 0; animation: nbc-x 18s linear infinite; will-change: transform; }
-        .nbc { position: absolute; bottom: 0; left: 0; width: 340px; height: auto; pointer-events: none; user-select: none; }
+        .nbc { position: absolute; bottom: 0; left: 0; width: 340px; max-width: none; height: auto; pointer-events: none; user-select: none; }
         .nbc-walk   { animation: nbc-walkfade 18s linear infinite, nbc-bob .5s ease-in-out infinite alternate; }
         .nbc-stretch{ animation: nbc-stretch 18s linear infinite; transform-origin: bottom center; }
 
