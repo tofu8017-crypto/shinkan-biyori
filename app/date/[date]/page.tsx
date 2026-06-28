@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import DateBooksFilter from "@/components/DateBooksFilter";
+import NoBooksCat from "@/components/NoBooksCat";
 import DateStripScroller from "@/components/DateStripScroller";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
 import { getBooksByDate, getBookCountByDate } from "@/lib/supabase";
@@ -170,9 +171,12 @@ export default async function DatePage({
         </DateStripScroller>
 
         {books.length === 0 ? (
-          <p className="py-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-            この日の新刊データは現在収集中です。
-          </p>
+          <div>
+            <p className="pt-8 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+              この日は新刊がお休みのようです。猫が伸びをしています。
+            </p>
+            <NoBooksCat />
+          </div>
         ) : (
           <DateBooksFilter books={books} />
         )}

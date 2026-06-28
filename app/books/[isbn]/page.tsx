@@ -8,6 +8,7 @@ import BookCard from "@/components/BookCard";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { GENRES } from "@/types/book";
+import { effectiveGenreOfBook } from "@/lib/author-genre";
 import { amazonUrl } from "@/lib/amazon";
 import { ebookjapanUrl } from "@/lib/ebookjapan";
 import { splitAuthors, authorSlug } from "@/lib/normalize-author";
@@ -70,7 +71,7 @@ export default async function BookDetailPage({
   const book = await getBookByIsbn(isbn);
   if (!book) notFound();
 
-  const genre = GENRES.find((g) => g.id === book.genre_id);
+  const genre = GENRES.find((g) => g.id === effectiveGenreOfBook(book));
   const authors = splitAuthors(book.author);
   const pub = formatDateJP(book.published_date);
   const azUrl = amazonUrl(book);
