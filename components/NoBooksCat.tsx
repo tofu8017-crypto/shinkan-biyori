@@ -4,7 +4,10 @@
 // 実写の猫が「歩いて入ってくる→立ち止まって伸びをする→また歩いて去る」。
 // 歩行中は上下に小さくバウンドし、伸びの瞬間に体がぐっと伸びる（姿勢を2枚で切替）。
 // 装飾なので pointer-events 無効・スクリーンリーダーから隠す・動き低減設定に配慮。
-export default function NoBooksCat() {
+// variant="black": ジャンルページの「本日発売なし」用の黒猫（実写猫を黒シルエット加工した版）。
+export default function NoBooksCat({ variant = "normal" }: { variant?: "normal" | "black" }) {
+  const walk = variant === "black" ? "/cat-walk-black.png" : "/cat-walk.png";
+  const stretch = variant === "black" ? "/cat-stretch-black.png" : "/cat-stretch.png";
   return (
     <div
       aria-hidden
@@ -12,8 +15,8 @@ export default function NoBooksCat() {
     >
       <div className="nbc-mover">
         {/* eslint-disable @next/next/no-img-element */}
-        <img src="/cat-walk.png" alt="" className="nbc nbc-walk" />
-        <img src="/cat-stretch.png" alt="" className="nbc nbc-stretch" />
+        <img src={walk} alt="" className="nbc nbc-walk" />
+        <img src={stretch} alt="" className="nbc nbc-stretch" />
         {/* eslint-enable @next/next/no-img-element */}
       </div>
       <style>{`

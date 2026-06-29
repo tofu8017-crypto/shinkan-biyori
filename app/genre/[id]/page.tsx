@@ -5,6 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import BookCard from "@/components/BookCard";
 import GenreChips from "@/components/GenreChips";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
+import NoBooksCat from "@/components/NoBooksCat";
 import { getBooksByGenre, getBooksByDateAndGenre, getBookCountByDate } from "@/lib/supabase";
 import { GENRES } from "@/types/book";
 import DateStrip from "@/components/DateStrip";
@@ -145,9 +146,12 @@ export default async function GenrePage({
             </span>
           </div>
           {todayBooks.length === 0 ? (
-            <p className="py-4 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
-              本日発売の{genre.label}はありません。下のカレンダーから発売日を選べます。
-            </p>
+            <>
+              <p className="py-4 text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+                本日発売の{genre.label}はありません。下のカレンダーから発売日を選べます。
+              </p>
+              <NoBooksCat variant="black" />
+            </>
           ) : (
             <div
               style={{
