@@ -321,30 +321,29 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
   if (error) throw new Error(error.message);
 
   // ② このジャンルに手動で割り当てた作家の本（元ジャンルが違っても拾う）。
-  //    作家名は空白入りで保存されるため、文字間に%を挟んだ空白無視ilikeで照合する。
+  //    旧実装は作家名ごとに「文字間に%を挟んだ ilike」を最大24個 OR で投げており、
+  //    全件スキャンに近く Worker のリソース上限超過(Error 1102)の原因になっていた。
+  //    SF/時代小説/成人向けと同じく「小説プールを1本のインデックス済みクエリで取得し、
+  //    JS側の effectiveGenreId で実効ジャンルを判定」する軽い方式に統一する。結果は同じ。
   const ovAuthors = overrideAuthorsForGenre(genreId);
   let extra: Book[] = [];
   if (ovAuthors.length > 0) {
-    const orExpr = ovAuthors
-      .map((a) => buildSearchPattern(a))
-      .filter((p): p is string => !!p)
-      .map((p) => `author.ilike.${p}`)
-      .join(",");
-    if (orExpr) {
-      const { data: ed, error: ee } = await sb!
-        .from("books")
-        .select("*")
-        .or(orExpr)
-        .gte("published_date", since)
-        .lte("published_date", until)
-        .not("title", "ilike", "%写真集%")
-        .not("title", "ilike", "%グラビア%")
-        .not("title", "ilike", "%アイドル%")
-        .order("published_date", { ascending: false })
-        .limit(200);
-      if (ee) throw new Error(ee.message);
-      extra = ed ?? [];
-    }
+    const { data: pool, error: pe } = await sb!
+      .from("books")
+      .select("*")
+      .in("genre_id", [...NOVEL_GENRE_IDS, RANOBE_ID])
+      .gte("published_date", since)
+      .lte("published_date", until)
+      .not("title", "ilike", "%写真集%")
+      .not("title", "ilike", "%グラビア%")
+      .not("title", "ilike", "%アイドル%")
+      .order("published_date", { ascending: false })
+      .limit(400);
+    if (pe) throw new Error(pe.message);
+    // 元ジャンルが違っても、作家オーバーライドで実効ジャンルがこのジャンルになる本だけ拾う
+    extra = (pool ?? []).filter(
+      (b) => b.genre_id !== genreId && effectiveGenreId(b.author, b.genre_id) === genreId
+    );
   }
 
   // ③ 統合＋ISBN重複排除
