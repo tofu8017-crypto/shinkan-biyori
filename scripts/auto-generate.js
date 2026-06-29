@@ -104,6 +104,119 @@ async function getBooks(sb, genreId) {
   }));
 }
 
+// 通し日数（在庫ローテ・固有名詞日の判定に使う）
+function epochDay(isoDate) {
+  return Math.floor(Date.parse(isoDate + "T00:00:00Z") / 86400000);
+}
+
+// 既に使ったターゲットKW（重複生成防止）
+async function getUsedKeywords(sb) {
+  const used = new Set();
+  const { data } = await sb.from("columns").select("target_keyword");
+  for (const c of data || []) if (c.target_keyword) used.add(norm(c.target_keyword));
+  return used;
+}
+
+// 文芸とみなすジャンル（簿記/資格/ビジネス001006・コミック001001を除外）
+const LITERARY_GENRES = ["001004008", "001004009", "001004001", "001004002", "001004003", "001019"];
+
+// 著者名らしくない値を弾く（編集部・教材・資格系・作画など＝文芸の作家ではない）
+function looksJunkAuthor(a) {
+  return /編集|アンソロジ|作画|イラスト|ｺﾐｯｸ|コミック|ムック|公式|ガイド|attsuxx|画報|学院|会議所|研究会|試験|問題集|検定|資格|スクール|アカデミー|協会|委員会|アソシエーツ|辞典|事典/.test(a);
+}
+
+// 版違い（【サイン本】/新装版/文庫版 等）を同一作品とみなすためのタイトルキー。
+// 上巻/下巻など巻数は別作品として残す（除去しない）。
+function titleKey(t) {
+  return (t || "")
+    .replace(/[【〔（(\[].*?[】〕）)\]]/g, "")
+    .replace(/サイン本|新装版|完全版|愛蔵版|特装版|限定版|文庫版|新版|改訂版/g, "")
+    .replace(/[\s　]/g, "")
+    .toLowerCase();
+}
+
+// 在庫の全作家から「直近に2冊以上ある作家」を拾い、固有名詞コラムのテーマにする。
+// 作家名中心（藤澤さん方針 2026-06-30、週5日は固有名詞）。在庫のある本だけで書く前提。
+// 文芸ジャンル限定＋ハーレクイン(恋愛輸入)除外で、簿記/資格/ロマンス輸入を排除する。
+async function getAuthorTopics(sb, used) {
+  const today = jstToday();
+  const since = addDaysUTC(today, -180); // 60日だと作家が足りないので広めに
+  let q = sb
+    .from("books")
+    .select("author,title,genre_id,published_date")
+    .in("genre_id", LITERARY_GENRES)
+    .not("publisher", "ilike", "%ハーレクイン%")
+    .not("publisher", "ilike", "%ハーパーコリンズ%")
+    .gte("published_date", since)
+    .lte("published_date", today);
+  for (const w of NG_TITLE) q = q.not("title", "ilike", `%${w}%`);
+  const { data } = await q.order("published_date", { ascending: false }).limit(2000);
+
+  const map = new Map(); // normAuthor -> {author, titles:Set, genre:{id:count}}
+  for (const b of data || []) {
+    const a = (b.author || "").split("/")[0].trim();
+    if (!a || a.length < 2 || /[0-9A-Za-z]/.test(a) || looksJunkAuthor(a)) continue;
+    const k = norm(a);
+    if (!map.has(k)) map.set(k, { author: a, titles: new Set(), genre: {} });
+    const e = map.get(k);
+    e.titles.add(titleKey(b.title)); // 版違いは1作として数える
+    e.genre[b.genre_id] = (e.genre[b.genre_id] || 0) + 1;
+  }
+  let authors = [...map.values()].filter((e) => e.titles.size >= 2);
+  for (const e of authors) {
+    e.genre_id = Object.entries(e.genre).sort((x, y) => y[1] - x[1])[0][0];
+  }
+  // 既出作家は除外。在庫が多い順を基本に、日でローテして毎日違う作家に。
+  authors = authors.filter(
+    (e) => !used.has(norm(`${e.author} おすすめ`)) && !used.has(norm(e.author))
+  );
+  authors.sort((a, b) => b.titles.size - a.titles.size);
+  const off = authors.length ? epochDay(today) % authors.length : 0;
+  const rotated = authors.slice(off).concat(authors.slice(0, off));
+  return rotated.map((e) => ({
+    keyword: `${e.author} おすすめ`,
+    genre_id: e.genre_id,
+    author: e.author,
+  }));
+}
+
+// 指定作家の在庫本（固有名詞コラムの引用材料）。ジャンル横断で集める。
+async function getBooksByAuthor(sb, author) {
+  const today = jstToday();
+  const since = addDaysUTC(today, -180);
+  let q = sb
+    .from("books")
+    .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date")
+    .ilike("author", `%${author}%`)
+    .in("genre_id", LITERARY_GENRES)
+    .not("publisher", "ilike", "%ハーレクイン%")
+    .not("publisher", "ilike", "%ハーパーコリンズ%")
+    .gte("published_date", since)
+    .lte("published_date", today);
+  for (const w of NG_TITLE) q = q.not("title", "ilike", `%${w}%`);
+  const { data } = await q.order("published_date", { ascending: false }).limit(20);
+  // 版違い（サイン本等）を1作にまとめる。最新の1冊を代表に。
+  const seen = new Set();
+  const out = [];
+  for (const b of data || []) {
+    const k = titleKey(b.title);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push({
+      title: b.title,
+      author: b.author,
+      publisher: b.publisher,
+      published_date: b.published_date,
+      isbn13: b.isbn13,
+      isbn10: b.isbn10,
+      amazon_url: amazonUrl(b),
+      rakuten_url: b.rakuten_url,
+    });
+    if (out.length >= 12) break;
+  }
+  return out;
+}
+
 function run(script, args) {
   return execFileSync("node", [path.join(__dirname, script), ...args], {
     encoding: "utf8",
@@ -122,35 +235,55 @@ async function main() {
     process.exit(1);
   }
   const sb = createClient(SUPABASE_URL, KEY);
-  const candidates = await pickKeywords(sb);
-  if (candidates.length === 0) {
-    console.log("狙えるキーワードが残っていません。今日は生成なし。");
-    return;
+  const used = await getUsedKeywords(sb);
+
+  // 週5日は固有名詞（作家名）テーマにする。残り2日は従来の一般KW。
+  // 同じ雰囲気の連続を避ける（藤澤さん方針 2026-06-30）。epochDay%7 < 5 で 5/7 日。
+  const entityDay = epochDay(jstToday()) % 7 < 5;
+
+  const chosen = []; // {keyword, genre_id, author?}
+  const usedGenre = new Set();
+
+  if (entityDay) {
+    const topics = await getAuthorTopics(sb, used);
+    for (const t of topics) {
+      if (chosen.length >= N) break;
+      chosen.push({ keyword: t.keyword, genre_id: t.genre_id, author: t.author });
+      usedGenre.add(t.genre_id);
+    }
+    console.log(`固有名詞デー: 作家テーマ ${chosen.length}本（${chosen.map((c) => c.author).join("、") || "該当なし"}）`);
   }
 
-  // ジャンルが偏らないよう、できるだけ別ジャンルでN本選ぶ
-  const chosen = [];
-  const usedGenre = new Set();
-  for (const c of candidates) {
-    const g = mapGenre(c.keyword);
-    if (usedGenre.has(g) && chosen.length < candidates.length) continue;
-    chosen.push({ keyword: c.keyword, genre_id: g });
-    usedGenre.add(g);
-    if (chosen.length >= N) break;
+  // 固有名詞で埋まらない分（一般KWデー or 作家が足りない時）は従来の一般KWで補う
+  if (chosen.length < N) {
+    const candidates = await pickKeywords(sb);
+    for (const c of candidates) {
+      if (chosen.length >= N) break;
+      const g = mapGenre(c.keyword);
+      if (usedGenre.has(g)) continue;
+      if (chosen.some((x) => x.keyword === c.keyword)) continue;
+      chosen.push({ keyword: c.keyword, genre_id: g });
+      usedGenre.add(g);
+    }
+    // 別ジャンルで埋まらなければ重複ジャンル許容で補う
+    for (const c of candidates) {
+      if (chosen.length >= N) break;
+      if (chosen.some((x) => x.keyword === c.keyword)) continue;
+      chosen.push({ keyword: c.keyword, genre_id: mapGenre(c.keyword) });
+    }
   }
-  // 別ジャンルで埋まらなければ重複ジャンル許容で補う
-  for (const c of candidates) {
-    if (chosen.length >= N) break;
-    if (chosen.some((x) => x.keyword === c.keyword)) continue;
-    chosen.push({ keyword: c.keyword, genre_id: mapGenre(c.keyword) });
+
+  if (chosen.length === 0) {
+    console.log("狙えるテーマが残っていません。今日は生成なし。");
+    return;
   }
 
   let ok = 0;
   for (let i = 0; i < chosen.length; i++) {
-    const { keyword, genre_id } = chosen[i];
+    const { keyword, genre_id, author } = chosen[i];
     try {
-      console.log(`\n[${i + 1}] KW="${keyword}" genre=${genre_id}`);
-      const books = await getBooks(sb, genre_id);
+      console.log(`\n[${i + 1}] KW="${keyword}" genre=${genre_id}${author ? ` (作家:${author})` : ""}`);
+      const books = author ? await getBooksByAuthor(sb, author) : await getBooks(sb, genre_id);
       if (books.length < 2) {
         console.log(`  本が${books.length}冊しか無いのでスキップ`);
         continue;
