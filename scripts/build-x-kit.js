@@ -288,13 +288,28 @@ async function main() {
       const base = fresh;
       const off = dayNum(today) % base.length;
       const rotated = base.slice(off).concat(base.slice(0, off));
-      const picks = [...new Map(rotated.slice(0, 2).map((b) => [b.isbn13, b])).values()];
+      // 2冊羅列だと薄いので、3冊をリスト表示＋フック文で内容を濃く（藤澤さん要望 2026-06-30）。
+      // 280超過時は冊数を1冊ずつ減らして必ず収める。
+      const picksAll = [...new Map(rotated.slice(0, 3).map((b) => [b.isbn13, b])).values()];
+      const buildDigest = (picks) => {
+        const lines = picks
+          .map((b) => `・『${b.title}』${(b.author || "").split("/")[0]}`)
+          .join("\n");
+        return (
+          `📚 ${label}発売の文芸書は${count}冊。\n` +
+          `気になる新刊はこのあたり。\n` +
+          `${lines}\n` +
+          `今日はどれを開きますか？\n` +
+          `#本好きと繋がりたい #新刊`
+        );
+      };
+      let picks = picksAll;
+      let content = buildDigest(picks);
+      while (xWeight(content) > 278 && picks.length > 1) {
+        picks = picks.slice(0, picks.length - 1);
+        content = buildDigest(picks);
+      }
       for (const b of picks) if (b.isbn13) usedIsbn.add(b.isbn13);
-      const names = picks.map((b) => `『${b.title}』(${(b.author || "").split("/")[0]})`).join("、");
-      const content =
-        `📚 ${label}発売の文芸書は${count}冊。\n` +
-        `注目は${names} など。\n` +
-        `#本好きと繋がりたい`;
       posts.push({
         kind: "new_books_digest",
         content,
