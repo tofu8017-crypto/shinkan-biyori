@@ -46,56 +46,79 @@ async function main() {
     JSON.stringify(theme, null, 2) +
     "\n```";
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userMessage },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 8000,
-    }),
-  });
+  // DeepSeekは時々サボって短文・リンク無しを返す。一発勝負だと即失敗するので、
+  // 検証に通るまで最大3回リトライし、失敗時は具体的な不足を伝えて作り直させる。
+  const MAX_ATTEMPTS = 3;
+  let article = null;
+  let lastErrs = [];
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    // 2回目以降は前回の不足点を明示して矯正する
+    const retryNote =
+      attempt === 1
+        ? ""
+        : `\n\n【前回の生成は不合格でした。必ず直してください】\n - ${lastErrs.join("\n - ")}\n` +
+          "本文は必ず1100字以上、internal_links を本文中に2〜3本(https://shinkanbiyori.com…)をMarkdownリンクで張ること。";
 
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    console.error(`DeepSeek APIエラー: ${res.status} ${t.slice(0, 300)}`);
-    process.exit(1);
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage + retryNote },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.7,
+        max_tokens: 8000,
+      }),
+    });
+
+    if (!res.ok) {
+      const t = await res.text().catch(() => "");
+      console.error(`DeepSeek APIエラー: ${res.status} ${t.slice(0, 300)}`);
+      process.exit(1);
+    }
+
+    const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) {
+      console.error("DeepSeekの応答が空でした。");
+      process.exit(1);
+    }
+
+    let candidate;
+    try {
+      candidate = JSON.parse(content);
+    } catch (e) {
+      console.error("DeepSeek応答のJSONパースに失敗:", e.message);
+      console.error(content.slice(0, 400));
+      process.exit(1);
+    }
+
+    // 最低限のバリデーション
+    const errs = [];
+    if (!candidate.title || candidate.title.length > 40) errs.push("title が無い/長すぎる");
+    if (!candidate.body_markdown || candidate.body_markdown.length < 1100) errs.push(`body_markdown が短すぎる(${candidate.body_markdown ? candidate.body_markdown.length : 0}字 / 1100字以上必要)`);
+    if (/^#\s/.test(candidate.body_markdown || "")) errs.push("本文先頭にH1(#)がある（タイトルは別管理なので不要）");
+    // 本文に新刊日和リンクが2本以上あるか
+    const linkCount = (candidate.body_markdown.match(/shinkanbiyori\.com/g) || []).length;
+    if (linkCount < 2) errs.push(`本文中の新刊日和リンクが${linkCount}本（2〜3本必要）`);
+
+    if (!errs.length) {
+      article = candidate;
+      if (attempt > 1) console.error(`[hatena-auto] 再生成${attempt}回目で検証通過`);
+      break;
+    }
+    lastErrs = errs;
+    console.error(`[hatena-auto] 生成${attempt}/${MAX_ATTEMPTS}回目が検証不合格:\n - ${errs.join("\n - ")}`);
   }
 
-  const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) {
-    console.error("DeepSeekの応答が空でした。");
-    process.exit(1);
-  }
-
-  let article;
-  try {
-    article = JSON.parse(content);
-  } catch (e) {
-    console.error("DeepSeek応答のJSONパースに失敗:", e.message);
-    console.error(content.slice(0, 400));
-    process.exit(1);
-  }
-
-  // 最低限のバリデーション
-  const errs = [];
-  if (!article.title || article.title.length > 40) errs.push("title が無い/長すぎる");
-  if (!article.body_markdown || article.body_markdown.length < 1100) errs.push(`body_markdown が短すぎる(${article.body_markdown ? article.body_markdown.length : 0}字 / 1100字以上必要)`);
-  if (/^#\s/.test(article.body_markdown || "")) errs.push("本文先頭にH1(#)がある（タイトルは別管理なので不要）");
-  // 本文に新刊日和リンクが2本以上あるか
-  const linkCount = (article.body_markdown.match(/shinkanbiyori\.com/g) || []).length;
-  if (linkCount < 2) errs.push(`本文中の新刊日和リンクが${linkCount}本（2〜3本必要）`);
-  if (errs.length) {
-    console.error("生成記事の検証に失敗:\n - " + errs.join("\n - "));
+  if (!article) {
+    console.error(`生成記事の検証に${MAX_ATTEMPTS}回失敗:\n - ` + lastErrs.join("\n - "));
     process.exit(2);
   }
 
