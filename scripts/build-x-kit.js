@@ -183,15 +183,19 @@ async function postToDiscord(webhook, posts, today, kindLabel) {
     }
   };
   await send(
-    `🐦 **今日のX投稿キット（${today}）**\n下の枠を長押しコピー → @shinkanbiyori に貼って投稿。リンク付きは③だけ・1日2回まで（朝/夕）。`
+    `🐦 **今日のX投稿キット（${today}）**\n各ブロックは「ラベル行」＋「コピー用の枠」の2メッセージに分けています。**枠だけを長押しコピー**して @shinkanbiyori に貼ってください（ラベルや文字数が混ざりません）。1日2回まで（朝/夕）。`
   );
   for (const p of posts) {
     const w = xWeight(p.content);
     const label = kindLabel[p.kind] || p.kind;
-    let msg = `**${label}**（${w}/280）\n\`\`\`\n${p.content}\n\`\`\``;
+    // ① ラベル行（コピー対象外）。文字数と書影リンクはここにまとめる
+    let header = `**${label}**（${w}/280）`;
     // <>で囲まないとDiscordが書影をインライン表示する→長押しで保存→Xに添付しやすい
-    if (p.image_url) msg += `\n📎 書影（保存してXに添付）: ${p.image_url}`;
-    await send(msg);
+    if (p.image_url) header += `\n📎 書影（保存してXに添付）: ${p.image_url}`;
+    await send(header);
+    await new Promise((r) => setTimeout(r, 400));
+    // ② コピー用の枠（これだけを長押しコピー）。本文だけを入れる
+    await send("```\n" + p.content + "\n```");
     await new Promise((r) => setTimeout(r, 600)); // Discordレート制限対策
   }
 }
@@ -333,9 +337,12 @@ async function main() {
     if (chosen) {
       const author = (chosen.author || "").split("/")[0];
       const crafted = await craftEditorialPost(chosen, summary); // 編集者の見立て（DeepSeek）
-      const content =
+      const body =
         crafted ||
         `『${chosen.title}』${author}（${chosen.publisher}）\n${mdJP(chosen.published_date)}発売。`;
+      // ②にも書籍ページへのリンクを付ける（藤澤さん方針 2026-06-30。URLはXでは23字換算）
+      const url = `${SITE}/books/${chosen.isbn13}?${UTM}`;
+      const content = `${body}\n${url}`;
       posts.push({ kind: "spotlight", isbn13: chosen.isbn13, content, image_url: coverImg(chosen.image_url) });
     }
     // あらすじのある本が見つからなければ②は出さない（中身の薄い投稿を作らない）
@@ -376,9 +383,28 @@ async function main() {
     const bd = override[md] || birthdays[md];
     if (bd) {
       const [, m, d] = today.split("-");
+      // 内容が薄くならないよう、その作家の本がDBにあれば書名を1つ添え、
+      // 新刊・近刊一覧（検索ページ）へのリンクを付ける（藤澤さん方針 2026-06-30）。
+      // 著者ページはslug正規化のズレが怖いので、確実に開ける /search?q= を使う。
+      let work = "";
+      try {
+        const nameNoSpace = bd.name.replace(/\s/g, "");
+        const { data: bks } = await sb
+          .from("books")
+          .select("title,author")
+          .ilike("author", `%${nameNoSpace}%`)
+          .order("published_date", { ascending: false })
+          .limit(1);
+        if (bks && bks[0] && bks[0].title && !looksLikeJunk(bks[0].title)) {
+          work = bks[0].title;
+        }
+      } catch (_) {}
+      const url = `${SITE}/search?q=${encodeURIComponent(bd.name)}&${UTM}`;
       let c = `📚 今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
       if (bd.note) c += `\n${bd.note}。`;
-      c += `\n#今日は何の日`;
+      if (work) c += `\n新刊・近刊だと『${work}』など。作品一覧→${url}`;
+      else c += `\n${bd.name}の本を探す→${url}`;
+      c += `\n#今日は何の日 #本好きと繋がりたい`;
       posts.push({ kind: "birthday", content: c });
     }
     // 該当作家がいない日は④を出さない（無理に思想ポストを作らない）
@@ -389,13 +415,13 @@ async function main() {
   // ---- 出力（Job Summary or stdout） ----
   const kindLabel = {
     new_books_digest: "① 今日の新刊ダイジェスト（リンク無し）",
-    spotlight: "② 編集者の見立て（注目の新刊・リンク無し）",
-    column_promo: "③ コラム告知（★今日の1リンク）",
-    birthday: "④ 今日が誕生日の作家（事実）",
+    spotlight: "② 編集者の見立て（注目の新刊・リンク有）",
+    column_promo: "③ コラム告知（コラムへのリンク）",
+    birthday: "④ 今日が誕生日の作家（作品リンク有）",
   };
 
   let md = `# 🐦 X投稿キット（${today}）\n\n`;
-  md += `各ブロックをそのままコピーして @shinkanbiyori に貼ってください。育成モード中はリンク付きは③の1枚だけにします。朝と夕で2枚に分けて投稿すると安全です。\n\n`;
+  md += `各ブロックをそのままコピーして @shinkanbiyori に貼ってください。②③④はサイトへのリンク付き（①のみリンク無し）。朝と夕に分けて投稿すると安全です。\n\n`;
 
   for (const p of posts) {
     const w = xWeight(p.content);
