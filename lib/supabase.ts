@@ -147,8 +147,14 @@ export async function searchBooks(
       .slice(0, limit);
   }
 
-  const pattern = buildSearchPattern(q);
-  if (!pattern) return [];
+  // 入力語＋別名（カタカナ⇄英字。例:ブルージャイアント→BLUE GIANT）でDBを引く。
+  // 別名を楽天補完だけでなくDB検索にも使う（英字タイトルの新刊がDBにある時に拾える）。
+  const orParts: string[] = [];
+  for (const term of [q, ...searchAliases(q)]) {
+    const p = buildSearchPattern(term);
+    if (p) orParts.push(`title.ilike.${p}`, `author.ilike.${p}`);
+  }
+  if (orParts.length === 0) return [];
 
   const sb = await getClient();
   // genreId 指定時はDB側でジャンルに絞る（コミック検索が全書籍を舐めてWorker上限超過=
@@ -156,7 +162,7 @@ export async function searchBooks(
   let qb = sb!
     .from("books")
     .select("*")
-    .or(`title.ilike.${pattern},author.ilike.${pattern}`)
+    .or(orParts.join(","))
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
