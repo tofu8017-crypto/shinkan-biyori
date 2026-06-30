@@ -76,8 +76,14 @@ async function pickKeywords(sb) {
     .sort((a, b) => b.volume - a.volume);
 }
 
-// 文芸コラムに不適切なタイトルを除外（写真集・グラビア・成人向け等）
-const NG_TITLE = ["写真集", "グラビア", "アイドル", "射精", "官能", "エロ", "18禁", "成人向け", "ヌード", "av編集", "撮影会"];
+// 文芸コラムに不適切なタイトルを除外（写真集・グラビア・成人向け等）。
+// 成人向け高信号語を強化（「好色村」(竹書房文庫)等の漏れを防ぐ。lib/genre-classifyのADULT_TITLEと揃える）。
+const NG_TITLE = [
+  "写真集", "グラビア", "アイドル", "ヌード", "av編集", "撮影会",
+  "射精", "官能", "エロ", "18禁", "成人向け",
+  "好色", "淫", "痴女", "巨乳", "爆乳", "中出", "寝取", "性奴隷", "人妻",
+  "媚薬", "牝", "陵辱", "痴漢", "蜜夜", "ふたなり", "発情", "童貞", "絶頂", "性欲",
+];
 
 async function getBooks(sb, genreId) {
   const today = jstToday();
@@ -91,7 +97,7 @@ async function getBooks(sb, genreId) {
   for (const w of NG_TITLE) q = q.not("title", "ilike", `%${w}%`);
   const { data } = await q
     .order("published_date", { ascending: false })
-    .limit(12);
+    .limit(6); // 12選リストをやめ少数に絞る（フォールバック時も絞り込み）
   return (data || []).map((b) => ({
     title: b.title,
     author: b.author,
@@ -237,9 +243,10 @@ async function main() {
   const sb = createClient(SUPABASE_URL, KEY);
   const used = await getUsedKeywords(sb);
 
-  // 週5日は固有名詞（作家名）テーマにする。残り2日は従来の一般KW。
-  // 同じ雰囲気の連続を避ける（藤澤さん方針 2026-06-30）。epochDay%7 < 5 で 5/7 日。
-  const entityDay = epochDay(jstToday()) % 7 < 5;
+  // 作家名テーマを基本にする（藤澤さん方針 2026-06-30）。
+  // 「日付の新刊◯◯選」リスト型はラノベ/成人が混ざるため廃止し、作家コラムに統一。
+  // 作家が足りない日だけ一般KWへフォールバック（その場合も少数・成人除外）。
+  const entityDay = true;
 
   const chosen = []; // {keyword, genre_id, author?}
   const usedGenre = new Set();
