@@ -128,7 +128,8 @@ function buildSearchPattern(q: string): string | null {
 
 export async function searchBooks(
   query: string,
-  limit = 200
+  limit = 200,
+  opts?: { genreId?: string; skipRakuten?: boolean }
 ): Promise<Book[]> {
   const q = query.trim();
   if (!q) return [];
@@ -139,8 +140,8 @@ export async function searchBooks(
     const needle = strip(q);
     return MOCK_BOOKS.filter(
       (b) =>
-        strip(b.title).includes(needle) ||
-        strip(b.author ?? "").includes(needle)
+        (!opts?.genreId || b.genre_id === opts.genreId) &&
+        (strip(b.title).includes(needle) || strip(b.author ?? "").includes(needle))
     )
       .sort((a, b) => b.published_date.localeCompare(a.published_date))
       .slice(0, limit);
@@ -150,19 +151,27 @@ export async function searchBooks(
   if (!pattern) return [];
 
   const sb = await getClient();
-  const { data, error } = await sb!
+  // genreId 指定時はDB側でジャンルに絞る（コミック検索が全書籍を舐めてWorker上限超過=
+  // Error 1102 になるのを防ぐ。文字間%のilikeは重いので走査対象を最小化する）。
+  let qb = sb!
     .from("books")
     .select("*")
     .or(`title.ilike.${pattern},author.ilike.${pattern}`)
     .not("title", "ilike", "%写真集%")
     .not("title", "ilike", "%グラビア%")
     .not("title", "ilike", "%アイドル%")
-    .not("title", "ilike", "%Top Yell%")
+    .not("title", "ilike", "%Top Yell%");
+  if (opts?.genreId) qb = qb.eq("genre_id", opts.genreId);
+  const { data, error } = await qb
     .order("published_date", { ascending: false })
     .limit(limit);
 
   if (error) throw new Error(error.message);
   const dbBooks = data ?? [];
+
+  // 楽天補完をスキップ（コミック検索など。楽天補完は文芸中心で、ジャンル絞り込み後に
+  // 捨てられるため無駄＋遅延。DB結果だけ返す）。
+  if (opts?.skipRakuten) return dbBooks;
 
   // DBは新刊しか持たないため、楽天の全カタログ検索で旧作も補う。
   // DB収録分（新刊）を上に、楽天で見つかった未収録分（旧作など）を下に並べる。

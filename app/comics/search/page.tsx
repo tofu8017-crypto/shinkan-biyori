@@ -26,9 +26,11 @@ export default async function ComicSearchPage({
 }) {
   const { q } = await searchParams;
   const query = (q ?? "").trim();
-  // コミック検索なのでコミック(genre_id=001001)だけに絞る。文芸の本は除外する。
-  const all = query ? await searchBooks(query) : [];
-  const books = all.filter((b) => b.genre_id === "001001");
+  // コミック検索なのでDB側でコミック(genre_id=001001)に絞り、楽天補完もスキップする。
+  // （全書籍を舐めるとWorkerのリソース上限超過=Error 1102 になるため）
+  const books = query
+    ? await searchBooks(query, 200, { genreId: "001001", skipRakuten: true })
+    : [];
 
   return (
     <div className="comic-theme min-h-screen flex flex-col">
