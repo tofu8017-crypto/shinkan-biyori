@@ -3,7 +3,7 @@ name: はてな自動投稿（被リンク）
 # 毎日1本、ナカノ文体の独自記事をはてなブログに公開し、新刊日和へ dofollow 被リンクを張る。
 on:
   schedule:
-    - cron: "0 23 * * *"   # 毎朝8:00 JST = UTC 23:00（前日）。既存cron(00:30/06:00/07:00)と非衝突。
+    - cron: "10 21 * * *"   # 毎朝6:10 JST = UTC 21:10（前日）。7時頃に届くよう早めに発火（GitHub遅延吸収・:00回避）
   workflow_dispatch:
     inputs:
       draft:
