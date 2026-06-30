@@ -299,7 +299,27 @@ async function main() {
         console.error("  生成結果のパスを取得できず");
         continue;
       }
-      run("save-column.js", [m[1]]);
+      let colPath = m[1];
+
+      // 無料Gemini(別系統AI)でファクトチェック→指摘があればDeepSeekで1回だけ自己修正。
+      // SARPのジューリーを¥0で再現。Geminiが落ちても元コラムで続行（フェイルセーフ）。
+      try {
+        const rev = JSON.parse(run("review-column-gemini.js", [colPath, matPath]) || "{}");
+        if (rev && rev.ok === false && Array.isArray(rev.issues) && rev.issues.length) {
+          console.log(`  Geminiファクトチェック: ${rev.issues.length}件の指摘 → 1回修正`);
+          const notePath = `/tmp/review-note-${i}.txt`;
+          fs.writeFileSync(notePath, rev.issues.map((s, idx) => `${idx + 1}. ${s}`).join("\n"));
+          const out2 = run("write-column-deepseek.js", [matPath, notePath]);
+          const m2 = out2.match(/(\/tmp\/column-[^\s]+\.json)/);
+          if (m2) colPath = m2[1];
+        } else {
+          console.log("  Geminiファクトチェック: 指摘なし");
+        }
+      } catch (e) {
+        console.error("  Geminiチェックをスキップ（続行）:", e.message);
+      }
+
+      run("save-column.js", [colPath]);
       ok++;
     } catch (e) {
       console.error(`  [${i + 1}] 失敗（他は継続）: ${e.message}`);

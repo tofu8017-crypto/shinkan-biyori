@@ -48,11 +48,25 @@ async function main() {
     "utf8"
   );
 
+  // 任意: Geminiファクトチェックの指摘（第2引数のファイル）を渡されたら、修正指示として足す。
+  const reviseNotePath = process.argv[3];
+  let reviseNote = "";
+  if (reviseNotePath && fs.existsSync(reviseNotePath)) {
+    const note = fs.readFileSync(reviseNotePath, "utf8").trim();
+    if (note) {
+      reviseNote =
+        "\n\n【前回の記事に次の指摘がありました。素材の事実だけを使って必ず直してください】\n" +
+        note +
+        "\n（素材に無い固有名詞・数値・主張は書かない。AI臭い定型句は避ける。）";
+    }
+  }
+
   const userMessage =
     "以下の素材だけを使って、ルールに沿ったコラムJSONを1つ返してください。\n\n" +
     "```json\n" +
     JSON.stringify(materials, null, 2) +
-    "\n```";
+    "\n```" +
+    reviseNote;
 
   const res = await fetch(API_URL, {
     method: "POST",
