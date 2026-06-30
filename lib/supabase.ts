@@ -918,10 +918,12 @@ export async function getSiteStats(): Promise<SiteStats> {
     lastSyncedAt = null;
   }
 
-  // アフィリエイトクリック数（click_eventsが無い環境でも壊れないようtry/catch）
+  // アフィリエイトクリック数。click_events はRLSでanon SELECTを許可していないため、
+  // anonクライアントだと常に0になる（記録はservice_roleで書ける）。service_roleで集計する。
   let affiliateClicks = 0;
   try {
-    const ce = await sb!.from("click_events").select("*", { count: "exact", head: true });
+    const svc = await getServiceClient();
+    const ce = await (svc ?? sb!).from("click_events").select("*", { count: "exact", head: true });
     affiliateClicks = ce.count ?? 0;
   } catch {
     affiliateClicks = 0;
