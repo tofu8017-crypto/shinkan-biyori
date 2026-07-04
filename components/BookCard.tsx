@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Book } from "@/types/book";
 import { GENRES } from "@/types/book";
-import { amazonUrl } from "@/lib/amazon";
+import { amazonUrl, amazonSearchUrl } from "@/lib/amazon";
+import { detectSeries } from "@/lib/detect-series";
 import { ebookjapanUrl } from "@/lib/ebookjapan";
 import { hiResCover } from "@/lib/cover";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -70,6 +71,9 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
   const genre = GENRES.find((g) => g.id === effectiveGenreOfBook(book));
   const azUrl = amazonUrl(book);
   const ebjUrl = ebookjapanUrl(book); // 提携設定が無ければ null＝ボタン非表示
+  // 巻数付きタイトルなら「シリーズを全巻見る」導線を出す（Amazon検索＝アフィリンク）。
+  const series = detectSeries(book.title);
+  const seriesUrl = series ? amazonSearchUrl(series.base) : null;
   const href = azUrl; // 表紙画像クリックの飛び先＝Amazon（楽天は黒の楽天ボタンから）
   // お気に入り保存に必要な最小限の書誌（localStorageに入れる）
   const favBook = {
@@ -182,6 +186,13 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
               Amazon
             </a>
           </div>
+          {seriesUrl && (
+            <a href={seriesUrl} target="_blank" rel="noopener noreferrer sponsored"
+              className="text-sm font-bold mt-4 inline-block transition-opacity hover:opacity-80"
+              style={{ color: "var(--highlight)", textDecoration: "none" }}>
+              📚「{series!.base}」を全巻見る →
+            </a>
+          )}
         </div>
       </article>
     );
@@ -260,6 +271,13 @@ export default function BookCard({ book, featured = false, featuredLabel = "今�
           Amazon
         </a>
       </div>
+      {seriesUrl && (
+        <a href={seriesUrl} target="_blank" rel="noopener noreferrer sponsored"
+          className="block text-xs font-bold mt-3 text-center transition-opacity hover:opacity-80"
+          style={{ color: "var(--highlight)", textDecoration: "none" }}>
+          📚 シリーズを全巻見る →
+        </a>
+      )}
     </article>
   );
 }

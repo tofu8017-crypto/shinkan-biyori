@@ -33,14 +33,12 @@ async function CalendarBody() {
   const prev = shiftMonth(yyyymm, -1);
   const next = shiftMonth(yyyymm, 1);
 
+  // ★1102対策: 冊数集計は当月のみ取得する。前月・翌月は色付けなし（クリックで各月ページへ）。
+  //   3カ月ぶんの全件ページング集計を毎回の再生成で走らせるとWorkerが重くなるため。
   const cur = monthRange(yyyymm);
-  const pr = monthRange(prev);
-  const nx = monthRange(next);
-  const [counts, prevCounts, nextCounts] = await Promise.all([
-    getBookCountByDate(cur.from, cur.to),
-    getBookCountByDate(pr.from, pr.to),
-    getBookCountByDate(nx.from, nx.to),
-  ]);
+  const counts = await getBookCountByDate(cur.from, cur.to);
+  const prevCounts: Record<string, number> = {};
+  const nextCounts: Record<string, number> = {};
 
   const SideMonth = ({ ym, c }: { ym: string; c: Record<string, number> }) => (
     <Link

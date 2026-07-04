@@ -8,6 +8,7 @@ import {
   isJidaiNovel,
   isAdultNovel,
   isFantasy,
+  isChildrensBook,
   isReassignedFromBaseNovel,
 } from "./genre-classify";
 import { searchRakutenBooks, fetchRakutenByIsbn } from "./rakuten";
@@ -22,6 +23,10 @@ const NOVEL_GENRE_IDS = ["001004008", "001004009", "001004001", "001004002", "00
 const SF_FANTASY_ID = "001004002";
 const JIDAI_ID = "jidai";
 const ADULT_ID = "adult";
+const JIDO_ID = "jido";
+// ジャンルページのカード描画に必要な列だけ（description等の大きい列を外して
+// 再生成時のメモリ/CPUを抑える＝Error 1102対策）。BookCardのグリッド表示はこれで足りる。
+const CARD_COLS = "id,isbn13,isbn10,title,author,publisher,published_date,genre_id,image_url,rakuten_url";
 // 「日本文学」「海外小説」の基本タブ。ここからは派生ジャンル該当本を抜く。
 const BASE_NOVEL_IDS = ["001004008", "001004009"];
 
@@ -247,12 +252,14 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
       rows = rows.filter((b) => !isLikelyLightNovel(b) && isJidaiNovel(b));
     } else if (genreId === ADULT_ID) {
       rows = rows.filter((b) => isAdultNovel(b));
+    } else if (genreId === JIDO_ID) {
+      rows = rows.filter((b) => isChildrensBook(b));
     } else if (genreId === SF_FANTASY_ID) {
       rows = rows.filter(
         (b) =>
           !isLikelyLightNovel(b) &&
           !isAdultNovel(b) &&
-          (b.genre_id === SF_FANTASY_ID || isFantasy(b))
+          (b.genre_id === SF_FANTASY_ID || (isFantasy(b) && b.genre_id !== RANOBE_ID))
       );
     } else {
       rows = rows.filter((b) => b.genre_id === genreId);
@@ -269,7 +276,7 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
   if (genreId === RANOBE_ID) {
     const { data, error } = await sb!
       .from("books")
-      .select("*")
+      .select(CARD_COLS)
       .in("genre_id", [...NOVEL_GENRE_IDS, RANOBE_ID])
       .gte("published_date", since)
       .lte("published_date", until)
@@ -277,7 +284,8 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
       .not("title", "ilike", "%グラビア%")
       .not("title", "ilike", "%アイドル%")
       .order("published_date", { ascending: false })
-      .limit(300);
+      .limit(300)
+      .returns<Book[]>();
     if (error) throw new Error(error.message);
     return (data ?? [])
       .filter((b) => b.genre_id === RANOBE_ID || isLikelyLightNovel(b))
@@ -286,10 +294,15 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
 
   // 派生ジャンル（時代小説 / 成人向け / SF・ホラー・ファンタジー）:
   // 楽天ジャンルIDを持たないため、小説プールを広く取得しキーワード分類で絞る。
-  if (genreId === JIDAI_ID || genreId === ADULT_ID || genreId === SF_FANTASY_ID) {
+  if (
+    genreId === JIDAI_ID ||
+    genreId === ADULT_ID ||
+    genreId === JIDO_ID ||
+    genreId === SF_FANTASY_ID
+  ) {
     const { data, error } = await sb!
       .from("books")
-      .select("*")
+      .select(CARD_COLS)
       .in("genre_id", [...NOVEL_GENRE_IDS, RANOBE_ID])
       .gte("published_date", since)
       .lte("published_date", until)
@@ -297,7 +310,8 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
       .not("title", "ilike", "%グラビア%")
       .not("title", "ilike", "%アイドル%")
       .order("published_date", { ascending: false })
-      .limit(400);
+      .limit(400)
+      .returns<Book[]>();
     if (error) throw new Error(error.message);
     const pool = data ?? [];
     let rows: Book[];
@@ -305,6 +319,8 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
       rows = pool.filter((b) => !isLikelyLightNovel(b) && isJidaiNovel(b));
     } else if (genreId === ADULT_ID) {
       rows = pool.filter((b) => isAdultNovel(b));
+    } else if (genreId === JIDO_ID) {
+      rows = pool.filter((b) => isChildrensBook(b));
     } else {
       // SF・ホラー・ファンタジー: 元ジャンルがSF・ホラー、またはファンタジー判定。
       // ラノベ・成人向けは各専用タブへ寄せるため除外。
@@ -312,7 +328,7 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
         (b) =>
           !isLikelyLightNovel(b) &&
           !isAdultNovel(b) &&
-          (b.genre_id === SF_FANTASY_ID || isFantasy(b))
+          (b.genre_id === SF_FANTASY_ID || (isFantasy(b) && b.genre_id !== RANOBE_ID))
       );
     }
     rows.sort((a, b) => b.published_date.localeCompare(a.published_date));
@@ -322,7 +338,7 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
   // ① 元ジャンルが一致する本
   const { data, error } = await sb!
     .from("books")
-    .select("*")
+    .select(CARD_COLS)
     .eq("genre_id", genreId)
     .gte("published_date", since)
     .lte("published_date", until)
@@ -331,7 +347,8 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
     .not("title", "ilike", "%アイドル%")
     .not("title", "ilike", "%Top Yell%")
     .order("published_date", { ascending: false })
-    .limit(200);
+    .limit(200)
+    .returns<Book[]>();
 
   if (error) throw new Error(error.message);
 
@@ -345,7 +362,7 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
   if (ovAuthors.length > 0) {
     const { data: pool, error: pe } = await sb!
       .from("books")
-      .select("*")
+      .select(CARD_COLS)
       .in("genre_id", [...NOVEL_GENRE_IDS, RANOBE_ID])
       .gte("published_date", since)
       .lte("published_date", until)
@@ -353,7 +370,8 @@ export async function getBooksByGenre(genreId: string): Promise<Book[]> {
       .not("title", "ilike", "%グラビア%")
       .not("title", "ilike", "%アイドル%")
       .order("published_date", { ascending: false })
-      .limit(400);
+      .limit(400)
+      .returns<Book[]>();
     if (pe) throw new Error(pe.message);
     // 元ジャンルが違っても、作家オーバーライドで実効ジャンルがこのジャンルになる本だけ拾う
     extra = (pool ?? []).filter(
@@ -457,13 +475,17 @@ export async function getBookCountByDate(
 
   // Supabaseは1リクエスト最大1000行。月の冊数は1000を超えるため、published_dateだけを
   // 1000件ずつページングして全件集計する（.select("*")だと前半1000件で打ち切られ、
-  // 月後半が0件に見える不具合になる）。フィルタは getBooksByDateRange と揃える。
+  // 月後半が0件に見える不具合になる）。
+  // ★ISR再生成時のWorkerリソース(Error 1102)対策: 集計に必要なのは日付だけなので
+  //   published_date のみ取得する（title/publisherまで取ると3カ月分で数千行×太い行になり重い）。
+  //   写真集/コミック等はSQL側で除外。成人向けのJS除外はここでは行わない
+  //   （成人向けは稀で、カレンダーの色付けが数冊多くなる程度＝一覧表示には影響なし）。
   const sb = await getClient();
   const PAGE = 1000;
   for (let offset = 0; ; offset += PAGE) {
     const { data, error } = await sb!
       .from("books")
-      .select("published_date, title, publisher")
+      .select("published_date")
       .gte("published_date", from)
       .lte("published_date", to)
       .not("title", "ilike", "%写真集%")
@@ -476,8 +498,6 @@ export async function getBookCountByDate(
     if (error) throw new Error(error.message);
     const rows = data ?? [];
     for (const b of rows) {
-      // 成人向けは一覧から除外しているので、カレンダーの冊数集計からも外す
-      if (isAdultNovel(b)) continue;
       counts[b.published_date] = (counts[b.published_date] ?? 0) + 1;
     }
     if (rows.length < PAGE) break;
@@ -725,11 +745,12 @@ function bookMatchesGenre(b: Book, genreId?: string): boolean {
   if (genreId === RANOBE_ID) return b.genre_id === RANOBE_ID || isLikelyLightNovel(b);
   if (genreId === JIDAI_ID) return !isLikelyLightNovel(b) && isJidaiNovel(b);
   if (genreId === ADULT_ID) return isAdultNovel(b);
+  if (genreId === JIDO_ID) return isChildrensBook(b);
   if (genreId === SF_FANTASY_ID) {
     return (
       !isLikelyLightNovel(b) &&
       !isAdultNovel(b) &&
-      (b.genre_id === SF_FANTASY_ID || isFantasy(b))
+      (b.genre_id === SF_FANTASY_ID || (isFantasy(b) && b.genre_id !== RANOBE_ID))
     );
   }
   // 通常ジャンル: 作家オーバーライドを反映した実効ジャンルで一致を見る

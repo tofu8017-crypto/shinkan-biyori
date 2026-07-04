@@ -10,6 +10,7 @@ export type Genre =
   | "001006"    // ビジネス・実用書
   | "jidai"     // 歴史・時代小説（楽天ジャンルではなくキーワード分類の派生ジャンル）
   | "adult"     // 成人向け小説（同上）
+  | "jido"      // 児童書（同上。楽天が海外小説等に誤分類する児童書・絵本をキーワードで抽出）
 
 // label: 書籍カードのジャンルチップやジャンルページ見出しに使う正式名
 // short: ヘッダーのタブ表示用の短い名前（無ければlabelを使う）
@@ -27,6 +28,7 @@ export const GENRES: { id: Genre; label: string; color: string; short?: string }
   { id: "001001",    label: "コミック",     color: "#B8C4D4" },
   { id: "001019",    label: "文庫",         color: "#C4C9B8" },
   { id: "001006",    label: "ビジネス・実用書", color: "#D8C99A", short: "ビジネス" },
+  { id: "jido",      label: "児童書",         color: "#C4D8B0" },
 ]
 
 // ラノベの判定で使う「文芸の小説ジャンル」。これらに入っていても

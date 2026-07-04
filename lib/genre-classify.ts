@@ -43,6 +43,15 @@ const FANTASY_TITLE = [
   "精霊", "召喚", "異界", "妖精", "魔女", "騎士団", "聖剣", "幻想",
 ];
 
+// ===== 児童書（楽天が海外小説等に誤分類する児童書・絵本を寄せる） =====
+const JIDO_TITLE = [
+  "絵本", "児童書", "児童文学", "児童文芸", "童話", "読み聞かせ", "よみきかせ",
+];
+const JIDO_PUBLISHERS = [
+  "日本児童文芸家協会", "福音館書店", "童心社", "偕成社", "金の星社",
+  "あかね書房", "フレーベル館", "岩崎書店",
+];
+
 function hasAny(text: string, words: string[]): boolean {
   return words.some((w) => text.includes(w));
 }
@@ -69,10 +78,16 @@ export function isFantasy(book: Pick<Book, "title" | "publisher">): boolean {
   return hasAny(book.title ?? "", FANTASY_TITLE);
 }
 
+// 児童書か（タイトル or レーベルで判定）。
+export function isChildrensBook(book: Pick<Book, "title" | "publisher">): boolean {
+  if (hasAny(book.title ?? "", JIDO_TITLE)) return true;
+  return hasAny(book.publisher ?? "", JIDO_PUBLISHERS);
+}
+
 // 「小説（日本）/（海外）」の基本タブから抜くべき本か。
-// 成人向け・時代小説・ファンタジーに該当する本は専用タブへ寄せ、基本タブから外す。
+// 成人向け・時代小説・ファンタジー・児童書に該当する本は専用タブへ寄せ、基本タブから外す。
 export function isReassignedFromBaseNovel(
   book: Pick<Book, "title" | "author" | "publisher">
 ): boolean {
-  return isAdultNovel(book) || isJidaiNovel(book) || isFantasy(book);
+  return isAdultNovel(book) || isJidaiNovel(book) || isFantasy(book) || isChildrensBook(book);
 }

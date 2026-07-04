@@ -90,7 +90,7 @@ async function getBooks(sb, genreId) {
   const since = addDaysUTC(today, -BOOK_DAYS);
   let q = sb
     .from("books")
-    .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date")
+    .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date,image_url")
     .eq("genre_id", genreId)
     .gte("published_date", since)
     .lte("published_date", today);
@@ -107,6 +107,7 @@ async function getBooks(sb, genreId) {
     isbn10: b.isbn10,
     amazon_url: amazonUrl(b),
     rakuten_url: b.rakuten_url,
+    image_url: b.image_url,
   }));
 }
 
@@ -192,7 +193,7 @@ async function getBooksByAuthor(sb, author) {
   const since = addDaysUTC(today, -180);
   let q = sb
     .from("books")
-    .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date")
+    .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date,image_url")
     .ilike("author", `%${author}%`)
     .in("genre_id", LITERARY_GENRES)
     .not("publisher", "ilike", "%ハーレクイン%")
@@ -217,6 +218,7 @@ async function getBooksByAuthor(sb, author) {
       isbn10: b.isbn10,
       amazon_url: amazonUrl(b),
       rakuten_url: b.rakuten_url,
+      image_url: b.image_url,
     });
     if (out.length >= 12) break;
   }
@@ -324,6 +326,19 @@ async function main() {
         }
       } catch (e) {
         console.error("  Geminiチェックをスキップ（続行）:", e.message);
+      }
+
+      // アイキャッチ＝先頭の本の表紙（高解像度化）。無ければ save-column 側がプール画像にフォールバック。
+      const lead = books.find((b) => b.image_url);
+      if (lead) {
+        const hiRes = lead.image_url.replace(/_ex=\d+x\d+/, "_ex=600x600");
+        try {
+          const col = JSON.parse(fs.readFileSync(colPath, "utf8"));
+          col.hero_image_url = hiRes;
+          fs.writeFileSync(colPath, JSON.stringify(col));
+        } catch (e) {
+          console.error("  hero_image_url 付与に失敗（続行）:", e.message);
+        }
       }
 
       run("save-column.js", [colPath]);

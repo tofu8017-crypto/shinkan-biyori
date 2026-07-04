@@ -136,14 +136,11 @@ async function ComicCalendarSection() {
   const prev = shiftMonth(yyyymm, -1);
   const next = shiftMonth(yyyymm, 1);
 
+  // ★1102対策: 冊数集計は当月のみ。コミックは最大ジャンルで3カ月ぶんのページング集計が重い。
   const cur = monthRange(yyyymm);
-  const pr = monthRange(prev);
-  const nx = monthRange(next);
-  const [counts, prevCounts, nextCounts] = await Promise.all([
-    getComicCountByDate(cur.from, cur.to),
-    getComicCountByDate(pr.from, pr.to),
-    getComicCountByDate(nx.from, nx.to),
-  ]);
+  const counts = await getComicCountByDate(cur.from, cur.to);
+  const prevCounts: Record<string, number> = {};
+  const nextCounts: Record<string, number> = {};
 
   const SideMonth = ({ ym, c }: { ym: string; c: Record<string, number> }) => (
     <Link

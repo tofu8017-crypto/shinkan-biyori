@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { GENRES } from "@/types/book";
 import { pickColumnImage } from "@/lib/column-images";
 
@@ -29,18 +32,32 @@ export default function ColumnHero({ slug, genreId, heroImageUrl, variant = "lis
   const genre = GENRES.find((g) => g.id === genreId);
   const accent = (genreId && ACCENTS[genreId]) || "#9c8f86";
   const isDetail = variant === "detail";
-  const src = heroImageUrl || pickColumnImage(slug);
+  // hero_image_url が 404 等で壊れていたら、プール画像へ自動フォールバックする
+  // （リラのコラムのように実体ファイルが無いURLでも画像が消えないように）。
+  const fallback = pickColumnImage(slug);
+  const [src, setSrc] = useState(heroImageUrl || fallback);
 
   return (
     <div
       className="relative w-full overflow-hidden"
       style={{ height: isDetail ? "300px" : "168px" }}
     >
+      {/* ぼかした画像を背景に敷き、縦長の本の表紙でも横長ヘロに破綻なく収める。
+          前面はobject-containで表紙全体を中央に見せる（横長の写真もそのまま馴染む）。 */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ filter: "blur(18px) brightness(0.85)", transform: "scale(1.15)" }}
+      />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={genre ? `${genre.label}のコラム` : "コラム"}
-        className="w-full h-full object-cover"
+        className="relative w-full h-full object-contain"
+        onError={() => { if (src !== fallback) setSrc(fallback); }}
       />
       {/* 下部の暗いスクリム（ラベルの可読性確保） */}
       <div

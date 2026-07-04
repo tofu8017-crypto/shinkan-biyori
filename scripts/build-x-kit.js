@@ -50,10 +50,14 @@ const HIGHLIGHT_GENRES = [
 
 // 文芸らしくないタイトルを除外（成人向け＋ラノベ/なろう/異世界系＋極端に長い題名）。
 // 楽天の「小説」ジャンルにはこれらが大量に混ざるため、Xの見出しから外す。
-const NG_RE = /射精|官能|エロ|18禁|成人向け|ヌード|AV編集|撮影会/;
+// 成人向け語。lib/genre-classify.ts の ADULT_TITLE と揃える（好色村等の漏れ防止）。
+// ★ここを増やすときは lib/genre-classify.ts の ADULT_TITLE も揃えること。
+const NG_RE = /射精|官能|エロ|18禁|成人向け|ヌード|AV編集|撮影会|好色|淫|肉欲|蜜夜|媚薬|牝|陵辱|痴漢|人妻|寝取|性奴隷|痴女|巨乳|爆乳|中出し|アダルト|ふたなり|発情|牝堕ち|雌堕ち|性欲|童貞|絶頂/;
 const LN_RE = /異世界|転生|転移|令嬢|公爵|侯爵|伯爵|婚約|聖女|勇者|魔王|魔導|スキル|チート|最強|追放|ハーレム|ヤンデレ|ダンジョン|迷宮|攻略|冒険者|辺境|領地|王太子|王女|騎士団|召喚|やり直し|無職|無双|モブ|な件|ざまぁ|二度目|スローライフ|悪役|ギルド|レベル|奴隷|VRMMO|ステータス|側妃|竜帝|世継ぎ|寵愛|嫁いで/;
 function looksLikeJunk(title) {
   const t = title || "";
+  // POD(プリントオンデマンド＝自費出版系)は「今日の一冊」等の看板に出さない（ブランド保護）
+  if (/【POD】|オンデマンド(版|印刷)/.test(t)) return true;
   return NG_RE.test(t) || LN_RE.test(t) || t.length > 32;
 }
 // 著者データが壊れている本を弾く（著者が空 / 出版社名が著者欄に入っている等）
@@ -232,10 +236,10 @@ async function main() {
   const posts = []; // {kind, isbn13?, slug?, content, image_url?}
   const usedIsbn = new Set(); // このキット内で既に出した本（①②の重複防止）
 
-  // ---- (1) 今日の新刊ダイジェスト（リンク無し・コンテンツ） ----
+  // ---- (1) 今日の新刊ダイジェスト（1冊を書影＋短いあらすじ＋書籍ページリンクで紹介） ----
   try {
     // 今日の文芸書（正確な冊数はcountで取得し、見出し用に数冊だけ実体を引く）
-    const SEL = "title,author,publisher,isbn13,image_url,published_date";
+    const SEL = "title,author,publisher,isbn13,image_url,published_date,description";
     // 写真集/グラビア＋ハーレクイン（恋愛輸入）を除外して文芸らしさを保つ
     const CLEAN = (q) =>
       q.not("title", "ilike", "%写真集%")
@@ -288,33 +292,47 @@ async function main() {
       const base = fresh;
       const off = dayNum(today) % base.length;
       const rotated = base.slice(off).concat(base.slice(0, off));
-      // 2冊羅列だと薄いので、3冊をリスト表示＋フック文で内容を濃く（藤澤さん要望 2026-06-30）。
-      // 280超過時は冊数を1冊ずつ減らして必ず収める。
-      const picksAll = [...new Map(rotated.slice(0, 3).map((b) => [b.isbn13, b])).values()];
-      const buildDigest = (picks) => {
-        const lines = picks
-          .map((b) => `・『${b.title}』${(b.author || "").split("/")[0]}`)
-          .join("\n");
-        return (
-          `📚 ${label}発売の文芸書は${count}冊。\n` +
-          `気になる新刊はこのあたり。\n` +
-          `${lines}\n` +
-          `今日はどれを開きますか？\n` +
-          `#本好きと繋がりたい #新刊`
-        );
-      };
-      let picks = picksAll;
-      let content = buildDigest(picks);
-      while (xWeight(content) > 278 && picks.length > 1) {
-        picks = picks.slice(0, picks.length - 1);
-        content = buildDigest(picks);
+      // 1冊だけを深く紹介する（藤澤さん方針 2026-07-02）。書影＋短いあらすじ＋書籍ページ
+      // (=楽天/Amazonの購入ボタンとクリック計測つき)へのリンクで、そのまま購入に繋げる。
+      // あらすじがある本を優先する。まずDBのdescription(openBD要約済み)を持つ本を探し、
+      // 無ければopenBDを広めに(最大12冊)問い合わせる。それでも無ければ先頭の本を使う
+      // （新刊は発売直後だとopenBDに紹介文が無いことが多い＝その日は書影＋リンクのみ）。
+      let pick = rotated[0];
+      let summary = "";
+      const withDesc = rotated.find((b) => b.description && b.description.length > 20);
+      if (withDesc) {
+        pick = withDesc;
+        summary = withDesc.description;
+      } else {
+        for (const b of rotated.slice(0, 12)) {
+          const s = await fetchOpenBDSummary(b.isbn13);
+          if (s) { pick = b; summary = s; break; }
+        }
       }
-      for (const b of picks) if (b.isbn13) usedIsbn.add(b.isbn13);
+      const dAuthor = (pick.author || "").split("/")[0];
+      const dUrl = `${SITE}/books/${pick.isbn13}?${UTM}`;
+      const clip = (s, n) => (s && s.length > n ? s.slice(0, n).trim() + "…" : s || "");
+      const buildDigest = (summ) =>
+        `📚 ${label}発売の文芸書は${count}冊。\n` +
+        `今日の一冊はこちら。\n` +
+        `『${pick.title}』${dAuthor}\n` +
+        (summ ? `${summ}\n` : "") +
+        `${dUrl}\n` +
+        `#本好きと繋がりたい #新刊`;
+      // あらすじは長めに載せ、280超過なら少しずつ削る→最後は無しにして必ず収める。
+      let summ = clip(summary, 90);
+      let content = buildDigest(summ);
+      while (xWeight(content) > 278 && summ.length > 0) {
+        summ = clip(summ.replace(/…$/, ""), Math.max(0, summ.length - 12));
+        content = buildDigest(summ);
+      }
+      if (xWeight(content) > 278) content = buildDigest("");
+      if (pick.isbn13) usedIsbn.add(pick.isbn13);
       posts.push({
         kind: "new_books_digest",
         content,
-        image_url: coverImg(picks[0] && picks[0].image_url), // 1冊目の書影を手動添付用に
-        isbns: picks.map((b) => b.isbn13).filter(Boolean), // 見出しに出した本も重複防止対象に
+        image_url: coverImg(pick.image_url), // 紹介する1冊の書影を手動添付用に
+        isbns: [pick.isbn13].filter(Boolean),
       });
     }
   } catch (e) {
@@ -429,14 +447,14 @@ async function main() {
 
   // ---- 出力（Job Summary or stdout） ----
   const kindLabel = {
-    new_books_digest: "① 今日の新刊ダイジェスト（リンク無し）",
+    new_books_digest: "① 今日の新刊ダイジェスト（1冊・書影・あらすじ・リンク有）",
     spotlight: "② 編集者の見立て（注目の新刊・リンク有）",
     column_promo: "③ コラム告知（コラムへのリンク）",
     birthday: "④ 今日が誕生日の作家（作品リンク有）",
   };
 
   let md = `# 🐦 X投稿キット（${today}）\n\n`;
-  md += `各ブロックをそのままコピーして @shinkanbiyori に貼ってください。②③④はサイトへのリンク付き（①のみリンク無し）。朝と夕に分けて投稿すると安全です。\n\n`;
+  md += `各ブロックをそのままコピーして @shinkanbiyori に貼ってください。①②③④すべてサイトへのリンク付き。①は書影を添付してください。朝と夕に分けて投稿すると安全です。\n\n`;
 
   for (const p of posts) {
     const w = xWeight(p.content);
