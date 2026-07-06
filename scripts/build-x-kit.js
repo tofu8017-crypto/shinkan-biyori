@@ -133,20 +133,22 @@ async function fetchOpenBDSummary(isbn) {
 }
 
 // DeepSeekで「編集者の見立て」型のX投稿を1つ生成（事実ベース・煽らない）。失敗時はnull。
+// 型はバズ小説紹介の定石: 1行目=書名を出さない内容フック → 『書名』著者 → どんな読者に響くか。
 async function craftEditorialPost(book, summary) {
   if (!DEEPSEEK_API_KEY) return null;
   const sys =
     "あなたは文芸書にくわしい編集者です。X(旧Twitter)用に新刊を紹介する短い投稿を1つ書きます。\n" +
-    "# 必須要素（この順で自然に）\n" +
-    "1. 冒頭で『書名』と著者名を必ず出す（例: 『書名』(著者名)。）\n" +
-    "2. どんな本か＝主題やジャンルを、内容紹介を“要約”して1〜2文（あらすじの丸写しは禁止）。\n" +
-    "3. 末尾に「どんな読者に響くか」を一言（例: 〜が好きな人に。/〜したい夜に。）。\n" +
+    "# 構成（この順で必ず）\n" +
+    "1. 1行目: 書名・著者名を出さず、この本の内容の核心を突く一言（読者のスクロールが止まる具体的な一文。ネタバレはしない。疑問形や意外な状況の提示が有効）。\n" +
+    "2. 空行をはさんで『書名』著者名。\n" +
+    "3. どんな本か＝主題やジャンルを、内容紹介を“要約”して1文（あらすじの丸写しは禁止）。\n" +
+    "4. 末尾に「どんな読者に響くか」を一言（例: 〜が好きな人に。/〜したい夜に。）。\n" +
     "# 声・事実\n" +
     "- 落ち着いた編集者の「見立て」。煽らない。与えられた『内容紹介』の事実だけを使い、捏造・脚色しない。内容紹介が無い場合は書名・著者・版元だけで簡潔に。\n" +
     "# 制約\n" +
-    "- 日本語、90〜120字（全角）。絶対に130字を超えない。改行は2〜3回まで。\n" +
+    "- 日本語、100〜130字（全角）。絶対に140字を超えない。\n" +
     "- ハッシュタグは付けない。絵文字は使わない。『』「」は可。\n" +
-    "- 使ってはいけない語: 魅力 必見 ぜひ いかがでしょうか 話題沸騰 今すぐ 絶対 神 感動必至 涙腺崩壊\n" +
+    "- 使ってはいけない語: 魅力 必見 ぜひ いかがでしょうか 話題沸騰 今すぐ 絶対 神 感動必至 涙腺崩壊 衝撃 驚愕\n" +
     "- 本文だけを返す（説明・引用符・コードブロックなし）。";
   const user =
     `書名: ${book.title}\n著者: ${(book.author || "").split("/")[0]}\n出版社: ${book.publisher}\n発売日: ${book.published_date}\n内容紹介: ${summary || "(なし)"}`;
@@ -187,7 +189,7 @@ async function postToDiscord(webhook, posts, today, kindLabel) {
     }
   };
   await send(
-    `🐦 **今日のX投稿キット（${today}）**\n各ブロックは「ラベル行」＋「コピー用の枠」の2メッセージに分けています。**枠だけを長押しコピー**して @shinkanbiyori に貼ってください（ラベルや文字数が混ざりません）。1日2回まで（朝/夕）。`
+    `🐦 **今日のX投稿キット（${today}）**\n各ブロックは「ラベル行」＋「本文の枠」＋「リプ用リンクの枠」に分かれています。**本文の枠を長押しコピー**して @shinkanbiyori に投稿→**すぐ自分でリプライしてリンクの枠を貼って**ください（本文にURLを入れるとXに表示を減らされるため、リンクはリプ欄に分けています）。1日2回まで（朝/夕）。`
   );
   for (const p of posts) {
     const w = xWeight(p.content);
@@ -198,9 +200,14 @@ async function postToDiscord(webhook, posts, today, kindLabel) {
     if (p.image_url) header += `\n📎 書影（保存してXに添付）: ${p.image_url}`;
     await send(header);
     await new Promise((r) => setTimeout(r, 400));
-    // ② コピー用の枠（これだけを長押しコピー）。本文だけを入れる
+    // ② 本文の枠（これを長押しコピーして投稿）
     await send("```\n" + p.content + "\n```");
     await new Promise((r) => setTimeout(r, 600)); // Discordレート制限対策
+    // ③ リプ用リンクの枠（本文を投稿した直後に、自分でリプライして貼る）
+    if (p.link) {
+      await send("↳ 投稿したらすぐ自分にリプライ↓\n```\n" + p.link + "\n```");
+      await new Promise((r) => setTimeout(r, 600));
+    }
   }
 }
 
@@ -312,15 +319,14 @@ async function main() {
       const dAuthor = (pick.author || "").split("/")[0];
       const dUrl = `${SITE}/books/${pick.isbn13}?${UTM}`;
       const clip = (s, n) => (s && s.length > n ? s.slice(0, n).trim() + "…" : s || "");
+      // 1行目=選択のフック（冊数は「◯冊から1冊」の緊張感として使う）。URLは本文に入れない（リプ欄へ）。
       const buildDigest = (summ) =>
-        `📚 ${label}発売の文芸書は${count}冊。\n` +
-        `今日の一冊はこちら。\n` +
+        `${label}発売の文芸書${count}冊から、1冊選ぶならこれ。\n\n` +
         `『${pick.title}』${dAuthor}\n` +
-        (summ ? `${summ}\n` : "") +
-        `${dUrl}\n` +
-        `#本好きと繋がりたい #新刊`;
+        (summ ? `\n${summ}\n` : "") +
+        `\n#本好きと繋がりたい #読書好きな人と繋がりたい`;
       // あらすじは長めに載せ、280超過なら少しずつ削る→最後は無しにして必ず収める。
-      let summ = clip(summary, 90);
+      let summ = clip(summary, 110);
       let content = buildDigest(summ);
       while (xWeight(content) > 278 && summ.length > 0) {
         summ = clip(summ.replace(/…$/, ""), Math.max(0, summ.length - 12));
@@ -331,6 +337,7 @@ async function main() {
       posts.push({
         kind: "new_books_digest",
         content,
+        link: `あらすじの続き・購入はこちら\n${dUrl}`,
         image_url: coverImg(pick.image_url), // 紹介する1冊の書影を手動添付用に
         isbns: [pick.isbn13].filter(Boolean),
       });
@@ -373,29 +380,61 @@ async function main() {
       const body =
         crafted ||
         `『${chosen.title}』${author}（${chosen.publisher}）\n${mdJP(chosen.published_date)}発売。`;
-      // ②にも書籍ページへのリンクを付ける（藤澤さん方針 2026-06-30。URLはXでは23字換算）
+      // リンクは本文に入れずリプ欄へ（本文URLはXに表示を減らされるため。2026-07-06変更）
       const url = `${SITE}/books/${chosen.isbn13}?${UTM}`;
-      const content = `${body}\n${url}`;
-      posts.push({ kind: "spotlight", isbn13: chosen.isbn13, content, image_url: coverImg(chosen.image_url) });
+      posts.push({
+        kind: "spotlight",
+        isbn13: chosen.isbn13,
+        content: body,
+        link: `詳細・購入はこちら\n${url}`,
+        image_url: coverImg(chosen.image_url),
+      });
     }
     // あらすじのある本が見つからなければ②は出さない（中身の薄い投稿を作らない）
   } catch (e) {
     console.error("spotlight生成スキップ:", e.message);
   }
 
-  // ---- (3) コラム告知（★この1枚だけ自サイトURLを付ける＝1日1リンク） ----
+  // ---- (3) コラム紹介（「公開しました」型をやめ、本文からリストを抜いた“保存される”投稿にする。
+  //          Xで最重視のシグナルはブックマーク＝リスト形式が強い。リンクはリプ欄へ） ----
   try {
     const { data: cols } = await sb
       .from("columns")
-      .select("slug,title,published_at,status")
+      .select("slug,title,body_html,published_at,status")
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(1);
     const c = (cols || [])[0];
     if (c) {
       const url = `${SITE}/column/${c.slug}?${UTM}`;
-      const content = `コラムを公開しました。\n「${c.title}」\n${url}\n#本好きと繋がりたい`;
-      posts.push({ kind: "column_promo", slug: c.slug, content });
+      // コラム本文から『書名』を順に抜き出す（重複除去・長すぎる誤マッチ除外）
+      const titles = [];
+      for (const m of (c.body_html || "").matchAll(/『([^』]{2,32})』/g)) {
+        if (!titles.includes(m[1])) titles.push(m[1]);
+      }
+      // タイトルの「◯選」から総数を拾う（無ければ抜き出せた冊数）
+      const numMatch = (c.title || "").match(/(\d+)選/);
+      const total = numMatch ? Number(numMatch[1]) : titles.length;
+      let content;
+      if (titles.length >= 3) {
+        // 280超過時はリストを壊さず「載せる冊数を減らす」（3冊→2冊）
+        const hook = c.title.replace(/^新刊案内文庫｜/, "").replace(/｜.*$/, "");
+        const build = (n) => {
+          const shown = titles.slice(0, n).map((t) => `・『${t}』`).join("\n");
+          const rest = Math.max(0, total - n);
+          return (
+            `${hook}\n\n${shown}\n` +
+            (rest > 0 ? `ほか全${total}冊。\n` : "") +
+            `選んだ理由と残りはコラムで（リンクはリプ欄）。\n\n#本好きと繋がりたい #読書好きな人と繋がりたい`
+          );
+        };
+        content = build(3);
+        if (xWeight(content) > 278) content = build(2);
+      } else {
+        // 書名が抜けないコラム（読み物系）はタイトルをフックにする
+        content = `「${c.title}」を書きました。リンクはリプ欄に。\n\n#本好きと繋がりたい`;
+      }
+      posts.push({ kind: "column_promo", slug: c.slug, content, link: `コラム本文はこちら\n${url}` });
     }
   } catch (e) {
     console.error("column_promo生成スキップ:", e.message);
@@ -433,12 +472,13 @@ async function main() {
         }
       } catch (_) {}
       const url = `${SITE}/search?q=${encodeURIComponent(bd.name)}&${UTM}`;
-      let c = `📚 今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
+      let c = `今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
       if (bd.note) c += `\n${bd.note}。`;
-      if (work) c += `\n新刊・近刊だと『${work}』など。作品一覧→${url}`;
-      else c += `\n${bd.name}の本を探す→${url}`;
-      c += `\n#今日は何の日 #本好きと繋がりたい`;
-      posts.push({ kind: "birthday", content: c });
+      if (work) c += `\n新刊・近刊だと『${work}』など。`;
+      // 問いかけで締める（リプライ＝会話が発生する投稿をXは優遇する。2026-07-06変更）
+      c += `\n\n${bd.name}作品、いちばん好きな一冊はなんですか？`;
+      c += `\n\n#今日は何の日 #本好きと繋がりたい`;
+      posts.push({ kind: "birthday", content: c, link: `${bd.name}の本を探す\n${url}` });
     }
     // 該当作家がいない日は④を出さない（無理に思想ポストを作らない）
   } catch (e) {
@@ -447,14 +487,14 @@ async function main() {
 
   // ---- 出力（Job Summary or stdout） ----
   const kindLabel = {
-    new_books_digest: "① 今日の新刊ダイジェスト（1冊・書影・あらすじ・リンク有）",
-    spotlight: "② 編集者の見立て（注目の新刊・リンク有）",
-    column_promo: "③ コラム告知（コラムへのリンク）",
-    birthday: "④ 今日が誕生日の作家（作品リンク有）",
+    new_books_digest: "① 今日の新刊ダイジェスト（1冊・書影・リンクはリプ欄）",
+    spotlight: "② 編集者の見立て（注目の新刊・リンクはリプ欄）",
+    column_promo: "③ コラム紹介（リスト型・リンクはリプ欄）",
+    birthday: "④ 今日が誕生日の作家（問いかけ・リンクはリプ欄）",
   };
 
   let md = `# 🐦 X投稿キット（${today}）\n\n`;
-  md += `各ブロックをそのままコピーして @shinkanbiyori に貼ってください。①②③④すべてサイトへのリンク付き。①は書影を添付してください。朝と夕に分けて投稿すると安全です。\n\n`;
+  md += `本文をコピーして @shinkanbiyori に投稿→すぐ自分でリプライしてリンクを貼ってください（本文にURLを入れるとXに表示を減らされるため）。①②は書影を添付。朝と夕に分けて投稿すると安全です。\n\n`;
 
   for (const p of posts) {
     const w = xWeight(p.content);
@@ -462,6 +502,7 @@ async function main() {
     const banned = lintBanned(p.content);
     md += `## ${kindLabel[p.kind] || p.kind}\n\n`;
     md += "```\n" + p.content + "\n```\n";
+    if (p.link) md += "リプ欄に貼るリンク:\n\n```\n" + p.link + "\n```\n";
     md += `- 文字数(X換算): ${w}/280${over}\n`;
     if (banned.length) md += `- ⚠️ 禁止語: ${banned.join(", ")}（言い換え推奨）\n`;
     if (p.image_url) md += `- 📎 書影（開いて保存→Xに添付）: ${p.image_url}\n`;
