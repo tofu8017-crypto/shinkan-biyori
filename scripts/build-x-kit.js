@@ -174,6 +174,45 @@ async function craftEditorialPost(book, summary) {
   }
 }
 
+// DeepSeekで①「今日の一冊」の推薦理由を1〜2文生成（なぜこの本を選んだかが伝わる一言）。失敗時はnull。
+async function craftPickReason(book, summary) {
+  if (!DEEPSEEK_API_KEY || !summary) return null;
+  const sys =
+    "あなたは文芸書にくわしい編集者です。今日発売の新刊の中から「今日の一冊」に選んだ本について、" +
+    "X(旧Twitter)投稿に載せる推薦理由を書きます。\n" +
+    "# 書くこと\n" +
+    "- なぜ数ある新刊からこの1冊を選んだのかが伝わる、具体的な推薦の一言（1〜2文）。\n" +
+    "- どんな話かに軽く触れつつ、「どんな気分・どんな読者に合うか」で締める。\n" +
+    "# 制約\n" +
+    "- 与えられた『内容紹介』の事実だけを使う。捏造・脚色しない。\n" +
+    "- 書名・著者名は書かない（投稿の別の行に既にあるため）。\n" +
+    "- 日本語、50〜90字（全角）。絶対に100字を超えない。\n" +
+    "- ハッシュタグ・絵文字なし。あらすじの丸写し禁止。\n" +
+    "- 使ってはいけない語: 魅力 必見 ぜひ いかがでしょうか 話題沸騰 今すぐ 絶対 神 感動必至 涙腺崩壊 衝撃 驚愕\n" +
+    "- 本文だけを返す（説明・引用符なし）。";
+  const user = `書名: ${book.title}\n著者: ${(book.author || "").split("/")[0]}\n内容紹介: ${summary}`;
+  try {
+    const res = await fetch(DEEPSEEK_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${DEEPSEEK_API_KEY}` },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [{ role: "system", content: sys }, { role: "user", content: user }],
+        temperature: 0.7,
+        max_tokens: 300,
+      }),
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    let t = d?.choices?.[0]?.message?.content?.trim();
+    if (!t) return null;
+    t = t.replace(/^["'`]+|["'`]+$/g, "").trim();
+    return xWeight(t) <= 220 ? t : null; // 明らかに長すぎたら不採用（フォールバックへ）
+  } catch (_) {
+    return null;
+  }
+}
+
 // Discord Webhook に投稿キットを送る。各投稿を個別メッセージ（コードブロック）にして
 // スマホで長押しコピー→Xに貼りやすくする。
 async function postToDiscord(webhook, posts, today, kindLabel) {
@@ -311,7 +350,8 @@ async function main() {
         pick = withDesc;
         summary = withDesc.description;
       } else {
-        for (const b of rotated.slice(0, 12)) {
+        // 内容紹介がある本を広めに探す（あらすじ無し＝推薦理由も書けない日を減らす）
+        for (const b of rotated.slice(0, 25)) {
           const s = await fetchOpenBDSummary(b.isbn13);
           if (s) { pick = b; summary = s; break; }
         }
@@ -325,8 +365,11 @@ async function main() {
         `『${pick.title}』${dAuthor}\n` +
         (summ ? `\n${summ}\n` : "") +
         `\n#本好きと繋がりたい #読書好きな人と繋がりたい`;
-      // あらすじは長めに載せ、280超過なら少しずつ削る→最後は無しにして必ず収める。
-      let summ = clip(summary, 110);
+      // 「なぜこの1冊か」＝推薦理由をDeepSeekで生成（藤澤さんFB 2026-07-06:
+      // あらすじの切り貼りでは選んだ理由が伝わらない）。失敗時はあらすじ短縮にフォールバック。
+      const reason = await craftPickReason(pick, summary);
+      // あらすじ（or理由）は280超過なら少しずつ削る→最後は無しにして必ず収める。
+      let summ = reason || clip(summary, 110);
       let content = buildDigest(summ);
       while (xWeight(content) > 278 && summ.length > 0) {
         summ = clip(summ.replace(/…$/, ""), Math.max(0, summ.length - 12));
@@ -453,7 +496,10 @@ async function main() {
     } catch (_) {}
     const md = today.slice(5); // MM-DD
     const bd = override[md] || birthdays[md];
-    if (bd) {
+    // 文芸の看板に合う人だけ出す: 書物の代表作(works=Wikidata由来)があるか、作家系の肩書きか。
+    // 軍人・皇族・スポーツ選手等は自動スキップ（2026-07-06・薄い投稿対策）
+    const WRITER_NOTE = /作家|小説家|詩人|歌人|俳人|俳諧|劇作家|随筆|エッセイ|評論家|翻訳|文学|漫画家|脚本家|著述|文人|戯作|哲学者|思想家/;
+    if (bd && ((bd.works || []).length > 0 || WRITER_NOTE.test(bd.note || ""))) {
       const [, m, d] = today.split("-");
       // 内容が薄くならないよう、その作家の本がDBにあれば書名を1つ添え、
       // 新刊・近刊一覧（検索ページ）へのリンクを付ける（藤澤さん方針 2026-06-30）。
@@ -472,12 +518,22 @@ async function main() {
         }
       } catch (_) {}
       const url = `${SITE}/search?q=${encodeURIComponent(bd.name)}&${UTM}`;
-      let c = `今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
-      if (bd.note) c += `\n${bd.note}。`;
-      if (work) c += `\n新刊・近刊だと『${work}』など。`;
-      // 問いかけで締める（リプライ＝会話が発生する投稿をXは優遇する。2026-07-06変更）
-      c += `\n\n${bd.name}作品、いちばん好きな一冊はなんですか？`;
-      c += `\n\n#今日は何の日 #本好きと繋がりたい`;
+      // 代表作（Wikidata由来・書物のみ）＋問いかけで厚みを出す。
+      // 280超過時は「DB新刊の行→代表作2作目」の順で間引く（問いかけ・タグは守る）
+      const buildBd = (nWorks, withDbWork) => {
+        let c = `今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
+        if (bd.note) c += `\n${bd.note}。`;
+        const works = (bd.works || []).slice(0, nWorks).map((w) => `『${w}』`).join("");
+        if (works) c += `\n代表作は${works}。`;
+        if (withDbWork && work) c += `\n新刊・近刊だと『${work}』など。`;
+        // 問いかけで締める（リプライ＝会話が発生する投稿をXは優遇する。2026-07-06変更）
+        c += `\n\n${bd.name}作品、いちばん好きな一冊はなんですか？`;
+        c += `\n\n#今日は何の日 #本好きと繋がりたい`;
+        return c;
+      };
+      let c = buildBd(2, true);
+      if (xWeight(c) > 278) c = buildBd(2, false);
+      if (xWeight(c) > 278) c = buildBd(1, false);
       posts.push({ kind: "birthday", content: c, link: `${bd.name}の本を探す\n${url}` });
     }
     // 該当作家がいない日は④を出さない（無理に思想ポストを作らない）
