@@ -18,6 +18,10 @@ const MAX_KD = Number(process.env.MAX_KD) || 35;
 const BOOK_DAYS = Number(process.env.BOOK_DAYS) || 60;
 
 const norm = (s) => (s || "").replace(/[\s　]/g, "").toLowerCase();
+// quality-check.js の字数下限と揃える（本文が短いまま公開ゲートに出しても毎回落ちるだけなので、
+// ここで一度だけ書き直しのチャンスを与える）
+const QC_MIN_CHARS = Number(process.env.QC_MIN_CHARS) || 1800;
+const plainLen = (html) => (html || "").replace(/<[^>]+>/g, "").replace(/\s/g, "").length;
 
 // 在庫と噛み合わない/文芸でないKWは生成しない。
 // （実データ上 ミステリー001004001・SF001004002・ロマンス001004016 はほぼ0冊で、
@@ -309,6 +313,28 @@ async function main() {
         continue;
       }
       let colPath = m[1];
+
+      // 本文が品質ゲートの字数下限に届かなければ、1回だけ書き直しのチャンスを与える
+      // （プロンプトの目標3,500字に対し、DeepSeekの実出力が1,800字未満に収まりがちで
+      //   ゲート不合格→非公開が続いた反省。2026-07-08）。
+      {
+        const len = plainLen(JSON.parse(fs.readFileSync(colPath, "utf8")).body_html);
+        if (len < QC_MIN_CHARS) {
+          console.log(`  本文${len}字で下限(${QC_MIN_CHARS}字)未満 → 書き直しを1回試みる`);
+          const lenNotePath = `/tmp/length-note-${i}.txt`;
+          fs.writeFileSync(
+            lenNotePath,
+            `本文が${len}字しかなく短すぎます（目標は3,500字以上）。各書籍ブロックを「書誌事実／内容紹介／読みどころ・背景／どんな人に響くか」の4部構成で、資料にある情報を漏らさず具体的に掘り下げて増やしてください（新しい事実は作らない・同じ内容の言い換えで水増ししない）。導入とまとめも具体的に書いてください。`
+          );
+          try {
+            const out3 = run("write-column-deepseek.js", [matPath, lenNotePath]);
+            const m3 = out3.match(/(\/tmp\/column-[^\s]+\.json)/);
+            if (m3) colPath = m3[1];
+          } catch (e) {
+            console.error("  書き直しに失敗（元の下書きで続行）:", e.message);
+          }
+        }
+      }
 
       // 無料Gemini(別系統AI)でファクトチェック→指摘があればDeepSeekで1回だけ自己修正。
       // SARPのジューリーを¥0で再現。Geminiが落ちても元コラムで続行（フェイルセーフ）。
