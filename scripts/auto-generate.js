@@ -329,7 +329,11 @@ async function main() {
           try {
             const out3 = run("write-column-deepseek.js", [matPath, lenNotePath]);
             const m3 = out3.match(/(\/tmp\/column-[^\s]+\.json)/);
-            if (m3) colPath = m3[1];
+            if (m3) {
+              colPath = m3[1];
+              const len2 = plainLen(JSON.parse(fs.readFileSync(colPath, "utf8")).body_html);
+              console.log(`  書き直し後: ${len2}字`);
+            }
           } catch (e) {
             console.error("  書き直しに失敗（元の下書きで続行）:", e.message);
           }
