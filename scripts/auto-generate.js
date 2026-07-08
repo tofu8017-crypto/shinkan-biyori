@@ -146,10 +146,10 @@ function titleKey(t) {
     .toLowerCase();
 }
 
-// 在庫の全作家から「直近に2冊以上ある作家」を拾い、固有名詞コラムのテーマにする。
-// 作家名中心（藤澤さん方針 2026-06-30、週5日は固有名詞）。在庫のある本だけで書く前提。
+// 在庫の全作家から「直近に2冊以上ある作家」を集計する（固有名詞コラムの母集団）。
 // 文芸ジャンル限定＋ハーレクイン(恋愛輸入)除外で、簿記/資格/ロマンス輸入を排除する。
-async function getAuthorTopics(sb, used) {
+// getAuthorTopics/getBookTopics 共通の下ごしらえ（同じクエリを2回投げない）。
+async function collectAuthorStats(sb) {
   const today = jstToday();
   const since = addDaysUTC(today, -180); // 60日だと作家が足りないので広めに
   let q = sb
@@ -163,31 +163,57 @@ async function getAuthorTopics(sb, used) {
   for (const w of NG_TITLE) q = q.not("title", "ilike", `%${w}%`);
   const { data } = await q.order("published_date", { ascending: false }).limit(2000);
 
-  const map = new Map(); // normAuthor -> {author, titles:Set, genre:{id:count}}
+  const map = new Map(); // normAuthor -> {author, titles:Set, genre:{id:count}, latestTitle}
   for (const b of data || []) {
     const a = (b.author || "").split("/")[0].trim();
     if (!a || a.length < 2 || /[0-9A-Za-z]/.test(a) || looksJunkAuthor(a)) continue;
     const k = norm(a);
-    if (!map.has(k)) map.set(k, { author: a, titles: new Set(), genre: {} });
+    if (!map.has(k)) map.set(k, { author: a, titles: new Set(), genre: {}, latestTitle: b.title });
     const e = map.get(k);
     e.titles.add(titleKey(b.title)); // 版違いは1作として数える
     e.genre[b.genre_id] = (e.genre[b.genre_id] || 0) + 1;
   }
-  let authors = [...map.values()].filter((e) => e.titles.size >= 2);
+  const authors = [...map.values()].filter((e) => e.titles.size >= 2);
   for (const e of authors) {
     e.genre_id = Object.entries(e.genre).sort((x, y) => y[1] - x[1])[0][0];
   }
+  return authors;
+}
+
+// 作家名中心のコラムテーマ（藤澤さん方針 2026-06-30、週5日は固有名詞）。在庫のある本だけで書く前提。
+async function getAuthorTopics(sb, used, authors) {
+  const today = jstToday();
   // 既出作家は除外。在庫が多い順を基本に、日でローテして毎日違う作家に。
-  authors = authors.filter(
+  const pool = authors.filter(
     (e) => !used.has(norm(`${e.author} おすすめ`)) && !used.has(norm(e.author))
   );
-  authors.sort((a, b) => b.titles.size - a.titles.size);
-  const off = authors.length ? epochDay(today) % authors.length : 0;
-  const rotated = authors.slice(off).concat(authors.slice(0, off));
+  pool.sort((a, b) => b.titles.size - a.titles.size);
+  const off = pool.length ? epochDay(today) % pool.length : 0;
+  const rotated = pool.slice(off).concat(pool.slice(0, off));
   return rotated.map((e) => ({
     keyword: `${e.author} おすすめ`,
     genre_id: e.genre_id,
     author: e.author,
+  }));
+}
+
+// 書籍名中心のコラムテーマ（藤澤さんFB 2026-07-08「書籍名で記事を書いて」）。
+// 1冊を主役に深掘りしつつ、同じ作家の他の在庫本も併せて紹介する（素材不足で字数ゲートに
+// 落ちないよう、getAuthorTopicsと同じ「直近2冊以上ある作家」だけを対象にする）。
+// 主役の本＝その作家の最新刊（在庫データが最も厚く、話題性もある）。
+async function getBookTopics(sb, used, authors) {
+  const today = jstToday();
+  const pool = authors.filter(
+    (e) => !used.has(norm(`${e.latestTitle} あらすじ`)) && !used.has(norm(e.latestTitle))
+  );
+  pool.sort((a, b) => b.titles.size - a.titles.size);
+  const off = pool.length ? (epochDay(today) + 1) % pool.length : 0; // 作家テーマと日をずらして被りを減らす
+  const rotated = pool.slice(off).concat(pool.slice(0, off));
+  return rotated.map((e) => ({
+    keyword: `${e.latestTitle} あらすじ`,
+    genre_id: e.genre_id,
+    author: e.author,
+    leadTitle: e.latestTitle,
   }));
 }
 
@@ -249,22 +275,50 @@ async function main() {
   const sb = createClient(SUPABASE_URL, KEY);
   const used = await getUsedKeywords(sb);
 
-  // 作家名テーマを基本にする（藤澤さん方針 2026-06-30）。
-  // 「日付の新刊◯◯選」リスト型はラノベ/成人が混ざるため廃止し、作家コラムに統一。
-  // 作家が足りない日だけ一般KWへフォールバック（その場合も少数・成人除外）。
+  // 作家名テーマ＋書籍名テーマを基本にする（藤澤さん方針 2026-06-30・2026-07-08）。
+  // 「日付の新刊◯◯選」リスト型はラノベ/成人が混ざるため廃止し、固有名詞コラムに統一。
+  // 1日の本数(N)を半々に割り、作家紹介と1冊深掘りの両方を毎日出す。
+  // 固有名詞が足りない日だけ一般KWへフォールバック（その場合も少数・成人除外）。
   const entityDay = true;
 
-  const chosen = []; // {keyword, genre_id, author?}
+  const chosen = []; // {keyword, genre_id, author?, leadTitle?}
   const usedGenre = new Set();
 
   if (entityDay) {
-    const topics = await getAuthorTopics(sb, used);
-    for (const t of topics) {
-      if (chosen.length >= N) break;
+    const authorStats = await collectAuthorStats(sb);
+    const wantBooks = Math.floor(N / 2); // N=2→書籍1本・作家1本、N=1→作家のみ
+    const wantAuthors = N - wantBooks;
+
+    const authorTopics = await getAuthorTopics(sb, used, authorStats);
+    for (const t of authorTopics) {
+      if (chosen.filter((c) => !c.leadTitle).length >= wantAuthors) break;
       chosen.push({ keyword: t.keyword, genre_id: t.genre_id, author: t.author });
       usedGenre.add(t.genre_id);
     }
-    console.log(`固有名詞デー: 作家テーマ ${chosen.length}本（${chosen.map((c) => c.author).join("、") || "該当なし"}）`);
+
+    const bookTopics = await getBookTopics(sb, used, authorStats);
+    for (const t of bookTopics) {
+      if (chosen.length >= wantAuthors + wantBooks) break;
+      if (chosen.some((c) => norm(c.author) === norm(t.author))) continue; // 同じ作家の重複回避
+      chosen.push({ keyword: t.keyword, genre_id: t.genre_id, author: t.author, leadTitle: t.leadTitle });
+      usedGenre.add(t.genre_id);
+    }
+
+    // 書籍テーマが足りなければ作家テーマで穴埋め
+    if (chosen.length < N) {
+      for (const t of authorTopics) {
+        if (chosen.length >= N) break;
+        if (chosen.some((c) => norm(c.author) === norm(t.author))) continue; // 同じ作家の重複回避
+        chosen.push({ keyword: t.keyword, genre_id: t.genre_id, author: t.author });
+        usedGenre.add(t.genre_id);
+      }
+    }
+
+    const authorCount = chosen.filter((c) => !c.leadTitle).length;
+    const bookCount = chosen.filter((c) => c.leadTitle).length;
+    console.log(
+      `固有名詞デー: 作家テーマ${authorCount}本・書籍テーマ${bookCount}本（${chosen.map((c) => c.leadTitle || c.author).join("、") || "該当なし"}）`
+    );
   }
 
   // 固有名詞で埋まらない分（一般KWデー or 作家が足りない時）は従来の一般KWで補う
@@ -293,13 +347,18 @@ async function main() {
 
   let ok = 0;
   for (let i = 0; i < chosen.length; i++) {
-    const { keyword, genre_id, author } = chosen[i];
+    const { keyword, genre_id, author, leadTitle } = chosen[i];
     try {
       console.log(`\n[${i + 1}] KW="${keyword}" genre=${genre_id}${author ? ` (作家:${author})` : ""}`);
-      const books = author ? await getBooksByAuthor(sb, author) : await getBooks(sb, genre_id);
+      let books = author ? await getBooksByAuthor(sb, author) : await getBooks(sb, genre_id);
       if (books.length < 2) {
         console.log(`  本が${books.length}冊しか無いのでスキップ`);
         continue;
+      }
+      // 書籍テーマ: 主役の本(leadTitle)を先頭に並べ直す（プロンプトが「1冊目=主役」と解釈する目印）
+      if (leadTitle) {
+        const idx = books.findIndex((b) => titleKey(b.title) === titleKey(leadTitle));
+        if (idx > 0) books = [books[idx], ...books.slice(0, idx), ...books.slice(idx + 1)];
       }
       const inPath = `/tmp/input-${i}.json`;
       const matPath = `/tmp/materials-${i}.json`;
