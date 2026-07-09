@@ -399,11 +399,15 @@ async function main() {
       for (let retry = 0; retry < 2; retry++) {
         const len = plainLen(JSON.parse(fs.readFileSync(colPath, "utf8")).body_html);
         if (len >= QC_MIN_CHARS) break;
-        console.log(`  本文${len}字で下限(${QC_MIN_CHARS}字)未満 → 書き直し(${retry + 1}/2)を試みる`);
+        // 「3,500字以上」という遠い目標だと届かないことが多い（実測: 2回リトライしても
+        // 1600字前後止まりの例が半数）。現在地から届きそうな具体的な数値を都度示す方が
+        // 効きが良い（2026-07-09）。
+        const target = len + 800;
+        console.log(`  本文${len}字で下限(${QC_MIN_CHARS}字)未満 → 書き直し(${retry + 1}/2)を試みる(目標${target}字)`);
         const lenNotePath = `/tmp/length-note-${i}-${retry}.txt`;
         fs.writeFileSync(
           lenNotePath,
-          `本文が${len}字しかなく短すぎます（目標は3,500字以上）。各書籍ブロックを「書誌事実／内容紹介／読みどころ・背景／どんな人に響くか」の4部構成で、資料にある情報を漏らさず具体的に掘り下げて増やしてください（新しい事実は作らない・同じ内容の言い換えで水増ししない）。導入とまとめも具体的に書いてください。`
+          `本文が${len}字しかなく短すぎます。今の内容を土台に、最低でも${target}字まで増やしてください。各書籍ブロックの「内容の紹介」「読みどころ・背景」を、資料にある情報を漏らさず具体的に掘り下げて2〜3倍の分量に膨らませる（新しい事実は作らない・同じ内容の言い換えで水増ししない）。導入とまとめも具体的に。字数を満たせないなら「これ以上増やせる資料がない」ではなく、資料の中の細部（発売日・版元・レーベル・author_facts等）まで丁寧に文章化すること。`
         );
         try {
           const out3 = run("write-column-deepseek.js", [matPath, lenNotePath]);
