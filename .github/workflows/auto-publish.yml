@@ -10,6 +10,10 @@ on:
         description: "公開までの待ち時間(h)。手動で今すぐ公開したい時は0に"
         required: false
         default: "12"
+      count:
+        description: "今回生成する本数（0〜9の1桁のみ）。増産したい時だけ変更"
+        required: false
+        default: "2"
 
 jobs:
   generate-and-publish:
@@ -37,9 +41,9 @@ jobs:
       - name: 依存関係インストール
         run: npm install --omit=dev --no-audit --no-fund
 
-      # ① 下書きを生成（2本）。失敗しても後段の公開は走らせる。
+      # ① 下書きを生成（既定2本。手動実行時はcount入力で変更可）。失敗しても後段の公開は走らせる。
       - name: コラム下書きを生成
-        run: node scripts/auto-generate.js 2
+        run: node scripts/auto-generate.js ${{ github.event.inputs.count || '2' }}
         continue-on-error: true
 
       # ② 前日以前の下書きから、品質ゲートを通った最良1本だけを公開。
