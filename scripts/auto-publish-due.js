@@ -66,18 +66,27 @@ async function main() {
     return;
   }
 
-  // 生成から DELAY_HOURS 以上たった下書き（古い順＝FIFOで消化）
+  // 生成から DELAY_HOURS 以上たった下書き（新しい順）。
+  // 以前は古い順(FIFO)で見ていたが、恒久的にゲートを通らない古い下書きが
+  // limit件を埋めてしまうと新しい(改善後の)下書きが永遠に評価されない詰まりが
+  // 発生した(2026-07-02〜09に実際発生)。新しい順にして詰まりを避ける。
+  const { count: totalEligible } = await sb
+    .from("columns")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "draft")
+    .lte("created_at", cutoff);
   const { data: drafts, error } = await sb
     .from("columns")
     .select("*")
     .eq("status", "draft")
     .lte("created_at", cutoff)
-    .order("created_at", { ascending: true })
-    .limit(20);
+    .order("created_at", { ascending: false })
+    .limit(30);
   if (error) {
     console.error("下書き取得エラー:", error.message);
     process.exit(1);
   }
+  console.log(`公開判定の対象: ${totalEligible || 0}件中、新しい順に${(drafts || []).length}件を評価`);
   if (!drafts || drafts.length === 0) {
     console.log("公開対象の下書きはありません。");
     return;
