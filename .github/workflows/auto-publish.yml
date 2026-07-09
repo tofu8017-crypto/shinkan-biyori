@@ -14,6 +14,10 @@ on:
         description: "今回生成する本数（0〜9の1桁のみ）。増産したい時だけ変更"
         required: false
         default: "2"
+      max_publish:
+        description: "本日の公開上限。同日にもう1本出したい時だけ2以上に"
+        required: false
+        default: "1"
 
 jobs:
   generate-and-publish:
@@ -27,6 +31,7 @@ jobs:
       GEMINI_API_KEY:            ${{ secrets.GEMINI_API_KEY }}   # 無料枠でコラムのファクトチェック（review-column-gemini.js）
       INDEXNOW_KEY:              ${{ secrets.INDEXNOW_KEY }}
       PUBLISH_DELAY_HOURS:       ${{ github.event.inputs.delay_hours || '12' }}
+      PUBLISH_MAX_PER_RUN:       ${{ github.event.inputs.max_publish || '1' }}
 
     steps:
       - name: リポジトリをチェックアウト
