@@ -1,5 +1,14 @@
 # 引き継ぎ: GSC自律改善ループの実装（Sonnet→Fable）
 
+## 2026-07-09 Fable実装完了（未コミット・テスト待ち）
+藤澤さん合意のもとフル実装済み。構成:
+- `scripts/weekly-optimize.js` — GSC取得(サービスアカウントJWT・googleapis不要)→①検索需要をdata/gsc-priority.jsonへ→②11〜30位/低CTRページのtitle/metaをDeepSeekで改善しseo_overridesへupsert→③docs/optimization-log.md追記。--dry-run/最大10件/21日クールダウン/文字数バリデーション付き
+- `scripts/auto-generate.js` — gsc-priority.jsonの作家・書籍をテーマ選定の先頭に割り込み（ファイル無しなら従来動作）
+- `lib/supabase.ts` getSeoOverride + books/authors/column/calendarの4ページのgenerateMetadataでoverride優先表示（本文h1は変えない）
+- `.github/workflows/weekly-optimize.yml` — 月曜6:00 JST、結果を自動コミット
+dry-runは藤澤さん実行（`! node scripts/weekly-optimize.js --dry-run`）で3回検証済み：GSC認証〜DeepSeek改善案まで動作OK。途中で見つけた問題（表示回数が1/3に見える集計・内容の捏造・ラノベ混入）は修正済み。
+残り: ①GSC_CREDENTIALS_JSONのSecret登録（藤澤さん）②サイト側変更（override表示）はcf:deploy待ち ③初回の本番実行はActionsのworkflow_dispatchで
+
 ## ゴール
 GSC(Google Search Console)の検索データを週次で自動取得し、コラムのキーワード選定・テーマ配分に自動反映するループを作る。「勘ではなくデータで次の一手を決める」の自動化版。
 

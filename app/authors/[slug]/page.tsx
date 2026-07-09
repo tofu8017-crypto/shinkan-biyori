@@ -8,7 +8,7 @@ import BookCard from "@/components/BookCard";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { decodeAuthorSlug, authorSlug } from "@/lib/normalize-author";
-import { getBooksByAuthor } from "@/lib/supabase";
+import { getBooksByAuthor, getSeoOverride } from "@/lib/supabase";
 
 function formatDateJP(dateStr: string): string {
   const [y, m, dd] = dateStr.split("-").map(Number);
@@ -33,9 +33,11 @@ export async function generateMetadata({
   }
 
   const description = `${name}の新刊・最新刊の一覧。発売日順にまとめています。楽天ブックス・Amazonのリンク付き。｜新刊日和`;
+  // 週次自律改善ループの上書き（あれば優先）。キーはデコード済みslug＝正規化済み著者名
+  const ov = await getSeoOverride("author", name);
   return {
-    title: `${name}の新刊一覧・最新刊【2026年最新】`,
-    description,
+    title: ov?.title ?? `${name}の新刊一覧・最新刊【2026年最新】`,
+    description: ov?.description ?? description,
     alternates: { canonical: `/authors/${authorSlug(name)}` },
     openGraph: {
       title: `${name}の新刊一覧｜新刊日和`,

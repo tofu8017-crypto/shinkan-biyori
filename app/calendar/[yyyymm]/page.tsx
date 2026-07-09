@@ -9,7 +9,7 @@ import MonthCalendar from "@/components/MonthCalendar";
 import JsonLd, { SITE_URL, breadcrumbJsonLd } from "@/components/JsonLd";
 import { GENRES } from "@/types/book";
 import type { Book } from "@/types/book";
-import { getBooksByMonth } from "@/lib/supabase";
+import { getBooksByMonth, getSeoOverride } from "@/lib/supabase";
 
 // "YYYY-MM" の妥当性チェック
 function isValidYearMonth(s: string): boolean {
@@ -41,9 +41,11 @@ export async function generateMetadata({
   }
   const label = labelJP(yyyymm);
   const description = `${label}に発売される文芸書（小説・ミステリー・SF/ホラー・エッセイ）の新刊一覧。ジャンル別にまとめています。｜新刊日和`;
+  // 週次自律改善ループの上書き（あれば優先）
+  const ov = await getSeoOverride("calendar", yyyymm);
   return {
-    title: `${label}の文芸新刊一覧｜発売日順`,
-    description,
+    title: ov?.title ?? `${label}の文芸新刊一覧｜発売日順`,
+    description: ov?.description ?? description,
     alternates: { canonical: `/calendar/${yyyymm}` },
     openGraph: {
       title: `${label}の文芸新刊一覧｜新刊日和`,

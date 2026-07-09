@@ -17,6 +17,7 @@ import {
   getBookByIsbn,
   getBooksBySameAuthor,
   getBooksSameDay,
+  getSeoOverride,
 } from "@/lib/supabase";
 
 function isValidIsbn(s: string): boolean {
@@ -47,10 +48,12 @@ export async function generateMetadata({
   const pub = formatDateJP(book.published_date);
   const summary = book.description?.slice(0, 100) ?? `${book.author}の文芸書`;
   const description = `『${book.title}』（${book.author}／${book.publisher}）は${pub}発売。${summary}`;
+  // 週次自律改善ループの上書き（あれば優先）
+  const ov = await getSeoOverride("book", isbn);
 
   return {
-    title: `${book.title} の発売日・あらすじ`,
-    description,
+    title: ov?.title ?? `${book.title} の発売日・あらすじ`,
+    description: ov?.description ?? description,
     alternates: { canonical: `/books/${isbn}` },
     openGraph: {
       title: `${book.title}｜新刊日和`,

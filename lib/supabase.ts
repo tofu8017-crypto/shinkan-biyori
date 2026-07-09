@@ -881,6 +881,28 @@ export async function getColumnBySlugAnyStatus(slug: string): Promise<Column | n
   }
 }
 
+// 週次SEO自律改善ループ（scripts/weekly-optimize.js）が書き込む title/meta の上書きを1件引く。
+// generateMetadata で published 値より優先して使う。テーブル未作成・エラー時は null（ページを落とさない）。
+export async function getSeoOverride(
+  targetType: "book" | "author" | "column" | "calendar",
+  targetKey: string
+): Promise<{ title: string | null; description: string | null } | null> {
+  if (useMock) return null;
+  try {
+    const sb = await getClient();
+    const { data, error } = await sb!
+      .from("seo_overrides")
+      .select("title,description")
+      .eq("target_type", targetType)
+      .eq("target_key", targetKey)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ===== /stats ダッシュボード用の集計 =====
 export type SiteStats = {
   totalBooks: number;

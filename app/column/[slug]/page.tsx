@@ -5,7 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import ColumnHero from "@/components/ColumnHero";
 import ShareButton from "@/components/ShareButton";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
-import { getColumnBySlug } from "@/lib/supabase";
+import { getColumnBySlug, getSeoOverride } from "@/lib/supabase";
 import { pickColumnImage } from "@/lib/column-images";
 import { notFound } from "next/navigation";
 
@@ -34,10 +34,12 @@ export async function generateMetadata({
   const description = column.excerpt ?? column.title;
   // og:image は記事ごとのアイキャッチ（書影プール）を絶対URLで。hero未設定でも /hero.jpg 一律にしない
   const ogImage = column.hero_image_url ?? `${BASE_URL}${pickColumnImage(slug)}`;
+  // 週次自律改善ループの上書き（検索結果の表示のみ。本文h1は元タイトルのまま）
+  const ov = await getSeoOverride("column", slug);
 
   return {
-    title: column.title,
-    description,
+    title: ov?.title ?? column.title,
+    description: ov?.description ?? description,
     alternates: {
       canonical: `/column/${slug}`,
     },

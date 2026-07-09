@@ -139,6 +139,28 @@ async function getUsedKeywords(sb) {
 // 文芸とみなすジャンル（簿記/資格/ビジネス001006・コミック001001を除外）
 const LITERARY_GENRES = ["001004008", "001004009", "001004001", "001004002", "001004003", "001019"];
 
+// GSC検索実績のある作家・書籍（weekly-optimize.jsが週次で更新）。
+// 「実際に検索されている固有名詞」を生成の先頭に割り込ませるための優先リスト。
+// ファイルが無い・壊れている場合は空＝従来の在庫数順のみで動く（フェイルセーフ）。
+function loadGscPriority() {
+  try {
+    const p = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "..", "data", "gsc-priority.json"), "utf8")
+    );
+    return {
+      authors: new Set((p.authors || []).map((a) => norm(a.author))),
+      titles: new Set((p.titles || []).map((t) => titleKey(t.title))),
+    };
+  } catch {
+    return { authors: new Set(), titles: new Set() };
+  }
+}
+
+// 優先対象を配列の先頭に寄せる（それ以外の並び・日次ローテはそのまま維持）
+function promote(arr, isPriority) {
+  return [...arr.filter(isPriority), ...arr.filter((e) => !isPriority(e))];
+}
+
 // 著者名らしくない値を弾く（編集部・教材・資格系・作画など＝文芸の作家ではない）
 function looksJunkAuthor(a) {
   return /編集|アンソロジ|作画|イラスト|ｺﾐｯｸ|コミック|ムック|公式|ガイド|attsuxx|画報|学院|会議所|研究会|試験|問題集|検定|資格|スクール|アカデミー|協会|委員会|アソシエーツ|辞典|事典/.test(a);
@@ -199,7 +221,10 @@ async function getAuthorTopics(sb, used, authors) {
   pool.sort((a, b) => b.titles.size - a.titles.size);
   const off = pool.length ? epochDay(today) % pool.length : 0;
   const rotated = pool.slice(off).concat(pool.slice(0, off));
-  return rotated.map((e) => ({
+  // GSCで実際に検索されている作家を最優先（未記事化のものだけがpoolに残っている）
+  const pri = loadGscPriority();
+  const prioritized = promote(rotated, (e) => pri.authors.has(norm(e.author)));
+  return prioritized.map((e) => ({
     keyword: `${e.author} おすすめ`,
     genre_id: e.genre_id,
     author: e.author,
@@ -218,7 +243,13 @@ async function getBookTopics(sb, used, authors) {
   pool.sort((a, b) => b.titles.size - a.titles.size);
   const off = pool.length ? (epochDay(today) + 1) % pool.length : 0; // 作家テーマと日をずらして被りを減らす
   const rotated = pool.slice(off).concat(pool.slice(0, off));
-  return rotated.map((e) => ({
+  // GSCで検索されている書籍（またはその作家）を最優先
+  const pri = loadGscPriority();
+  const prioritized = promote(
+    rotated,
+    (e) => pri.titles.has(titleKey(e.latestTitle)) || pri.authors.has(norm(e.author))
+  );
+  return prioritized.map((e) => ({
     keyword: `${e.latestTitle} あらすじ`,
     genre_id: e.genre_id,
     author: e.author,
