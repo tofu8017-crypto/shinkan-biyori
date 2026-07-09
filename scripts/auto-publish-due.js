@@ -75,6 +75,13 @@ async function main() {
     .select("*", { count: "exact", head: true })
     .eq("status", "draft")
     .lte("created_at", cutoff);
+  // デバッグ用（2026-07-09・原因調査）: cutoff無しの全draft件数と最新3件のcreated_atを見る
+  const { count: totalDraftAll } = await sb
+    .from("columns").select("*", { count: "exact", head: true }).eq("status", "draft");
+  const { data: newestDrafts } = await sb
+    .from("columns").select("slug,created_at").eq("status", "draft")
+    .order("created_at", { ascending: false }).limit(3);
+  console.log(`[debug] cutoff=${cutoff} / draft総数(cutoff無視)=${totalDraftAll} / 最新3件=${JSON.stringify(newestDrafts)}`);
   const { data: drafts, error } = await sb
     .from("columns")
     .select("*")
