@@ -15,7 +15,11 @@ const { createClient } = require("@supabase/supabase-js");
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SITE = "https://shinkanbiyori.com";
-const DELAY_HOURS = Number(process.env.PUBLISH_DELAY_HOURS) || 12;
+// ★"0 || 12"は0がfalsyなので常に12になるJSの罠。空文字/未設定のときだけ既定12を使う（2026-07-09発覚）。
+const DELAY_HOURS =
+  process.env.PUBLISH_DELAY_HOURS !== undefined && process.env.PUBLISH_DELAY_HOURS !== ""
+    ? Number(process.env.PUBLISH_DELAY_HOURS)
+    : 12;
 const MAX_PER_RUN = Number(process.env.PUBLISH_MAX_PER_RUN) || 1; // 1日1本（量産ペナルティ低減）
 
 function hoursAgoISO(h) {
@@ -75,13 +79,11 @@ async function main() {
     .select("*", { count: "exact", head: true })
     .eq("status", "draft")
     .lte("created_at", cutoff);
-  // デバッグ用（2026-07-09・原因調査）: cutoff無しの全draft件数と最新3件のcreated_atを見る
+  // draft総数(cutoff無視)を毎回ログに残す。DELAY_HOURSの設定ミス等で「対象0件」が
+  // 続くときに、単に下書きが無いのか・cutoffで弾かれているだけなのか一目で分かる。
   const { count: totalDraftAll } = await sb
     .from("columns").select("*", { count: "exact", head: true }).eq("status", "draft");
-  const { data: newestDrafts } = await sb
-    .from("columns").select("slug,created_at").eq("status", "draft")
-    .order("created_at", { ascending: false }).limit(3);
-  console.log(`[debug] cutoff=${cutoff} / draft総数(cutoff無視)=${totalDraftAll} / 最新3件=${JSON.stringify(newestDrafts)}`);
+  console.log(`draft総数(全期間)=${totalDraftAll} / cutoff=${cutoff}`);
   const { data: drafts, error } = await sb
     .from("columns")
     .select("*")
