@@ -373,10 +373,29 @@ async function main() {
       }
       let colPath = m[1];
 
-      // 本文が品質ゲートの字数下限に届かなければ、届くまで最大2回まで書き直す
-      // （プロンプトの目標3,500字に対し、DeepSeekの実出力が1,800字未満に収まりがちで
-      //   ゲート不合格→非公開が続いた反省。1回の書き直しでは僅差で届かないことがあり
-      //   2026-07-08に1回打ち切り→最大2回に変更）。
+      // 無料Gemini(別系統AI)でファクトチェック→指摘があればDeepSeekで1回だけ自己修正。
+      // SARPのジューリーを¥0で再現。Geminiが落ちても元コラムで続行（フェイルセーフ）。
+      try {
+        const rev = JSON.parse(run("review-column-gemini.js", [colPath, matPath]) || "{}");
+        if (rev && rev.ok === false && Array.isArray(rev.issues) && rev.issues.length) {
+          console.log(`  Geminiファクトチェック: ${rev.issues.length}件の指摘 → 1回修正`);
+          const notePath = `/tmp/review-note-${i}.txt`;
+          fs.writeFileSync(notePath, rev.issues.map((s, idx) => `${idx + 1}. ${s}`).join("\n"));
+          const out2 = run("write-column-deepseek.js", [matPath, notePath]);
+          const m2 = out2.match(/(\/tmp\/column-[^\s]+\.json)/);
+          if (m2) colPath = m2[1];
+        } else {
+          console.log("  Geminiファクトチェック: 指摘なし");
+        }
+      } catch (e) {
+        console.error("  Geminiチェックをスキップ（続行）:", e.message);
+      }
+
+      // 本文が品質ゲートの字数下限に届かなければ、届くまで最大2回まで書き直す。
+      // 必ずGeminiチェックの「後」に置く＝ここが最後の仕上げ（プロンプトの目標3,500字に対し
+      // DeepSeekの実出力が1,800字未満に収まりがちで公開ゼロが続いた反省。2026-07-08）。
+      // ★事故った過去のバグ: 以前はGeminiチェックの「前」に置いていたため、Geminiが指摘した際の
+      //   再生成(字数指示なし)で短さが再発し、字数を稼いだ分が丸ごと消えていた(2026-07-09発覚)。
       for (let retry = 0; retry < 2; retry++) {
         const len = plainLen(JSON.parse(fs.readFileSync(colPath, "utf8")).body_html);
         if (len >= QC_MIN_CHARS) break;
@@ -398,24 +417,6 @@ async function main() {
           console.error("  書き直しに失敗（元の下書きで続行）:", e.message);
           break;
         }
-      }
-
-      // 無料Gemini(別系統AI)でファクトチェック→指摘があればDeepSeekで1回だけ自己修正。
-      // SARPのジューリーを¥0で再現。Geminiが落ちても元コラムで続行（フェイルセーフ）。
-      try {
-        const rev = JSON.parse(run("review-column-gemini.js", [colPath, matPath]) || "{}");
-        if (rev && rev.ok === false && Array.isArray(rev.issues) && rev.issues.length) {
-          console.log(`  Geminiファクトチェック: ${rev.issues.length}件の指摘 → 1回修正`);
-          const notePath = `/tmp/review-note-${i}.txt`;
-          fs.writeFileSync(notePath, rev.issues.map((s, idx) => `${idx + 1}. ${s}`).join("\n"));
-          const out2 = run("write-column-deepseek.js", [matPath, notePath]);
-          const m2 = out2.match(/(\/tmp\/column-[^\s]+\.json)/);
-          if (m2) colPath = m2[1];
-        } else {
-          console.log("  Geminiファクトチェック: 指摘なし");
-        }
-      } catch (e) {
-        console.error("  Geminiチェックをスキップ（続行）:", e.message);
       }
 
       // アイキャッチ＝先頭の本の表紙（高解像度化）。無ければ save-column 側がプール画像にフォールバック。
