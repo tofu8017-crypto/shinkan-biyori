@@ -396,14 +396,15 @@ async function main() {
       // DeepSeekの実出力が1,800字未満に収まりがちで公開ゼロが続いた反省。2026-07-08）。
       // ★事故った過去のバグ: 以前はGeminiチェックの「前」に置いていたため、Geminiが指摘した際の
       //   再生成(字数指示なし)で短さが再発し、字数を稼いだ分が丸ごと消えていた(2026-07-09発覚)。
-      for (let retry = 0; retry < 2; retry++) {
+      const MAX_LEN_RETRY = 3; // 実測: 2回だと僅差(あと数字)で届かない例があったため3回に(2026-07-09)
+      for (let retry = 0; retry < MAX_LEN_RETRY; retry++) {
         const len = plainLen(JSON.parse(fs.readFileSync(colPath, "utf8")).body_html);
         if (len >= QC_MIN_CHARS) break;
         // 「3,500字以上」という遠い目標だと届かないことが多い（実測: 2回リトライしても
         // 1600字前後止まりの例が半数）。現在地から届きそうな具体的な数値を都度示す方が
         // 効きが良い（2026-07-09）。
         const target = len + 800;
-        console.log(`  本文${len}字で下限(${QC_MIN_CHARS}字)未満 → 書き直し(${retry + 1}/2)を試みる(目標${target}字)`);
+        console.log(`  本文${len}字で下限(${QC_MIN_CHARS}字)未満 → 書き直し(${retry + 1}/${MAX_LEN_RETRY})を試みる(目標${target}字)`);
         const lenNotePath = `/tmp/length-note-${i}-${retry}.txt`;
         fs.writeFileSync(
           lenNotePath,
