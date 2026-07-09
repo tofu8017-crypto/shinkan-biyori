@@ -88,6 +88,14 @@ const NG_TITLE = [
   "好色", "淫", "痴女", "巨乳", "爆乳", "中出", "寝取", "性奴隷", "人妻",
   "媚薬", "牝", "陵辱", "痴漢", "蜜夜", "ふたなり", "発情", "童貞", "絶頂", "性欲",
 ];
+// なろう/ラノベ系タイトルの検出（build-x-kit.jsのLN_REと同じ・藤澤さん方針2026-07-09
+// 「基本ラノベなしに」）。genre_id(LITERARY_GENRES)だけでは分類漏れが本タイトルまで
+// 通ってしまうため、タイトル語でも弾く。DBの.not.ilikeはNG_TITLEだけで既に長いので、
+// これは取得後にJS側でフィルタする（NG_TITLEと同じ運用パターン）。
+const LN_RE = /異世界|転生|転移|令嬢|公爵|侯爵|伯爵|婚約|聖女|勇者|魔王|魔導|スキル|チート|最強|追放|ハーレム|ヤンデレ|ダンジョン|迷宮|攻略|冒険者|辺境|領地|王太子|王女|騎士団|召喚|やり直し|無職|無双|モブ|な件|ざまぁ|二度目|スローライフ|悪役|ギルド|レベル|奴隷|VRMMO|ステータス|側妃|竜帝|世継ぎ|寵愛|嫁いで/;
+function looksLikeLN(title) {
+  return LN_RE.test(title || "");
+}
 
 async function getBooks(sb, genreId) {
   const today = jstToday();
@@ -102,7 +110,7 @@ async function getBooks(sb, genreId) {
   const { data } = await q
     .order("published_date", { ascending: false })
     .limit(6); // 12選リストをやめ少数に絞る（フォールバック時も絞り込み）
-  return (data || []).map((b) => ({
+  return (data || []).filter((b) => !looksLikeLN(b.title)).map((b) => ({
     title: b.title,
     author: b.author,
     publisher: b.publisher,
@@ -167,6 +175,7 @@ async function collectAuthorStats(sb) {
   for (const b of data || []) {
     const a = (b.author || "").split("/")[0].trim();
     if (!a || a.length < 2 || /[0-9A-Za-z]/.test(a) || looksJunkAuthor(a)) continue;
+    if (looksLikeLN(b.title)) continue; // ラノベ/なろう系タイトルは著者統計にもlatestTitleにも入れない
     const k = norm(a);
     if (!map.has(k)) map.set(k, { author: a, titles: new Set(), genre: {}, latestTitle: b.title });
     const e = map.get(k);
@@ -236,6 +245,7 @@ async function getBooksByAuthor(sb, author) {
   const seen = new Set();
   const out = [];
   for (const b of data || []) {
+    if (looksLikeLN(b.title)) continue;
     const k = titleKey(b.title);
     if (seen.has(k)) continue;
     seen.add(k);
