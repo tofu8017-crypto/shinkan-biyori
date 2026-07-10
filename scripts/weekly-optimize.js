@@ -22,10 +22,9 @@
 //   （Googleが反応する時間を与える。毎週書き換えると効果測定ができない）
 
 const fs = require("fs");
-const os = require("os");
 const path = require("path");
-const { createSign } = require("crypto");
 const { createClient } = require("@supabase/supabase-js");
+const { SITE, loadCredentials, getAccessToken, gscQuery } = require("./lib/gsc-client");
 
 // ローカル実行時（envが揃っていない時）は .env.local を自動で読む。
 // GitHub Actionsでは環境変数がSecretsから入るためこの分岐は通らない
@@ -37,9 +36,6 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
 }
 
 const DRY_RUN = process.argv.includes("--dry-run");
-// ローカルの鍵ファイルの既定パス（GSC_CREDENTIALS_JSON が無い時のフォールバック）
-const DEFAULT_KEY_PATH = path.join(os.homedir(), "secrets", "gsc-shinkan-biyori-key.json");
-const SITE = "sc-domain:shinkanbiyori.com";
 const BASE_URL = "https://shinkanbiyori.com";
 const WINDOW_DAYS = 28;          // 直近4週。データがまだ薄いので7日ではなく広めに見る
 const MAX_OVERRIDES = 10;        // 1回の実行で書き換える上限（元設計の受け入れ条件）
@@ -96,56 +92,6 @@ function addDaysUTC(isoDate, n) {
   const d = new Date(isoDate + "T00:00:00Z");
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
-}
-
-// ---------- GSC認証（サービスアカウントJWT。googleapis不要・標準cryptoのみ） ----------
-
-function loadCredentials() {
-  if (process.env.GSC_CREDENTIALS_JSON) return JSON.parse(process.env.GSC_CREDENTIALS_JSON);
-  const p = process.env.GSC_SERVICE_ACCOUNT_KEY_PATH || DEFAULT_KEY_PATH;
-  if (fs.existsSync(p.replace(/^~/, os.homedir()))) {
-    return JSON.parse(fs.readFileSync(p.replace(/^~/, os.homedir()), "utf8"));
-  }
-  throw new Error("GSC_CREDENTIALS_JSON か GSC_SERVICE_ACCOUNT_KEY_PATH を設定してください");
-}
-
-async function getAccessToken(creds) {
-  const now = Math.floor(Date.now() / 1000);
-  const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
-  const unsigned = `${b64({ alg: "RS256", typ: "JWT" })}.${b64({
-    iss: creds.client_email,
-    scope: "https://www.googleapis.com/auth/webmasters.readonly",
-    aud: "https://oauth2.googleapis.com/token",
-    iat: now,
-    exp: now + 3600,
-  })}`;
-  const sign = createSign("RSA-SHA256");
-  sign.update(unsigned);
-  const jwt = `${unsigned}.${sign.sign(creds.private_key).toString("base64url")}`;
-
-  const res = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion: jwt,
-    }),
-  });
-  if (!res.ok) throw new Error(`Google認証に失敗: ${res.status} ${(await res.text()).slice(0, 200)}`);
-  return (await res.json()).access_token;
-}
-
-async function gscQuery(token, body) {
-  const res = await fetch(
-    `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(SITE)}/searchAnalytics/query`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body),
-    }
-  );
-  if (!res.ok) throw new Error(`GSC APIエラー: ${res.status} ${(await res.text()).slice(0, 200)}`);
-  return (await res.json()).rows || [];
 }
 
 // ---------- ① 検索需要 → 生成優先度（data/gsc-priority.json） ----------

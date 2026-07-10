@@ -29,6 +29,7 @@ jobs:
       DEEPSEEK_API_KEY:   ${{ secrets.DEEPSEEK_API_KEY }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       HATENA_DRAFT:       ${{ github.event.inputs.draft || 'no' }}
+      GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}   # テーマプール枯渇時の自動生成用（weekly-optimize.ymlと共用のSecret）
 
     steps:
       - name: チェックアウト
@@ -42,15 +43,16 @@ jobs:
       - name: 自動投稿を実行
         run: bash scripts/hatena-auto-run.sh
 
-      - name: posts.log を保存（翌日の1日1本・重複チェック用）
+      - name: posts.log とテーマプールを保存（翌日の1日1本・重複チェック・自動生成分の反映用）
         run: |
           LOG=".claude/skills/hatena-auto-poster/data/posts.log"
-          if [[ -n "$(git status --porcelain "$LOG")" ]]; then
+          THEMES="data/hatena-themes.json"
+          if [[ -n "$(git status --porcelain "$LOG" "$THEMES")" ]]; then
             git config user.name  "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add "$LOG"
-            git commit -m "chore(hatena): 投稿記録を更新 [skip ci]"
+            git add "$LOG" "$THEMES"
+            git commit -m "chore(hatena): 投稿記録・テーマプールを更新 [skip ci]"
             git push
           else
-            echo "posts.log に変更なし（投稿スキップ日）。"
+            echo "変更なし（投稿スキップ日）。"
           fi

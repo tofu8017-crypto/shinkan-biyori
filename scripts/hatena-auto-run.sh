@@ -26,14 +26,25 @@ if ! bash "$SKILL/check-daily-limit.sh" 1; then
 fi
 
 # ── Step 1: テーマ選定（posts.log と被らない最初の1件） ──
-COUNT=$(node -e 'const t=require(process.argv[1]);console.log(t.themes.length)' "$THEMES")
-PICK=""
-for ((i=0; i<COUNT; i++)); do
-  KW=$(node -e 'const t=require(process.argv[1]);console.log(t.themes[+process.argv[2]].keyword)' "$THEMES" "$i")
-  if bash "$SKILL/check-dup.sh" "$KW" >/dev/null 2>&1; then PICK="$i"; break; fi
-done
+pick_theme() {
+  local count kw
+  count=$(node -e 'const t=require(process.argv[1]);console.log(t.themes.length)' "$THEMES")
+  for ((i=0; i<count; i++)); do
+    kw=$(node -e 'const t=require(process.argv[1]);console.log(t.themes[+process.argv[2]].keyword)' "$THEMES" "$i")
+    if bash "$SKILL/check-dup.sh" "$kw" >/dev/null 2>&1; then echo "$i"; return; fi
+  done
+}
+PICK="$(pick_theme)"
 if [[ -z "$PICK" ]]; then
-  log "未投稿の新テーマが尽きました（全テーマ投稿済み）。テーマプールに追記してください。正常終了。"; exit 0
+  log "未投稿の新テーマが尽きました。GSC実データから自動生成を試みます。"
+  if node "$ROOT/scripts/generate-hatena-themes.js" 8; then
+    PICK="$(pick_theme)"
+  else
+    log "テーマ自動生成に失敗（続けて手動追記が必要）。"
+  fi
+fi
+if [[ -z "$PICK" ]]; then
+  log "新テーマを用意できませんでした。テーマプールに手動で追記してください。正常終了。"; exit 0
 fi
 THEME_FILE="$(mktemp).json"
 node -e 'const t=require(process.argv[1]);process.stdout.write(JSON.stringify(t.themes[+process.argv[2]]))' "$THEMES" "$PICK" > "$THEME_FILE"
