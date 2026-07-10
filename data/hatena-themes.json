@@ -8,6 +8,15 @@
     { "keyword": "エッセイ おすすめ 入門", "angle": "エッセイの『最初の一冊』の選び方。何を基準に選ぶか", "internal_links": ["https://shinkanbiyori.com/genre/001004003", "https://shinkanbiyori.com/column", "https://shinkanbiyori.com"] },
     { "keyword": "読書 習慣 続かない", "angle": "読書が続かない人へ。冊数より『1日5分』の設計、という主張", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
     { "keyword": "翻訳 違い 読み比べ", "angle": "海外文学は翻訳者で読み心地が変わる。訳者から本を選ぶという入口", "internal_links": ["https://shinkanbiyori.com/genre/001004009", "https://shinkanbiyori.com/column"] },
-    { "keyword": "本 選び方 失敗しない", "angle": "ベストセラーや帯の煽りに頼らない、自分に合う本の見つけ方", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] }
+    { "keyword": "本 選び方 失敗しない", "angle": "ベストセラーや帯の煽りに頼らない、自分に合う本の見つけ方", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
+    { "keyword": "ミステリー 初心者 おすすめ", "angle": "ミステリー初心者はトリックの派手さより『語り口』で選ぶべき、という視点", "internal_links": ["https://shinkanbiyori.com/genre/001004001", "https://shinkanbiyori.com/column"] },
+    { "keyword": "SF小説 難しい 読めない", "angle": "SFが『難しくて読めない』のは設定のせいではなく入る作品を間違えているだけ、という主張", "internal_links": ["https://shinkanbiyori.com/genre/001004002", "https://shinkanbiyori.com/column"] },
+    { "keyword": "電子書籍 紙 どっち", "angle": "電子か紙かは『読む場所』で決めるべき。二択で悩まない実用的な判断軸", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
+    { "keyword": "小説 感想 書き方", "angle": "読書感想が『あらすじ+良かった』止まりになる人へ。一文だけ残す記録法という提案", "internal_links": ["https://shinkanbiyori.com/column", "https://shinkanbiyori.com"] },
+    { "keyword": "本屋 で 選ぶ 通販 で 選ぶ", "angle": "書店で選ぶ本とネットで選ぶ本は違っていい、という買い方の使い分け論", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
+    { "keyword": "時代小説 入門", "angle": "時代小説は難しそうという先入観の壁。人間関係から読むと入りやすいという視点", "internal_links": ["https://shinkanbiyori.com/genre/jidai", "https://shinkanbiyori.com/column"] },
+    { "keyword": "本 途中でやめる 罪悪感", "angle": "読みかけの本を『積読』に戻すことへの罪悪感は不要、という読書との距離の取り方", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] },
+    { "keyword": "新刊 発売日 チェック 方法", "angle": "好きな作家の新刊を買い逃さないための、発売日を追う仕組み化の話", "internal_links": ["https://shinkanbiyori.com/calendar/2026-07", "https://shinkanbiyori.com"] },
+    { "keyword": "本 プレゼント 選び方", "angle": "読書好きへの本のプレゼントは『好きなジャンルの新刊』が一番外さない、という選び方", "internal_links": ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"] }
   ]
 }
