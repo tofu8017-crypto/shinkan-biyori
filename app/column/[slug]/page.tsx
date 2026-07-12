@@ -7,6 +7,7 @@ import ShareButton from "@/components/ShareButton";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
 import { getColumnBySlug, getSeoOverride } from "@/lib/supabase";
 import { pickColumnImage } from "@/lib/column-images";
+import { formatColumnBody } from "@/lib/format-column";
 import { notFound } from "next/navigation";
 
 const BASE_URL = "https://shinkanbiyori.com";
@@ -173,7 +174,7 @@ export default async function ColumnDetailPage({
         {/* body_html は自社のAIが生成し人間がレビュー済みの信頼できる内部コンテンツ */}
         <div
           className="column-body"
-          dangerouslySetInnerHTML={{ __html: column.body_html }}
+          dangerouslySetInnerHTML={{ __html: formatColumnBody(column.body_html) }}
         />
 
         <div style={{ marginTop: "40px", paddingTop: "28px", borderTop: "1px solid var(--border)" }}>

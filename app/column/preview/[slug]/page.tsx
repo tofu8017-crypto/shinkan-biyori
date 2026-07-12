@@ -5,6 +5,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import ColumnHero from "@/components/ColumnHero";
 import { getColumnBySlugAnyStatus } from "@/lib/supabase";
+import { formatColumnBody } from "@/lib/format-column";
 import { notFound } from "next/navigation";
 
 // 下書きを含むコラムのプレビュー（非公開・noindex）。公開前の確認用。
@@ -81,7 +82,7 @@ export default async function ColumnPreviewDetailPage({
 
         <div
           className="column-body"
-          dangerouslySetInnerHTML={{ __html: column.body_html }}
+          dangerouslySetInnerHTML={{ __html: formatColumnBody(column.body_html) }}
         />
 
         {/* 公開コマンドの案内（操作は人間が手動で行う） */}
