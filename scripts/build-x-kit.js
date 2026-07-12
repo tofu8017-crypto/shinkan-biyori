@@ -213,6 +213,64 @@ async function craftPickReason(book, summary) {
   }
 }
 
+// ④用: Wikipedia日本語版の要約を取得する（捏造防止のため、紹介文は必ずこの事実を根拠に書かせる）
+// ponytail: 同姓同名で別人のページに当たる可能性は残る（誕生日データ自体がWikipedia閲覧数由来なので実質同一人物のはず）
+async function fetchWikipediaSummary(name) {
+  try {
+    const res = await fetch(
+      `https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`,
+      { headers: { "User-Agent": "shinkanbiyori.com daily-x-kit" } }
+    );
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (d?.type === "disambiguation") return null; // 曖昧さ回避ページは別人リスク大
+    const t = (d?.extract || "").trim();
+    return t.length >= 40 ? t : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// ④用: Wikipedia要約の事実だけを使い、作家紹介の一言（60〜100字）を書く。失敗時はnull＝従来のnote表示
+async function craftAuthorIntro(name, extract) {
+  if (!DEEPSEEK_API_KEY || !extract) return null;
+  const sys =
+    "あなたは文芸にくわしい編集者です。今日が誕生日の作家を紹介するX投稿の一部として、" +
+    "その作家がどんな書き手かが伝わる紹介文を書きます。\n" +
+    "# 書くこと\n" +
+    "- 代表作・受賞歴・作風・経歴など、読者が「へえ」と思う具体的な事実を1〜2つ。\n" +
+    "# 制約\n" +
+    "- 与えられた『紹介文』にある事実だけを使う。捏造・推測しない。\n" +
+    "- 作家名は書かない（投稿の別の行に既にあるため）。「彼」「彼女」も避け、主語なしの文にする。\n" +
+    "- 日本語、60〜100字（全角）。絶対に120字を超えない。文末は「。」で終える。\n" +
+    "- ハッシュタグ・絵文字なし。紹介文の丸写し禁止。\n" +
+    "- 使ってはいけない語: 魅力 必見 ぜひ いかがでしょうか 話題沸騰 今すぐ 絶対 神 感動必至 巨匠\n" +
+    "- 本文だけを返す（説明・引用符なし）。";
+  try {
+    const res = await fetch(DEEPSEEK_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${DEEPSEEK_API_KEY}` },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: `作家名: ${name}\n紹介文: ${extract.slice(0, 1500)}` },
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+      }),
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    let t = d?.choices?.[0]?.message?.content?.trim();
+    if (!t) return null;
+    t = t.replace(/^["'`]+|["'`]+$/g, "").trim();
+    return xWeight(t) <= 240 ? t : null; // 明らかに長すぎたら不採用（従来のnote表示へ）
+  } catch (_) {
+    return null;
+  }
+}
+
 // Discord Webhook に投稿キットを送る。各投稿を個別メッセージ（コードブロック）にして
 // スマホで長押しコピー→Xに貼りやすくする。
 async function postToDiscord(webhook, posts, today, kindLabel) {
@@ -518,11 +576,15 @@ async function main() {
         }
       } catch (_) {}
       const url = `${SITE}/search?q=${encodeURIComponent(bd.name)}&${UTM}`;
+      // 「日本の作家。」だけの薄い投稿を防ぐ: Wikipedia要約→DeepSeekで60〜100字の紹介文を生成し
+      // note の代わりに使う（藤澤さん指摘 2026-07-13）。取得/生成に失敗したら従来どおり note を出す
+      const intro = await craftAuthorIntro(bd.name, await fetchWikipediaSummary(bd.name));
       // 代表作（Wikidata由来・書物のみ）＋問いかけで厚みを出す。
-      // 280超過時は「DB新刊の行→代表作2作目」の順で間引く（問いかけ・タグは守る）
-      const buildBd = (nWorks, withDbWork) => {
+      // 280超過時は「DB新刊の行→代表作2作目→紹介文（noteに戻す）」の順で間引く（問いかけ・タグは守る）
+      const buildBd = (nWorks, withDbWork, withIntro) => {
         let c = `今日${Number(m)}月${Number(d)}日は、${bd.name}（${bd.year}年生まれ）の誕生日。`;
-        if (bd.note) c += `\n${bd.note}。`;
+        if (withIntro && intro) c += `\n${intro}`;
+        else if (bd.note) c += `\n${bd.note}。`;
         const works = (bd.works || []).slice(0, nWorks).map((w) => `『${w}』`).join("");
         if (works) c += `\n代表作は${works}。`;
         if (withDbWork && work) c += `\n新刊・近刊だと『${work}』など。`;
@@ -531,9 +593,10 @@ async function main() {
         c += `\n\n#今日は何の日 #本好きと繋がりたい`;
         return c;
       };
-      let c = buildBd(2, true);
-      if (xWeight(c) > 278) c = buildBd(2, false);
-      if (xWeight(c) > 278) c = buildBd(1, false);
+      let c = buildBd(2, true, true);
+      if (xWeight(c) > 278) c = buildBd(2, false, true);
+      if (xWeight(c) > 278) c = buildBd(1, false, true);
+      if (xWeight(c) > 278) c = buildBd(1, false, false);
       posts.push({ kind: "birthday", content: c, link: `${bd.name}の本を探す\n${url}` });
     }
     // 該当作家がいない日は④を出さない（無理に思想ポストを作らない）
