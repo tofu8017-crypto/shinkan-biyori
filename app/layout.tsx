@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Noto_Serif_JP, M_PLUS_Rounded_1c } from "next/font/google";
 import "./globals.css";
 import ModeSwitchFloat from "@/components/ModeSwitchFloat";
@@ -16,6 +17,10 @@ const mPlusRounded = M_PLUS_Rounded_1c({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
 });
+
+// GA4測定ID。公開情報（ページソースに載る値）なのでコード直書きでよい。
+// 空文字の間はタグ自体を出力しない。SPA遷移のpage_viewはGA4の拡張計測(履歴変更)が拾う
+const GA_ID = "G-VDFZB003MK";
 
 const SITE_DESCRIPTION =
   "今日発売の文芸書（小説・エッセイ・ミステリー・SF）を毎日まとめ。Amazon・楽天のリンク付き。";
@@ -95,6 +100,20 @@ export default function RootLayout({
             __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c"),
           }}
         />
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}');`}
+            </Script>
+          </>
+        )}
         {children}
         <SiteFooter />
         <ClickTracker />
