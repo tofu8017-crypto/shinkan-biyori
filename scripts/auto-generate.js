@@ -123,9 +123,49 @@ async function getBooks(sb, genreId) {
   }));
 }
 
-// 通し日数（在庫ローテ・固有名詞日の判定に使う）
-function epochDay(isoDate) {
-  return Math.floor(Date.parse(isoDate + "T00:00:00Z") / 86400000);
+// 作家の知名度スコア（日本語版Wikipediaの年間閲覧数）。
+// 「絲山秋子 おすすめ」がGSCで実際に検索されていた実績を踏まえ、無名の作家より先に
+// ある程度名の知れた作家から取り上げてインプレッションを稼ぐ（藤澤さん方針 2026-07-13）。
+// build-x-kit.js/rebuild-birthdays.jsと同じWikimedia pageviews APIを流用。キャッシュ無し
+// （母集団は数十名・数十秒で終わるため。0件=Wikipediaに項目なし or 無名）。
+const FAME_UA = "shinkanbiyori.com daily-column-gen";
+function fameWindow(today) {
+  // 直近1年・データ未反映の直近1ヶ月は避ける（rebuild-birthdays.jsと同じ考え方）
+  const end = addDaysUTC(today, -30);
+  const start = addDaysUTC(end, -365);
+  return `${start.replace(/-/g, "")}00/${end.replace(/-/g, "")}00`;
+}
+async function fetchFameScore(name, range) {
+  // DBの著者名は「姓 名」でスペース区切りだが、日本語版Wikipediaの人物記事は
+  // スペース無しの表記（例:「睦月 影郎」→記事は「睦月影郎」）。underscoreに変換すると
+  // 該当ページが見つからず常に0点になってしまうため、スペースは詰めて検索する。
+  const enc = encodeURIComponent(name.replace(/[\s　]/g, ""));
+  try {
+    const res = await fetch(
+      `https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/ja.wikipedia/all-access/user/${enc}/monthly/${range}`,
+      { headers: { "User-Agent": FAME_UA } }
+    );
+    if (!res.ok) return 0;
+    const d = await res.json();
+    return (d.items || []).reduce((a, x) => a + x.views, 0);
+  } catch (_) {
+    return 0;
+  }
+}
+// 各authorに .fame を付与する（getAuthorTopics/getBookTopicsの両方が同じ値を使い回す）。
+// 同時実行数を絞って一度に投げすぎない（対象は数十名程度）。
+async function attachFame(authors, today) {
+  const range = fameWindow(today);
+  const CONCURRENCY = 8;
+  for (let i = 0; i < authors.length; i += CONCURRENCY) {
+    const batch = authors.slice(i, i + CONCURRENCY);
+    await Promise.all(
+      batch.map(async (e) => {
+        e.fame = await fetchFameScore(e.author, range);
+      })
+    );
+  }
+  return authors;
 }
 
 // 既に使ったターゲットKW（重複生成防止）
@@ -213,17 +253,15 @@ async function collectAuthorStats(sb) {
 
 // 作家名中心のコラムテーマ（藤澤さん方針 2026-06-30、週5日は固有名詞）。在庫のある本だけで書く前提。
 async function getAuthorTopics(sb, used, authors) {
-  const today = jstToday();
-  // 既出作家は除外。在庫が多い順を基本に、日でローテして毎日違う作家に。
+  // 既出作家は除外。知名度(fame)が高い順を基本にする（藤澤さん方針2026-07-13）。
+  // 一度使った作家は`used`で永久に除外されるので、日ローテでなくても偏らない。
   const pool = authors.filter(
     (e) => !used.has(norm(`${e.author} おすすめ`)) && !used.has(norm(e.author))
   );
-  pool.sort((a, b) => b.titles.size - a.titles.size);
-  const off = pool.length ? epochDay(today) % pool.length : 0;
-  const rotated = pool.slice(off).concat(pool.slice(0, off));
-  // GSCで実際に検索されている作家を最優先（未記事化のものだけがpoolに残っている）
+  pool.sort((a, b) => (b.fame || 0) - (a.fame || 0) || b.titles.size - a.titles.size);
+  // GSCで実際に検索されている作家を最優先（実際の検索実績 > Wikipedia知名度の推定）
   const pri = loadGscPriority();
-  const prioritized = promote(rotated, (e) => pri.authors.has(norm(e.author)));
+  const prioritized = promote(pool, (e) => pri.authors.has(norm(e.author)));
   return prioritized.map((e) => ({
     keyword: `${e.author} おすすめ`,
     genre_id: e.genre_id,
@@ -236,17 +274,15 @@ async function getAuthorTopics(sb, used, authors) {
 // 落ちないよう、getAuthorTopicsと同じ「直近2冊以上ある作家」だけを対象にする）。
 // 主役の本＝その作家の最新刊（在庫データが最も厚く、話題性もある）。
 async function getBookTopics(sb, used, authors) {
-  const today = jstToday();
   const pool = authors.filter(
     (e) => !used.has(norm(`${e.latestTitle} あらすじ`)) && !used.has(norm(e.latestTitle))
   );
-  pool.sort((a, b) => b.titles.size - a.titles.size);
-  const off = pool.length ? (epochDay(today) + 1) % pool.length : 0; // 作家テーマと日をずらして被りを減らす
-  const rotated = pool.slice(off).concat(pool.slice(0, off));
+  // 知名度(fame)が高い作家の新刊を優先（getAuthorTopicsと同じ考え方。藤澤さん方針2026-07-13）
+  pool.sort((a, b) => (b.fame || 0) - (a.fame || 0) || b.titles.size - a.titles.size);
   // GSCで検索されている書籍（またはその作家）を最優先
   const pri = loadGscPriority();
   const prioritized = promote(
-    rotated,
+    pool,
     (e) => pri.titles.has(titleKey(e.latestTitle)) || pri.authors.has(norm(e.author))
   );
   return prioritized.map((e) => ({
@@ -327,6 +363,7 @@ async function main() {
 
   if (entityDay) {
     const authorStats = await collectAuthorStats(sb);
+    await attachFame(authorStats, jstToday()); // 知名度スコアを付与（getAuthorTopics/getBookTopicsが参照）
     const wantBooks = Math.floor(N / 2); // N=2→書籍1本・作家1本、N=1→作家のみ
     const wantAuthors = N - wantBooks;
 
