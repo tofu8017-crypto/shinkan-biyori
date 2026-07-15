@@ -51,13 +51,19 @@ async function main() {
   const MAX_ATTEMPTS = 3;
   let article = null;
   let lastErrs = [];
+  let lastLen = 0;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    // 2回目以降は前回の不足点を明示して矯正する
+    // 2回目以降は前回の不足点を明示して矯正する。
+    // 「1100字以上」という遠い目標だけ繰り返すと毎回同じくらい足りない量を生成してしまう
+    // （auto-generate.jsで7/9に見つけたのと同じ罠）。前回の実測字数を示し「+400字」の
+    // 具体的な上乗せ目標にする。
     const retryNote =
       attempt === 1
         ? ""
         : `\n\n【前回の生成は不合格でした。必ず直してください】\n - ${lastErrs.join("\n - ")}\n` +
-          "本文は必ず1100字以上、internal_links を本文中に2〜3本(https://shinkanbiyori.com…)をMarkdownリンクで張ること。";
+          `前回は${lastLen}字しかありませんでした。今回は最低${lastLen + 400}字（1100字は必ず超えること）を目安に、` +
+          "各見出しの具体例・編集者としての観察・読者が直面する場面の描写を増やして書き直してください。" +
+          "internal_links を本文中に2〜3本(https://shinkanbiyori.com…)をMarkdownリンクで張ること。";
 
     const res = await fetch(API_URL, {
       method: "POST",
@@ -114,6 +120,7 @@ async function main() {
       break;
     }
     lastErrs = errs;
+    lastLen = candidate.body_markdown ? candidate.body_markdown.length : 0;
     console.error(`[hatena-auto] 生成${attempt}/${MAX_ATTEMPTS}回目が検証不合格:\n - ${errs.join("\n - ")}`);
   }
 
