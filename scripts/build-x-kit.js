@@ -300,9 +300,11 @@ async function postToDiscord(webhook, posts, today, kindLabel) {
     // ② 本文の枠（これを長押しコピーして投稿）
     await send("```\n" + p.content + "\n```");
     await new Promise((r) => setTimeout(r, 600)); // Discordレート制限対策
-    // ③ リプ用リンクの枠（本文を投稿した直後に、自分でリプライして貼る）
+    // ③ リプ用リンクの枠（本文を投稿した直後に、自分でリプライして貼る）。
+    // 案内文(link_note)は枠の外に出し、枠の中はURLだけにする＝長押しコピーで余計な文言が混ざらない。
     if (p.link) {
-      await send("↳ 投稿したらすぐ自分にリプライ↓\n```\n" + p.link + "\n```");
+      const note = p.link_note ? `（${p.link_note}）` : "";
+      await send(`↳ 投稿したらすぐ自分にリプライ${note}↓\n` + "```\n" + p.link + "\n```");
       await new Promise((r) => setTimeout(r, 600));
     }
   }
@@ -438,7 +440,8 @@ async function main() {
       posts.push({
         kind: "new_books_digest",
         content,
-        link: `あらすじの続き・購入はこちら\n${dUrl}`,
+        link: dUrl,
+        link_note: "あらすじの続き・購入はこちら",
         image_url: coverImg(pick.image_url), // 紹介する1冊の書影を手動添付用に
         isbns: [pick.isbn13].filter(Boolean),
       });
@@ -487,7 +490,8 @@ async function main() {
         kind: "spotlight",
         isbn13: chosen.isbn13,
         content: body,
-        link: `詳細・購入はこちら\n${url}`,
+        link: url,
+        link_note: "詳細・購入はこちら",
         image_url: coverImg(chosen.image_url),
       });
     }
@@ -535,7 +539,7 @@ async function main() {
         // 書名が抜けないコラム（読み物系）はタイトルをフックにする
         content = `「${c.title}」を書きました。リンクはリプ欄に。\n\n#本好きと繋がりたい`;
       }
-      posts.push({ kind: "column_promo", slug: c.slug, content, link: `コラム本文はこちら\n${url}` });
+      posts.push({ kind: "column_promo", slug: c.slug, content, link: url, link_note: "コラム本文はこちら" });
     }
   } catch (e) {
     console.error("column_promo生成スキップ:", e.message);
@@ -597,7 +601,7 @@ async function main() {
       if (xWeight(c) > 278) c = buildBd(2, false, true);
       if (xWeight(c) > 278) c = buildBd(1, false, true);
       if (xWeight(c) > 278) c = buildBd(1, false, false);
-      posts.push({ kind: "birthday", content: c, link: `${bd.name}の本を探す\n${url}` });
+      posts.push({ kind: "birthday", content: c, link: url, link_note: `${bd.name}の本を探す` });
     }
     // 該当作家がいない日は④を出さない（無理に思想ポストを作らない）
   } catch (e) {
@@ -621,7 +625,7 @@ async function main() {
     const banned = lintBanned(p.content);
     md += `## ${kindLabel[p.kind] || p.kind}\n\n`;
     md += "```\n" + p.content + "\n```\n";
-    if (p.link) md += "リプ欄に貼るリンク:\n\n```\n" + p.link + "\n```\n";
+    if (p.link) md += `リプ欄に貼るリンク${p.link_note ? `（${p.link_note}）` : ""}:\n\n` + "```\n" + p.link + "\n```\n";
     md += `- 文字数(X換算): ${w}/280${over}\n`;
     if (banned.length) md += `- ⚠️ 禁止語: ${banned.join(", ")}（言い換え推奨）\n`;
     if (p.image_url) md += `- 📎 書影（開いて保存→Xに添付）: ${p.image_url}\n`;
