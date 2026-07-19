@@ -1,20 +1,70 @@
 {
-  "updated": "2026-07-13",
+  "updated": "2026-07-20",
   "window_days": 28,
   "authors": [
     {
-      "author": "有馬 美季子",
-      "impressions": 9,
-      "clicks": 0
+      "author": "南原詠",
+      "impressions": 13,
+      "clicks": 1
     },
     {
-      "author": "南原詠",
-      "impressions": 4,
+      "author": "有馬 美季子",
+      "impressions": 13,
       "clicks": 0
     },
     {
       "author": "蒼月 海里",
+      "impressions": 9,
+      "clicks": 0
+    },
+    {
+      "author": "五十嵐貴久",
+      "impressions": 6,
+      "clicks": 0
+    },
+    {
+      "author": "瀬尾 まいこ",
+      "impressions": 6,
+      "clicks": 0
+    },
+    {
+      "author": "坂井 希久子",
+      "impressions": 5,
+      "clicks": 0
+    },
+    {
+      "author": "東川　篤哉",
       "impressions": 3,
+      "clicks": 0
+    },
+    {
+      "author": "砂原 浩太朗",
+      "impressions": 3,
+      "clicks": 0
+    },
+    {
+      "author": "似鳥 鶏",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
+      "author": "島田荘司",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
+      "author": "月村了衛",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
+      "author": "朝井 まかて",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
+      "author": "河崎 秋子",
+      "impressions": 2,
       "clicks": 0
     },
     {
@@ -23,27 +73,22 @@
       "clicks": 0
     },
     {
-      "author": "瀬尾 まいこ",
+      "author": "くじら",
       "impressions": 2,
       "clicks": 0
     },
     {
-      "author": "坂井 希久子",
+      "author": "てるゆーぬ",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "砂原 浩太朗",
+      "author": "椎名 誠",
       "impressions": 1,
       "clicks": 0
     },
     {
       "author": "角幡 唯介",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "くじら",
       "impressions": 1,
       "clicks": 0
     },
@@ -57,7 +102,13 @@
     {
       "title": "ミステリーな北海道",
       "author": "渡辺 淳一",
-      "impressions": 2,
+      "impressions": 4,
+      "clicks": 0
+    },
+    {
+      "title": "両京十五日 1",
+      "author": "馬伯庸",
+      "impressions": 1,
       "clicks": 0
     }
   ]
