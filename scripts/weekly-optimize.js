@@ -23,7 +23,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const { createClient } = require("@supabase/supabase-js");
 const { SITE, loadCredentials, getAccessToken, gscQuery } = require("./lib/gsc-client");
 
 // ローカル実行時（envが揃っていない時）は .env.local を自動で読む。
@@ -328,6 +327,8 @@ async function main() {
       process.exit(1);
     }
   }
+  // ponytail: 遅延require。hatenaワークフローは node_modules 無しで isCleanText だけ借りるため
+  const { createClient } = require("@supabase/supabase-js");
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
   const today = jstToday();
   const startDate = addDaysUTC(today, -WINDOW_DAYS);

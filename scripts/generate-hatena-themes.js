@@ -71,6 +71,79 @@ function pickInternalLinks(keyword) {
   return ["https://shinkanbiyori.com", "https://shinkanbiyori.com/column"];
 }
 
+// ── 「著者名 おすすめ」テーマ ───────────────────────────
+// 実在の書名を楽天APIから取ってきて facts として渡す（AIに書名を発明させない）。
+// 著者ページが200で存在するものだけ採用する（run側のリンク200チェックで落ちないように）。
+const AUTHOR_LIST_PATH = path.join(__dirname, "..", "data", "notable-authors.json");
+const BIRTHDAYS_PATH = path.join(__dirname, "..", "data", "author-birthdays.json");
+
+function candidateAuthors() {
+  const notable = JSON.parse(fs.readFileSync(AUTHOR_LIST_PATH, "utf8"));
+  const bd = Object.values(JSON.parse(fs.readFileSync(BIRTHDAYS_PATH, "utf8")))
+    .flat()
+    .filter((a) => a && a.jp && a.name)
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .map((a) => a.name);
+  return [...new Set([...notable, ...bd])];
+}
+
+async function rakutenBooksByAuthor(name) {
+  if (!process.env.RAKUTEN_APP_ID || !process.env.RAKUTEN_ACCESS_KEY) return [];
+  const params = new URLSearchParams({
+    applicationId: process.env.RAKUTEN_APP_ID,
+    accessKey: process.env.RAKUTEN_ACCESS_KEY,
+    author: name,
+    hits: "12",
+    sort: "-releaseDate",
+    outOfStockFlag: "1",
+    formatVersion: "2",
+  });
+  const res = await fetch(
+    `https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?${params}`,
+    { headers: { Referer: "https://shinkanbiyori.com" } }
+  );
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.Items || [])
+    .map((b) => ({ title: b.title, publisher: b.publisherName, salesDate: b.salesDate }))
+    .filter((b) => b.title && isCleanText(b.title));
+}
+
+async function authorPageUrl(name) {
+  const url = `https://shinkanbiyori.com/authors/${encodeURIComponent(name.replace(/[\s　]/g, ""))}`;
+  try {
+    const res = await fetch(url);
+    return res.status === 200 ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+// 上から順に試し、count件そろうか候補を使い切るまで。1件ごとに2回fetchするので上限を切る
+async function buildAuthorThemes(avoidTokenSets, count) {
+  const out = [];
+  let tried = 0;
+  for (const name of candidateAuthors()) {
+    if (out.length >= count || tried >= 40) break;
+    const keyword = `${name} おすすめ`;
+    if (isTooSimilar(keyword, avoidTokenSets)) continue;
+    tried++;
+    const url = await authorPageUrl(name);
+    if (!url) continue;
+    const books = await rakutenBooksByAuthor(name);
+    if (books.length < 3) continue;
+    out.push({
+      keyword,
+      angle: `${name}をこれから読む人に向けて、どの作品から入るか・どんな読者に合うかを、実在の書誌の範囲で示す`,
+      internal_links: [url, "https://shinkanbiyori.com/column"],
+      facts: { author: name, books },
+    });
+    avoidTokenSets.push(tokens(keyword));
+    console.log(`  + ${keyword}（書誌${books.length}件）`);
+  }
+  return out;
+}
+
 async function fetchRealQueries() {
   const today = jstToday();
   const startDate = addDaysUTC(today, -90); // サイトが若いのでウィンドウを広めに
@@ -142,12 +215,20 @@ async function main() {
     : [];
   const avoidTokenSets = [...data.themes.map((t) => t.keyword), ...postedKeywords].map(tokens);
 
+  // まず「著者名 おすすめ」を実データから作る。足りない分だけDeepSeekの一般テーマで埋める
+  console.log(`「著者名 おすすめ」テーマを実データから作成中...`);
+  const authorThemes = await buildAuthorThemes(avoidTokenSets, COUNT);
+  if (authorThemes.length >= COUNT) {
+    writeThemes(data, authorThemes);
+    return;
+  }
+
   console.log(`GSCの検索クエリを取得中...`);
   const realQueries = await fetchRealQueries();
   console.log(`実データ: ${realQueries.length}件の検索語（サイト直近90日）`);
 
   console.log(`DeepSeekで新テーマを${COUNT}件発想中...`);
-  const generated = await generateThemes(data.themes, realQueries, COUNT);
+  const generated = await generateThemes(data.themes, realQueries, COUNT - authorThemes.length);
 
   const accepted = [];
   for (const g of generated) {
@@ -173,6 +254,10 @@ async function main() {
   console.log(`\n採用: ${accepted.length}件`);
   for (const t of accepted) console.log(`  + ${t.keyword} … ${t.angle}`);
 
+  writeThemes(data, [...authorThemes, ...accepted]);
+}
+
+function writeThemes(data, accepted) {
   if (accepted.length === 0) {
     console.log("追加できるテーマがありませんでした。");
     return;
@@ -183,11 +268,13 @@ async function main() {
     return;
   }
 
-  data.themes.push(...accepted);
+  // 新しいテーマを先頭に入れる（run側は先頭から未投稿の1件を選ぶため、
+  // 「著者名 おすすめ」が古い一般テーマより先に消化される）
+  data.themes.unshift(...accepted);
   // 既存ファイルと同じ「1テーマ1行」の見た目を保つため、配列全体を手組みで整形する
   // （JSON.stringify(data, null, 2)だと各テーマが多行に展開され差分が読みにくくなる）
   const themeLine = (t) =>
-    `    ${JSON.stringify({ keyword: t.keyword, angle: t.angle, internal_links: t.internal_links })}`;
+    `    ${JSON.stringify({ keyword: t.keyword, angle: t.angle, internal_links: t.internal_links, ...(t.facts ? { facts: t.facts } : {}) })}`;
   const body = [
     "{",
     `  "_comment": ${JSON.stringify(data._comment)},`,

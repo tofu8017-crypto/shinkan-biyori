@@ -30,6 +30,8 @@ jobs:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       HATENA_DRAFT:       ${{ github.event.inputs.draft || 'no' }}
       GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}   # テーマプール枯渇時の自動生成用（weekly-optimize.ymlと共用のSecret）
+      RAKUTEN_APP_ID:     ${{ secrets.RAKUTEN_APP_ID }}      # 「著者名 おすすめ」テーマの実在書誌の取得用
+      RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
 
     steps:
       - name: チェックアウト

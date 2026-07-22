@@ -13,6 +13,13 @@
 const fs = require("fs");
 const path = require("path");
 
+// ローカル実行時は generate-hatena-themes.js と同様に .env.local を自動で読む
+if (!process.env.DEEPSEEK_API_KEY) {
+  try {
+    require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
+  } catch {}
+}
+
 const API_KEY = process.env.DEEPSEEK_API_KEY;
 const API_URL = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
 const MODEL = process.env.DEEPSEEK_MODEL || "deepseek-chat";
@@ -39,12 +46,22 @@ async function main() {
     "utf8"
   );
 
+  // facts 付きテーマ（「著者名 おすすめ」等）は実在の書誌を渡す。
+  // 書名を出してよいのはこの範囲だけ、と明示して捏造を封じる。
+  const factsNote = theme.facts
+    ? "\n\n【事実】以下は実在の書誌データです。書名・出版社・発売日に触れるときは、必ずこの一覧の中の情報だけを使ってください。" +
+      "一覧に無い書名・受賞歴・部数・あらすじの断定は書かないこと（あらすじは知っている範囲でも書かない）。" +
+      "5〜7冊を選び、それぞれ「どんな読者に合うか」「どこから読むか」を編集者の視点で書き分けてください。\n" +
+      "```json\n" + JSON.stringify(theme.facts, null, 2) + "\n```"
+    : "";
+
   const userMessage =
     "以下のテーマで、ルールに沿ったはてな記事JSONを1つ返してください。\n" +
     "internal_links のうち2〜3本を本文に自然に張ってください。\n\n" +
     "```json\n" +
-    JSON.stringify(theme, null, 2) +
-    "\n```";
+    JSON.stringify({ ...theme, facts: undefined }, null, 2) +
+    "\n```" +
+    factsNote;
 
   // DeepSeekは時々サボって短文・リンク無しを返す。一発勝負だと即失敗するので、
   // 検証に通るまで最大3回リトライし、失敗時は具体的な不足を伝えて作り直させる。
