@@ -61,7 +61,7 @@ log "執筆完了: $TITLE （本文 $(wc -m < "$BODY" | tr -d ' ') 字）"
 
 # ── Step 2.5: 本文中の新刊日和リンクが実在(200)するか確認 ──
 LINKS=()
-while IFS= read -r u; do [[ -n "$u" ]] && LINKS+=("$u"); done < <(grep -oE 'https://shinkanbiyori\.com[A-Za-z0-9/_.-]*' "$BODY" | sort -u)
+while IFS= read -r u; do [[ -n "$u" ]] && LINKS+=("$u"); done < <(grep -oE 'https://shinkanbiyori\.com[A-Za-z0-9%/_.-]*' "$BODY" | sort -u)
 for u in "${LINKS[@]}"; do
   code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "$u" || echo ERR)
   if [[ "$code" != "200" ]]; then log "リンク不正($code): $u → 中止"; exit 1; fi
