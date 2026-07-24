@@ -10,58 +10,7 @@
 // openBD は1回のまとめ取得で済ませる（ISBNをカンマ区切り）。原文転載はせず要約用に渡すだけ。
 
 const fs = require("fs");
-
-// onix から内容紹介(TextType=03 = 内容紹介 / 02 = 内容説明 等)を拾う
-function pickDescription(item) {
-  const summaryText = item?.summary?.title ? "" : "";
-  const tc = item?.onix?.CollateralDetail?.TextContent;
-  if (Array.isArray(tc)) {
-    // 03(内容紹介) > 02(著者からのコメント等) > 先頭 の優先で拾う
-    const byType = (t) => tc.find((x) => x.TextType === t && x.Text);
-    const hit = byType("03") || byType("02") || tc.find((x) => x.Text);
-    if (hit && hit.Text) return String(hit.Text).replace(/\s+/g, " ").trim();
-  }
-  return summaryText;
-}
-
-function pickPrice(item) {
-  const p = item?.onix?.ProductSupply?.SupplyDetail?.Price;
-  if (Array.isArray(p) && p[0]?.PriceAmount) return `${p[0].PriceAmount}円`;
-  return "";
-}
-
-function pickLabel(item) {
-  // レーベル/シリーズ名（あれば）。無ければ空。
-  const coll = item?.onix?.DescriptiveDetail?.Collection;
-  const seq = Array.isArray(coll) ? coll[0] : coll;
-  const te = seq?.TitleDetail?.TitleElement;
-  const el = Array.isArray(te) ? te[0] : te;
-  return el?.TitleText?.content || el?.TitleText || "";
-}
-
-async function fetchOpenBD(isbns) {
-  if (isbns.length === 0) return {};
-  const url = `https://api.openbd.jp/v1/get?isbn=${isbns.join(",")}`;
-  let lastErr;
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`openBD ${res.status}`);
-      const arr = await res.json();
-      const map = {};
-      for (const item of arr || []) {
-        const isbn = item?.summary?.isbn;
-        if (isbn) map[isbn] = item;
-      }
-      return map;
-    } catch (e) {
-      lastErr = e;
-      await new Promise((r) => setTimeout(r, 1500 * attempt));
-    }
-  }
-  console.error("openBD取得に失敗（書誌のみで続行）:", lastErr?.message);
-  return {};
-}
+const { pickDescription, pickPrice, pickLabel, fetchOpenBD } = require("./lib/openbd");
 
 async function main() {
   const inPath = process.argv[2];
