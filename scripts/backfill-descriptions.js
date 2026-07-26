@@ -1,28 +1,70 @@
 #!/usr/bin/env node
 /**
- * books.description が空の本に、openBD の内容紹介（あらすじ）を埋める。
- * 楽天収集(fetch-books.js)は description:null で入れるだけなので、その穴埋め役。
- * 新しい本ほど検索需要が高いので発売日の新しい順に処理する。openBD にまだ無い本は
- * NULL のまま残り、翌日以降の実行で再挑戦される（openBD の反映遅れを自然に拾う）。
+ * books.description が空の本に、楽天ブックスAPIの itemCaption（あらすじ/商品説明）を埋める。
  *
- * 実行: node -r dotenv/config scripts/backfill-descriptions.js [--dry-run] [--max=3000]
- * 必要な環境変数: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+ * 主役は fetch-books.js で、収集窓（過去95日〜近刊）の本は日次収集時に description が入る。
+ * このスクリプトはその「窓より古い在庫」を少しずつ埋めるための補助。1回で埋めきらず、
+ * 発売日の新しい順に上限件数だけ処理し、残りは翌日以降の実行で片付ける。
+ * itemCaption が無い本(約3割)は null のまま残るが、それは楽天側にデータが無いだけ。
+ *
+ * openBD ではなく楽天を使う理由: このサイトの蔵書は楽天新刊中心で、
+ * openBDの内容紹介カバー率は約4%しかない一方、楽天itemCaptionは約7割に付く（実測）。
+ *
+ * 実行: node scripts/backfill-descriptions.js [--dry-run] [--max=400]
+ * 必要な環境変数: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+ *                 RAKUTEN_APP_ID, RAKUTEN_ACCESS_KEY
  */
 
+const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
-const { pickDescription, fetchOpenBD } = require("./lib/openbd");
+const { cleanDescription } = require("./lib/openbd");
+
+// ローカル実行時は .env.local を読む（weekly-optimize.js と同じ方式）。
+// GitHub Actions では env が Secrets から入るのでこの分岐は通らない。
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  try {
+    require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
+  } catch {}
+}
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const RAKUTEN_APP_ID = process.env.RAKUTEN_APP_ID;
+const RAKUTEN_ACCESS_KEY = process.env.RAKUTEN_ACCESS_KEY;
 
 const DRY_RUN   = process.argv.includes("--dry-run");
-const MAX_BOOKS = Number((process.argv.find((a) => a.startsWith("--max=")) || "").split("=")[1]) || 3000;
-const OPENBD_CHUNK = 400; // openBD は 1000件/回まで可。負荷を抑えて 400。
-const SELECT_PAGE  = 1000; // Supabase の1回のselect上限
+const MAX_BOOKS = Number((process.argv.find((a) => a.startsWith("--max=")) || "").split("=")[1]) || 400;
+const SELECT_PAGE = 1000; // Supabase の1回のselect上限
+const REQ_INTERVAL = 700; // 楽天APIへの間隔(ms)。レート制限に配慮
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// description が空(null/'')の isbn13 を発売日の新しい順にMAX_BOOKS件まで集める
+// 楽天ブックスAPIで1冊をISBN検索し itemCaption を返す（無ければ ""）
+async function fetchCaption(isbn) {
+  const p = new URLSearchParams({
+    applicationId: RAKUTEN_APP_ID,
+    accessKey: RAKUTEN_ACCESS_KEY,
+    isbn,
+    hits: "1",
+    formatVersion: "2",
+  });
+  const url = `https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?${p}`;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url, { headers: { Referer: "https://shinkanbiyori.com" } });
+      if (res.status === 429) { await sleep(2000 * attempt); continue; } // レート制限
+      if (!res.ok) throw new Error(`Rakuten ${res.status}`);
+      const data = await res.json();
+      return (data.Items?.[0]?.itemCaption || "").trim();
+    } catch (e) {
+      if (attempt === 3) { console.error(`  取得失敗 ${isbn}: ${e.message}`); return ""; }
+      await sleep(1000 * attempt);
+    }
+  }
+  return "";
+}
+
+// description が空(null)の isbn13 を発売日の新しい順にMAX_BOOKS件まで集める
 async function fetchTargets(supabase) {
   const targets = [];
   for (let from = 0; targets.length < MAX_BOOKS; from += SELECT_PAGE) {
@@ -41,36 +83,32 @@ async function fetchTargets(supabase) {
 }
 
 async function main() {
-  if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.error("環境変数 NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY が必要です。");
-    process.exit(1);
+  for (const [name, v] of [["NEXT_PUBLIC_SUPABASE_URL", SUPABASE_URL], ["SUPABASE_SERVICE_ROLE_KEY", SUPABASE_KEY], ["RAKUTEN_APP_ID", RAKUTEN_APP_ID], ["RAKUTEN_ACCESS_KEY", RAKUTEN_ACCESS_KEY]]) {
+    if (!v) { console.error(`環境変数 ${name} が必要です。`); process.exit(1); }
   }
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const targets = await fetchTargets(supabase);
-  console.log(`あらすじ未設定: ${targets.length}件を処理対象（新しい順・上限${MAX_BOOKS}）${DRY_RUN ? " [dry-run]" : ""}`);
+  console.log(`あらすじ未設定: ${targets.length}件を処理（新しい順・上限${MAX_BOOKS}）${DRY_RUN ? " [dry-run]" : ""}`);
   if (targets.length === 0) return;
 
   let filled = 0, notFound = 0, sampleShown = 0;
-  for (let i = 0; i < targets.length; i += OPENBD_CHUNK) {
-    const chunk = targets.slice(i, i + OPENBD_CHUNK);
-    const obd = await fetchOpenBD(chunk);
-    for (const isbn of chunk) {
-      const desc = obd[isbn] ? pickDescription(obd[isbn]) : "";
-      if (!desc) { notFound++; continue; }
-      if (DRY_RUN) {
-        if (sampleShown < 3) { console.log(`  [sample] ${isbn}: ${desc.slice(0, 60)}…`); sampleShown++; }
-        filled++;
-        continue;
-      }
-      const { error } = await supabase.from("books").update({ description: desc }).eq("isbn13", isbn);
-      if (error) { console.error(`  update失敗 ${isbn}: ${error.message}`); continue; }
+  for (const isbn of targets) {
+    const cap = await fetchCaption(isbn);
+    await sleep(REQ_INTERVAL);
+    const desc = cleanDescription(cap);
+    if (!desc) { notFound++; continue; }
+    if (DRY_RUN) {
+      if (sampleShown < 3) { console.log(`  [sample] ${isbn}: ${desc.slice(0, 60)}…`); sampleShown++; }
       filled++;
+      continue;
     }
-    console.log(`  ...${Math.min(i + OPENBD_CHUNK, targets.length)}/${targets.length} 処理 (埋めた:${filled} / openBD該当なし:${notFound})`);
-    await sleep(500); // openBD への連続アクセスを緩める
+    const { error } = await supabase.from("books").update({ description: desc }).eq("isbn13", isbn);
+    if (error) { console.error(`  update失敗 ${isbn}: ${error.message}`); continue; }
+    filled++;
+    if (filled % 50 === 0) console.log(`  ...${filled}件埋めた / 楽天に説明なし ${notFound}件`);
   }
-  console.log(`✅ 完了: ${DRY_RUN ? "（dry-run・書き込みなし）" : ""}あらすじを ${filled}件埋めた / openBDに無し ${notFound}件`);
+  console.log(`✅ 完了: ${DRY_RUN ? "（dry-run・書き込みなし）" : ""}あらすじを ${filled}件埋めた / 楽天に説明なし ${notFound}件`);
   if (targets.length >= MAX_BOOKS) {
     console.log(`⚠️ 上限${MAX_BOOKS}件で打ち切り。残りは次回実行で処理される。`);
   }

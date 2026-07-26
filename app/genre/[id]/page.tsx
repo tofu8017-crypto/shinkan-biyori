@@ -6,7 +6,7 @@ import BookCard from "@/components/BookCard";
 import GenreChips from "@/components/GenreChips";
 import MonthCalendarSection from "@/components/MonthCalendarSection";
 import NoBooksCat from "@/components/NoBooksCat";
-import { getBooksByGenre, getBooksByDateAndGenre, getBookCountByDate } from "@/lib/supabase";
+import { getBooksByGenre, getBooksByDateAndGenre, getBookCountByDate, getSeoOverride } from "@/lib/supabase";
 import { GENRES } from "@/types/book";
 import DateStrip from "@/components/DateStrip";
 import { notFound } from "next/navigation";
@@ -38,9 +38,12 @@ export async function generateMetadata({
 
   const description = `${genre.label}の最新の新刊を発売日順にまとめてチェック。楽天ブックス・Amazonのリンク付き。`;
 
+  // 週次自律改善ループの上書き（あれば優先）。/genre はループ対象に追加済み
+  const ov = await getSeoOverride("genre", id);
+
   return {
-    title: `${genre.label}の新刊一覧`,
-    description,
+    title: ov?.title ?? `${genre.label}の新刊一覧`,
+    description: ov?.description ?? description,
     alternates: {
       canonical: `/genre/${id}`,
     },
