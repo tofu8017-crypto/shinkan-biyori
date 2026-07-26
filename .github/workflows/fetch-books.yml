@@ -35,8 +35,10 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY:   ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/fetch-books.js
 
-      - name: あらすじ(内容紹介)をopenBDから補充
+      - name: あらすじ(itemCaption)を旧在庫にも補充
         env:
+          RAKUTEN_APP_ID:              ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY:          ${{ secrets.RAKUTEN_ACCESS_KEY }}
           NEXT_PUBLIC_SUPABASE_URL:    ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY:   ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/backfill-descriptions.js

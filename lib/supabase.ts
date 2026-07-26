@@ -884,7 +884,7 @@ export async function getColumnBySlugAnyStatus(slug: string): Promise<Column | n
 // 週次SEO自律改善ループ（scripts/weekly-optimize.js）が書き込む title/meta の上書きを1件引く。
 // generateMetadata で published 値より優先して使う。テーブル未作成・エラー時は null（ページを落とさない）。
 export async function getSeoOverride(
-  targetType: "book" | "author" | "column" | "calendar",
+  targetType: "book" | "author" | "column" | "calendar" | "genre",
   targetKey: string
 ): Promise<{ title: string | null; description: string | null } | null> {
   if (useMock) return null;

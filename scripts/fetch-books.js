@@ -6,6 +6,7 @@
  */
 
 const { createClient } = require("@supabase/supabase-js");
+const { cleanDescription } = require("./lib/openbd");
 
 // ===== 設定 =====
 
@@ -188,7 +189,9 @@ async function fetchAllBooksForGenre(queryGenreId, label, win, storeGenreId = qu
           image_url:      Item.largeImageUrl ?? Item.mediumImageUrl ?? null,
           rakuten_url:    Item.affiliateUrl || Item.itemUrl || null,
           amazon_url:     isbn10 ? `https://www.amazon.co.jp/dp/${isbn10}` : null,
-          description:    null, // openBDフェーズ2で追加
+          // 楽天itemCaption（あらすじ/商品説明）を格納。約7割の本に付く（openBDは約4%と手薄）。
+          // HTMLタグ除去・500字整形。窓内の本は毎日再収集されるので順次埋まる。
+          description:    cleanDescription(Item.itemCaption) || null,
           last_synced_at: new Date().toISOString(),
         });
       }

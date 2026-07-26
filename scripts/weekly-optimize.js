@@ -167,6 +167,14 @@ function buildPriority(queryRows, inventory) {
 
 // GSCのページURL → seo_overrides の (target_type, target_key)
 // ページ側の generateMetadata が同じキーで引く（lib/supabase.ts の getSeoOverride）
+// /genre/{id} の id → 表示名（types/book.ts の GENRES と一致）。
+// ラノベ(001017)・成人向け(adult)は看板に載せない方針なので意図的に除外＝ループ対象外。
+const GENRE_LABELS = {
+  "001004008": "日本文学", "001004009": "海外小説", "001004001": "ミステリー",
+  "001004002": "SF・ホラー・ファンタジー", jidai: "歴史・時代小説", "001004003": "エッセイ",
+  "001001": "コミック", "001019": "文庫", "001006": "ビジネス・実用書", jido: "児童書",
+};
+
 function parseTarget(url) {
   const p = url.replace(BASE_URL, "");
   let m;
@@ -174,12 +182,13 @@ function parseTarget(url) {
   if ((m = p.match(/^\/authors\/([^/?#]+)$/))) return { type: "author", key: decodeURIComponent(m[1]) };
   if ((m = p.match(/^\/column\/([a-z0-9-]+)$/))) return { type: "column", key: m[1] };
   if ((m = p.match(/^\/calendar\/(\d{4}-\d{2})$/))) return { type: "calendar", key: m[1] };
-  return null; // トップ・ジャンル・検索などは対象外
+  if ((m = p.match(/^\/genre\/([a-z0-9]+)$/))) return { type: "genre", key: m[1] };
+  return null; // トップ・検索などは対象外
 }
 
 function isCandidate(stat) {
   if (stat.impressions < MIN_IMPRESSIONS) return false;
-  if (stat.position >= 11 && stat.position <= 30) return true; // 改善余地が最大のゾーン
+  if (stat.position >= 11 && stat.position <= 50) return true; // 改善余地ゾーン（2〜5ページ目）
   if (stat.position <= 10 && stat.ctr < LOW_CTR) return true; // 上位なのにクリックされない
   return false;
 }
@@ -259,6 +268,35 @@ async function fetchPageContext(sb, target) {
       currentTitle: `${y}年${mo}月の文芸新刊一覧｜発売日順`,
     };
   }
+  if (target.type === "genre") {
+    const label = GENRE_LABELS[target.key];
+    if (!label) return null; // 未知/対象外(ラノベ・成人向け)ジャンルはスキップ
+    // 数値genre_idは実データから新刊例を拾う（jidai/jido等の派生ジャンルはDB検索が特殊なので例なし）
+    let examples = "";
+    if (/^\d+$/.test(target.key)) {
+      const { data } = await sb
+        .from("books")
+        .select("title,author,publisher")
+        .eq("genre_id", target.key)
+        .order("published_date", { ascending: false })
+        .limit(30);
+      const names = (data || [])
+        .filter(
+          (b) =>
+            isCleanText(b.title) &&
+            isCleanText(b.author) &&
+            !isLnPublisher(b.publisher) &&
+            !endsWithVolume(b.title)
+        )
+        .slice(0, 6)
+        .map((b) => `『${b.title}』(${b.author})`);
+      if (names.length) examples = `（新刊例: ${names.join("、")}）`;
+    }
+    return {
+      label: `ジャンル一覧ページ: ${label}の新刊を発売日順にまとめたページ（楽天/Amazonリンク付き）${examples}`,
+      currentTitle: `${label}の新刊一覧`,
+    };
+  }
   return null;
 }
 
@@ -277,7 +315,7 @@ async function generateImprovement(target, ctx, stat) {
 - titleは15〜32文字。サイト名「新刊日和」は自動で付くので含めない。検索クエリの語を自然に含め、クリックしたくなる具体性を持たせる（煽り・記号の乱用・偽りの数字は禁止）
 - descriptionは60〜120文字
 - 【最重要】書いてよいのは、資料に明記された事実（書名・著者・発売日・内容紹介・本文冒頭・収録例）だけ。資料に無い書名・数字（「◯選」等）・内容の説明・評価を推測で書くことは絶対に禁止。本の内容が資料から分からなければ、内容には触れず確かな事実だけで構成する
-- 次のページ共通機能は事実として書いてよい: 書籍ページ=発売日・書誌情報・Amazon/楽天リンク・同じ著者の他の新刊、作家ページ=その作家の新刊一覧と発売日、カレンダー=その月の文芸新刊の発売日順一覧
+- 次のページ共通機能は事実として書いてよい: 書籍ページ=発売日・書誌情報・Amazon/楽天リンク・同じ著者の他の新刊、作家ページ=その作家の新刊一覧と発売日、カレンダー=その月の文芸新刊の発売日順一覧、ジャンルページ=そのジャンルの新刊を発売日順にまとめた一覧
 - 「!」「?」「★」等の記号乱用、「必見」「衝撃」等の煽り語は使わない`;
 
   const user = `対象ページ: ${ctx.label}
