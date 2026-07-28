@@ -297,10 +297,17 @@ async function getBookTopics(sb, used, authors) {
 async function getBooksByAuthor(sb, author) {
   const today = jstToday();
   const since = addDaysUTC(today, -180);
+  // ★作家名の表記ゆれ対策: DBには「大沢　在昌」(全角空白)と「大沢在昌」が混在する。
+  //   テーマ選定側(collectAuthorStats)は norm() で空白を無視して冊数を数えるのに、
+  //   ここは選ばれた綴りそのままで ilike していたため「2冊以上いる作家なのに1冊しか無い」
+  //   と判定されて丸ごとスキップ→生成0本の日が出ていた(2026-07-28発覚)。
+  const nameVariants = [
+    ...new Set([author, author.replace(/[\s　]/g, ""), author.replace(/　/g, " "), author.replace(/ /g, "　")]),
+  ];
   let q = sb
     .from("books")
     .select("title,author,publisher,isbn10,isbn13,rakuten_url,published_date,image_url")
-    .ilike("author", `%${author}%`)
+    .or(nameVariants.map((v) => `author.ilike.%${v}%`).join(","))
     .in("genre_id", LITERARY_GENRES)
     .not("publisher", "ilike", "%ハーレクイン%")
     .not("publisher", "ilike", "%ハーパーコリンズ%")
@@ -380,6 +387,7 @@ async function main() {
 
   const chosen = []; // {keyword, genre_id, author?, leadTitle?}
   const usedGenre = new Set();
+  const spares = []; // 在庫不足でスキップしたテーマの差し替え候補（「今日は0本」を作らないため）
 
   if (entityDay) {
     const authorStats = await collectAuthorStats(sb);
@@ -410,6 +418,12 @@ async function main() {
         chosen.push({ keyword: t.keyword, genre_id: t.genre_id, author: t.author });
         usedGenre.add(t.genre_id);
       }
+    }
+
+    // 選ばれなかった候補は控えに回す。素材不足で本命が落ちたとき差し替えて使う。
+    const inChosen = (t) => chosen.some((c) => norm(c.author) === norm(t.author));
+    for (const t of [...authorTopics, ...bookTopics]) {
+      if (!inChosen(t) && !spares.some((s) => norm(s.author) === norm(t.author))) spares.push(t);
     }
 
     const authorCount = chosen.filter((c) => !c.leadTitle).length;
@@ -451,6 +465,14 @@ async function main() {
       let books = author ? await getBooksByAuthor(sb, author) : await getBooks(sb, genre_id);
       if (books.length < 2) {
         console.log(`  本が${books.length}冊しか無いのでスキップ`);
+        // 在庫の薄いテーマを引いただけで1日分を落とさない。控えのテーマに差し替えて続行する。
+        while (spares.length && chosen.length < N + 3) {
+          const sp = spares.shift();
+          if (chosen.some((c) => norm(c.author) === norm(sp.author))) continue;
+          chosen.push(sp);
+          console.log(`  → 控えのテーマ「${sp.keyword}」に差し替え`);
+          break;
+        }
         continue;
       }
       // 書籍テーマ: 主役の本(leadTitle)を先頭に並べ直す（プロンプトが「1冊目=主役」と解釈する目印）
