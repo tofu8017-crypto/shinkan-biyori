@@ -340,6 +340,26 @@ function run(script, args) {
   });
 }
 
+// 公開時に使うのと同じ品質ゲート(quality-check.js)を生成時にも通し、落ちた理由の配列を返す（空=合格）。
+// 判定ロジックを二重に書かないため、スクリプトをそのまま呼ぶ。
+function gateReasons(colPath) {
+  try {
+    execFileSync("node", [path.join(__dirname, "quality-check.js"), colPath], {
+      encoding: "utf8",
+      env: process.env,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    return [];
+  } catch (e) {
+    const out = ((e.stdout && e.stdout.toString()) || "").trim();
+    try {
+      return JSON.parse(out).reasons || ["品質ゲートが不明な理由で不合格"];
+    } catch {
+      return ["品質ゲートの実行に失敗"];
+    }
+  }
+}
+
 async function main() {
   if (!SUPABASE_URL || !KEY) {
     console.error("env未設定（NEXT_PUBLIC_SUPABASE_URL / キー）");
@@ -469,37 +489,48 @@ async function main() {
         console.error("  Geminiチェックをスキップ（続行）:", e.message);
       }
 
-      // 本文が品質ゲートの字数下限に届かなければ、届くまで最大2回まで書き直す。
-      // 必ずGeminiチェックの「後」に置く＝ここが最後の仕上げ（プロンプトの目標3,500字に対し
-      // DeepSeekの実出力が1,800字未満に収まりがちで公開ゼロが続いた反省。2026-07-08）。
-      // ★事故った過去のバグ: 以前はGeminiチェックの「前」に置いていたため、Geminiが指摘した際の
-      //   再生成(字数指示なし)で短さが再発し、字数を稼いだ分が丸ごと消えていた(2026-07-09発覚)。
-      const MAX_LEN_RETRY = 3; // 実測: 2回だと僅差(あと数字)で届かない例があったため3回に(2026-07-09)
-      for (let retry = 0; retry < MAX_LEN_RETRY; retry++) {
-        const len = plainLen(JSON.parse(fs.readFileSync(colPath, "utf8")).body_html);
-        if (len >= QC_MIN_CHARS) break;
+      // 保存前に「公開時と同じ品質ゲート」を通し、落ちた理由をそのまま書き直し指示にして最大3回直す。
+      // 必ずGeminiチェックの「後」に置く＝ここが最後の仕上げ。
+      // ★事故った過去のバグ1: Geminiチェックの「前」に置いていたため、Geminiの指摘で再生成した際に
+      //   字数を稼いだ分が丸ごと消えていた(2026-07-09発覚)。
+      // ★事故った過去のバグ2: 字数「だけ」を見ていたため、h2のキーワード不足など他の理由で落ちる
+      //   下書きが毎日たまり公開ゼロが続いた(2026-07-28発覚。3,112字の下書きがh2理由で不合格)。
+      const MAX_QC_RETRY = 3; // 実測: 2回だと僅差で届かない例があったため3回に(2026-07-09)
+      let best = { path: colPath, reasons: gateReasons(colPath) };
+      for (let retry = 0; retry < MAX_QC_RETRY && best.reasons.length > 0; retry++) {
+        // 同KWの公開済み記事があるのは書き直しでは直らないので、無駄なAPI呼び出しをせず抜ける。
+        if (best.reasons.some((r) => r.includes("公開済み記事が既にある"))) break;
+        const len = plainLen(JSON.parse(fs.readFileSync(best.path, "utf8")).body_html);
         // 「3,500字以上」という遠い目標だと届かないことが多い（実測: 2回リトライしても
-        // 1600字前後止まりの例が半数）。現在地から届きそうな具体的な数値を都度示す方が
-        // 効きが良い（2026-07-09）。
-        const target = len + 800;
-        console.log(`  本文${len}字で下限(${QC_MIN_CHARS}字)未満 → 書き直し(${retry + 1}/${MAX_LEN_RETRY})を試みる(目標${target}字)`);
-        const lenNotePath = `/tmp/length-note-${i}-${retry}.txt`;
-        fs.writeFileSync(
-          lenNotePath,
-          `本文が${len}字しかなく短すぎます。今の内容を土台に、最低でも${target}字まで増やしてください。各書籍ブロックの「内容の紹介」「読みどころ・背景」を、資料にある情報を漏らさず具体的に掘り下げて2〜3倍の分量に膨らませる（新しい事実は作らない・同じ内容の言い換えで水増ししない）。導入とまとめも具体的に。字数を満たせないなら「これ以上増やせる資料がない」ではなく、資料の中の細部（発売日・版元・レーベル・author_facts等）まで丁寧に文章化すること。`
-        );
+        // 1600字前後止まりの例が半数）。現在地から届きそうな具体的な数値を都度示す方が効く（2026-07-09）。
+        const lenNote =
+          len < QC_MIN_CHARS
+            ? `本文が${len}字しかなく短すぎます。今の内容を土台に、最低でも${len + 800}字まで増やしてください。各書籍ブロックの「内容の紹介」「読みどころ・背景」を、資料にある情報を漏らさず具体的に掘り下げて2〜3倍の分量に膨らませる（新しい事実は作らない・同じ内容の言い換えで水増ししない）。導入とまとめも具体的に。字数を満たせないなら「これ以上増やせる資料がない」ではなく、資料の中の細部（発売日・版元・レーベル・author_facts等）まで丁寧に文章化すること。`
+            : "";
+        console.log(`  品質ゲート不合格 → 書き直し(${retry + 1}/${MAX_QC_RETRY}): ${best.reasons.join(" / ")}`);
+        const notePath = `/tmp/qc-note-${i}-${retry}.txt`;
+        fs.writeFileSync(notePath, [...best.reasons, lenNote].filter(Boolean).join("\n"));
         try {
-          const out3 = run("write-column-deepseek.js", [matPath, lenNotePath]);
+          const out3 = run("write-column-deepseek.js", [matPath, notePath]);
           const m3 = out3.match(/(\/tmp\/column-[^\s]+\.json)/);
-          if (m3) {
-            colPath = m3[1];
-            const len2 = plainLen(JSON.parse(fs.readFileSync(colPath, "utf8")).body_html);
-            console.log(`  書き直し後: ${len2}字`);
-          }
+          if (!m3) break;
+          const next = { path: m3[1], reasons: gateReasons(m3[1]) };
+          console.log(
+            `  書き直し後: ${plainLen(JSON.parse(fs.readFileSync(next.path, "utf8")).body_html)}字 / 不合格理由 ${next.reasons.length}件`
+          );
+          // 悪化した版で上書きしない（以前は常に「最後の版」を保存していたため、
+          // 3,000字の版が1,200字の版に差し替わることがあった）。
+          if (next.reasons.length <= best.reasons.length) best = next;
         } catch (e) {
-          console.error("  書き直しに失敗（元の下書きで続行）:", e.message);
+          console.error("  書き直しに失敗（現時点で最良の下書きで続行）:", e.message);
           break;
         }
+      }
+      colPath = best.path;
+      if (best.reasons.length > 0) {
+        console.log(`  ⚠ 品質ゲート不合格のまま下書き保存: ${best.reasons.join(" / ")}`);
+      } else {
+        console.log("  品質ゲート合格");
       }
 
       // アイキャッチ＝先頭の本の表紙（高解像度化）。無ければ save-column 側がプール画像にフォールバック。

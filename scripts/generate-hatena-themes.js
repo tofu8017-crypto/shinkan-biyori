@@ -35,7 +35,7 @@ const POSTS_LOG_PATH = path.join(
 );
 
 const DEEPSEEK_URL = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-chat";
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-v4-flash";
 
 function jstToday() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
@@ -185,6 +185,8 @@ ${existingList.map((t) => `- ${t.keyword}: ${t.angle}`).join("\n")}`;
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}` },
     body: JSON.stringify({
       model: DEEPSEEK_MODEL,
+      // v4-flashは既定で思考ONなので、旧deepseek-chat相当（非思考）に戻す。max_tokensを思考に食われないため。
+      thinking: { type: "disabled" },
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },

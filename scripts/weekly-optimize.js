@@ -46,7 +46,7 @@ const PRIORITY_PATH = path.join(__dirname, "..", "data", "gsc-priority.json");
 const LOG_PATH = path.join(__dirname, "..", "docs", "optimization-log.md");
 
 const DEEPSEEK_URL = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-chat";
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-v4-flash";
 
 const norm = (s) => (s || "").replace(/[\s　]/g, "").toLowerCase();
 const plainText = (html) => (html || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
@@ -329,6 +329,8 @@ async function generateImprovement(target, ctx, stat) {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}` },
     body: JSON.stringify({
       model: DEEPSEEK_MODEL,
+      // v4-flashは既定で思考ONなので、旧deepseek-chat相当（非思考）に戻す。max_tokensを思考に食われないため。
+      thinking: { type: "disabled" },
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },

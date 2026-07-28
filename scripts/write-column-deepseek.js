@@ -25,7 +25,7 @@ const path = require("path");
 
 const API_KEY = process.env.DEEPSEEK_API_KEY;
 const API_URL = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
-const MODEL = process.env.DEEPSEEK_MODEL || "deepseek-chat";
+const MODEL = process.env.DEEPSEEK_MODEL || "deepseek-v4-flash";
 
 async function main() {
   if (!API_KEY) {
@@ -76,6 +76,8 @@ async function main() {
     },
     body: JSON.stringify({
       model: MODEL,
+      // v4-flashは既定で思考ONなので、旧deepseek-chat相当（非思考）に戻す。max_tokensを思考に食われないため。
+      thinking: { type: "disabled" },
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userMessage },
