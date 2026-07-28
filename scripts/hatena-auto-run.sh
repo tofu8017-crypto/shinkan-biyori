@@ -63,7 +63,13 @@ log "執筆完了: $TITLE （本文 $(wc -m < "$BODY" | tr -d ' ') 字）"
 LINKS=()
 while IFS= read -r u; do [[ -n "$u" ]] && LINKS+=("$u"); done < <(grep -oE 'https://shinkanbiyori\.com[A-Za-z0-9%/_.-]*' "$BODY" | sort -u)
 for u in "${LINKS[@]}"; do
-  code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "$u" || echo ERR)
+  # ISRの再生成中に一時的な5xxを返すことがあり、1回きりの判定だと投稿ごと中止になる
+  # （2026-07-27に著者ページの503で1日分を落とした）。間をあけて3回まで見る。
+  for attempt in 1 2 3; do
+    code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "$u" || echo ERR)
+    [[ "$code" == "200" ]] && break
+    [[ $attempt -lt 3 ]] && sleep 10
+  done
   if [[ "$code" != "200" ]]; then log "リンク不正($code): $u → 中止"; exit 1; fi
 done
 log "内部リンク ${#LINKS[@]}本すべて200を確認"

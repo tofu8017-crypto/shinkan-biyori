@@ -23,7 +23,7 @@ const UTM = "utm_source=x&utm_medium=social&utm_campaign=daily";
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK_URL || ""; // 設定があればDiscordにも送る
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
 const DEEPSEEK_API_URL = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-chat";
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-v4-flash";
 
 // 文芸ジャンルのみ（ビジネス001006・コミック001001・ラノベ001017は除外）。
 // fetch-books.js の GENRES と対応。"文芸書"の看板に合うものだけをXに出す。
@@ -158,6 +158,8 @@ async function craftEditorialPost(book, summary) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${DEEPSEEK_API_KEY}` },
       body: JSON.stringify({
         model: DEEPSEEK_MODEL,
+        // v4-flashは既定で思考ONなので、旧deepseek-chat相当（非思考）に戻す。max_tokensを思考に食われないため。
+        thinking: { type: "disabled" },
         messages: [{ role: "system", content: sys }, { role: "user", content: user }],
         temperature: 0.7,
         max_tokens: 400,
@@ -197,6 +199,8 @@ async function craftPickReason(book, summary) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${DEEPSEEK_API_KEY}` },
       body: JSON.stringify({
         model: DEEPSEEK_MODEL,
+        // v4-flashは既定で思考ONなので、旧deepseek-chat相当（非思考）に戻す。max_tokensを思考に食われないため。
+        thinking: { type: "disabled" },
         messages: [{ role: "system", content: sys }, { role: "user", content: user }],
         temperature: 0.7,
         max_tokens: 300,
@@ -252,6 +256,8 @@ async function craftAuthorIntro(name, extract) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${DEEPSEEK_API_KEY}` },
       body: JSON.stringify({
         model: DEEPSEEK_MODEL,
+        // v4-flashは既定で思考ONなので、旧deepseek-chat相当（非思考）に戻す。max_tokensを思考に食われないため。
+        thinking: { type: "disabled" },
         messages: [
           { role: "system", content: sys },
           { role: "user", content: `作家名: ${name}\n紹介文: ${extract.slice(0, 1500)}` },
