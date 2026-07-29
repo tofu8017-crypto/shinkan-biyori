@@ -3,7 +3,7 @@
 // やること（3部構成）:
 //   ① GSCの検索クエリから「実際に検索されている作家・書籍」を抽出し
 //      data/gsc-priority.json に保存 → auto-generate.js が生成の優先順位に使う
-//   ② 「表示はあるのに順位11〜30位」または「上位なのに低CTR」のページを抽出し、
+//   ② 「表示はあるのに順位11〜60位」または「上位なのに低CTR(5%未満)」のページを抽出し、
 //      DeepSeekでtitle/meta descriptionの改善案を生成 → seo_overrides にupsert
 //      （ページ側の generateMetadata が override を優先表示する）
 //   ③ 何をなぜ変えたかを docs/optimization-log.md に追記（ワークフローが自動コミット）
@@ -39,7 +39,13 @@ const BASE_URL = "https://shinkanbiyori.com";
 const WINDOW_DAYS = 28;          // 直近4週。データがまだ薄いので7日ではなく広めに見る
 const MAX_OVERRIDES = 10;        // 1回の実行で書き換える上限（元設計の受け入れ条件）
 const MIN_IMPRESSIONS = 5;       // これ未満のページはノイズとして対象外
-const LOW_CTR = 0.02;            // 上位表示なのにCTR2%未満＝タイトルの魅力不足とみなす
+// 10位以内なら本来15〜25%は取れる。2%だと「ほぼ0クリック」しか拾えず、
+// 「小野はるか 新刊」7.2位0クリック / 「シャルロッテリンク」8.6位3.6% のような
+// 明確な取りこぼしが対象外だった（2026-07-29のGSC分析で判明）。
+const LOW_CTR = 0.05;            // 上位表示なのにCTR5%未満＝タイトルの魅力不足とみなす
+// 改善余地ゾーンの下限順位。ミステリー系ジャンルページが平均51.7位で50位枠から
+// わずかに漏れていたため60位まで見る（2026-07-29）。
+const MAX_POSITION = 60;
 const OVERRIDE_COOLDOWN_DAYS = 21;
 
 const PRIORITY_PATH = path.join(__dirname, "..", "data", "gsc-priority.json");
@@ -188,7 +194,7 @@ function parseTarget(url) {
 
 function isCandidate(stat) {
   if (stat.impressions < MIN_IMPRESSIONS) return false;
-  if (stat.position >= 11 && stat.position <= 50) return true; // 改善余地ゾーン（2〜5ページ目）
+  if (stat.position >= 11 && stat.position <= MAX_POSITION) return true; // 改善余地ゾーン（2ページ目以降）
   if (stat.position <= 10 && stat.ctr < LOW_CTR) return true; // 上位なのにクリックされない
   return false;
 }
@@ -322,7 +328,7 @@ async function generateImprovement(target, ctx, stat) {
 現在のtitle: ${ctx.currentTitle}
 検索実績: 過去${WINDOW_DAYS}日で表示${stat.impressions}回・クリック${stat.clicks}回・平均${stat.position.toFixed(1)}位
 このページが表示された主な検索語: ${topQueries || "（データなし）"}
-課題: ${stat.position > 10 ? "11〜30位圏で伸び悩んでいる。検索語との関連が伝わるtitle/descriptionにして順位とCTRを上げたい" : "上位表示なのにクリックされていない。検索結果で魅力が伝わるtitle/descriptionにしたい"}`;
+課題: ${stat.position > 10 ? `11〜${MAX_POSITION}位圏で伸び悩んでいる。検索語との関連が伝わるtitle/descriptionにして順位とCTRを上げたい` : "上位表示なのにクリックされていない。検索結果で魅力が伝わるtitle/descriptionにしたい"}`;
 
   const res = await fetch(DEEPSEEK_URL, {
     method: "POST",
@@ -445,7 +451,7 @@ async function main() {
     .sort((a, b) => b.impressions - a.impressions)
     .slice(0, MAX_OVERRIDES);
 
-  console.log(`\n② 改善候補: ${candidates.length}ページ（表示${MIN_IMPRESSIONS}回以上で11〜30位、または上位でCTR${LOW_CTR * 100}%未満）`);
+  console.log(`\n② 改善候補: ${candidates.length}ページ（表示${MIN_IMPRESSIONS}回以上で11〜${MAX_POSITION}位、または上位でCTR${LOW_CTR * 100}%未満）`);
 
   // 21日以内に書き換え済みのページは見送る（効果測定の時間を確保）
   const cooldownSince = new Date(Date.now() - OVERRIDE_COOLDOWN_DAYS * 86400000).toISOString();
@@ -475,7 +481,7 @@ async function main() {
       }
       const reason =
         c.position > 10
-          ? `平均${c.position.toFixed(1)}位・表示${c.impressions}回（11〜30位の改善ゾーン）`
+          ? `平均${c.position.toFixed(1)}位・表示${c.impressions}回（11〜${MAX_POSITION}位の改善ゾーン）`
           : `平均${c.position.toFixed(1)}位・表示${c.impressions}回でクリック${c.clicks}回（低CTR）`;
       console.log(`  ✏ ${c.page}`);
       console.log(`     理由: ${reason}`);
