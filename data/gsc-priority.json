@@ -1,10 +1,10 @@
 {
-  "updated": "2026-07-27",
+  "updated": "2026-07-29",
   "window_days": 28,
   "authors": [
     {
       "author": "五十嵐貴久",
-      "impressions": 15,
+      "impressions": 17,
       "clicks": 1
     },
     {
@@ -33,6 +33,11 @@
       "clicks": 0
     },
     {
+      "author": "岡崎琢磨",
+      "impressions": 5,
+      "clicks": 0
+    },
+    {
       "author": "東川　篤哉",
       "impressions": 4,
       "clicks": 0
@@ -40,6 +45,11 @@
     {
       "author": "砂原 浩太朗",
       "impressions": 4,
+      "clicks": 0
+    },
+    {
+      "author": "堂場 瞬一",
+      "impressions": 3,
       "clicks": 0
     },
     {
@@ -54,11 +64,6 @@
     },
     {
       "author": "南　英男",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "岡崎琢磨",
       "impressions": 2,
       "clicks": 0
     },
@@ -118,11 +123,6 @@
       "clicks": 0
     },
     {
-      "author": "堂場 瞬一",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
       "author": "川上　途行",
       "impressions": 1,
       "clicks": 0
@@ -132,7 +132,13 @@
     {
       "title": "ミステリーな北海道",
       "author": "渡辺 淳一",
-      "impressions": 10,
+      "impressions": 12,
+      "clicks": 0
+    },
+    {
+      "title": "放課後ミステリクラブ　1〜3巻　名探偵デビューセット",
+      "author": "知念実希人",
+      "impressions": 3,
       "clicks": 0
     },
     {
@@ -144,12 +150,6 @@
     {
       "title": "両京十五日 1",
       "author": "馬伯庸",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "放課後ミステリクラブ　1〜3巻　名探偵デビューセット",
-      "author": "知念実希人",
       "impressions": 1,
       "clicks": 0
     }
