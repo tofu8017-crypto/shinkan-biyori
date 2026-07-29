@@ -444,16 +444,10 @@ async function main() {
   }
 
   // ---- ② title/meta改善 ----
-  const candidates = [...pageStats.values()]
-    .filter(isCandidate)
-    .map((s) => ({ ...s, target: parseTarget(s.page) }))
-    .filter((s) => s.target)
-    .sort((a, b) => b.impressions - a.impressions)
-    .slice(0, MAX_OVERRIDES);
-
-  console.log(`\n② 改善候補: ${candidates.length}ページ（表示${MIN_IMPRESSIONS}回以上で11〜${MAX_POSITION}位、または上位でCTR${LOW_CTR * 100}%未満）`);
-
-  // 21日以内に書き換え済みのページは見送る（効果測定の時間を確保）
+  // 21日以内に書き換え済みのページは見送る（効果測定の時間を確保）。
+  // ★除外は必ず枠(MAX_OVERRIDES)を切る「前」に行う。後で外すと見送り分が枠を食いつぶし、
+  //   実際に改善されるのは数ページだけになる（2026-07-29発覚: 10枠中6枠が見送りで消え、
+  //   条件を満たしたジャンルページ等が何週も順番待ちのままだった）。
   const cooldownSince = new Date(Date.now() - OVERRIDE_COOLDOWN_DAYS * 86400000).toISOString();
   const { data: recent } = await sb
     .from("seo_overrides")
@@ -461,13 +455,26 @@ async function main() {
     .gte("updated_at", cooldownSince);
   const recentKeys = new Set((recent || []).map((r) => `${r.target_type}:${r.target_key}`));
 
+  const eligible = [...pageStats.values()]
+    .filter(isCandidate)
+    .map((s) => ({ ...s, target: parseTarget(s.page) }))
+    .filter((s) => s.target);
+  const fresh = eligible
+    .filter((s) => !recentKeys.has(`${s.target.type}:${s.target.key}`))
+    .sort((a, b) => b.impressions - a.impressions);
+  const candidates = fresh.slice(0, MAX_OVERRIDES);
+
+  console.log(
+    `\n② 改善候補: ${candidates.length}ページ（表示${MIN_IMPRESSIONS}回以上で11〜${MAX_POSITION}位、または上位でCTR${LOW_CTR * 100}%未満）`
+  );
+  console.log(
+    `   条件を満たすページ${eligible.length}件のうち、${OVERRIDE_COOLDOWN_DAYS}日以内に変更済み${eligible.length - fresh.length}件を除外。` +
+      // 枠に入らなかった分は黙って捨てず件数を出す（「全部やった」と誤読しないため）
+      `残り${fresh.length}件から表示回数の多い順に${candidates.length}件。次回以降に持ち越し${Math.max(0, fresh.length - candidates.length)}件`
+  );
+
   const applied = [];
   for (const c of candidates) {
-    const keyId = `${c.target.type}:${c.target.key}`;
-    if (recentKeys.has(keyId)) {
-      console.log(`  - ${c.page} … ${OVERRIDE_COOLDOWN_DAYS}日以内に変更済みのため見送り`);
-      continue;
-    }
     try {
       const ctx = await fetchPageContext(sb, c.target);
       if (!ctx) {
