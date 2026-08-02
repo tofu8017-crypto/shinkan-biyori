@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-29",
+  "updated": "2026-08-03",
   "window_days": 28,
   "authors": [
     {
@@ -23,8 +23,18 @@
       "clicks": 0
     },
     {
+      "author": "堂場 瞬一",
+      "impressions": 9,
+      "clicks": 0
+    },
+    {
       "author": "瀬尾 まいこ",
       "impressions": 9,
+      "clicks": 0
+    },
+    {
+      "author": "岡崎琢磨",
+      "impressions": 7,
       "clicks": 0
     },
     {
@@ -33,7 +43,7 @@
       "clicks": 0
     },
     {
-      "author": "岡崎琢磨",
+      "author": "大沢在昌",
       "impressions": 5,
       "clicks": 0
     },
@@ -48,18 +58,8 @@
       "clicks": 0
     },
     {
-      "author": "堂場 瞬一",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
       "author": "河崎 秋子",
       "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "author": "似鳥 鶏",
-      "impressions": 2,
       "clicks": 0
     },
     {
@@ -93,6 +93,11 @@
       "clicks": 0
     },
     {
+      "author": "鈴木竜一",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
       "author": "くじら",
       "impressions": 2,
       "clicks": 0
@@ -113,12 +118,27 @@
       "clicks": 0
     },
     {
+      "author": "坂岡真",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
       "author": "角幡 唯介",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "鈴木竜一",
+      "author": "近藤 史恵",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "江本マシメサ",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "詠井　晴佳",
       "impressions": 1,
       "clicks": 0
     },
@@ -132,13 +152,13 @@
     {
       "title": "ミステリーな北海道",
       "author": "渡辺 淳一",
-      "impressions": 12,
+      "impressions": 22,
       "clicks": 0
     },
     {
       "title": "放課後ミステリクラブ　1〜3巻　名探偵デビューセット",
       "author": "知念実希人",
-      "impressions": 3,
+      "impressions": 4,
       "clicks": 0
     },
     {
@@ -149,6 +169,12 @@
     },
     {
       "title": "両京十五日 1",
+      "author": "馬伯庸",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "title": "両京十五日 2",
       "author": "馬伯庸",
       "impressions": 1,
       "clicks": 0
