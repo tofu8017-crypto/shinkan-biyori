@@ -21,12 +21,13 @@ function loadCredentials() {
   throw new Error("GSC_CREDENTIALS_JSON か GSC_SERVICE_ACCOUNT_KEY_PATH を設定してください");
 }
 
-async function getAccessToken(creds) {
+// scopeを差し替えれば同じ鍵で他のGoogle API（GA4等）にも使える
+async function getAccessToken(creds, scope = "https://www.googleapis.com/auth/webmasters.readonly") {
   const now = Math.floor(Date.now() / 1000);
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
   const unsigned = `${b64({ alg: "RS256", typ: "JWT" })}.${b64({
     iss: creds.client_email,
-    scope: "https://www.googleapis.com/auth/webmasters.readonly",
+    scope,
     aud: "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
