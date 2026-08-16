@@ -1,11 +1,21 @@
 {
-  "updated": "2026-08-10",
+  "updated": "2026-08-17",
   "window_days": 28,
   "authors": [
     {
-      "author": "南原詠",
-      "impressions": 10,
+      "author": "五十嵐 貴久",
+      "impressions": 11,
       "clicks": 1
+    },
+    {
+      "author": "角田光代",
+      "impressions": 24,
+      "clicks": 0
+    },
+    {
+      "author": "吉本ばなな",
+      "impressions": 20,
+      "clicks": 0
     },
     {
       "author": "岡崎琢磨",
@@ -18,23 +28,8 @@
       "clicks": 0
     },
     {
-      "author": "角田光代",
-      "impressions": 15,
-      "clicks": 0
-    },
-    {
       "author": "竹村優希",
       "impressions": 13,
-      "clicks": 0
-    },
-    {
-      "author": "蒼月 海里",
-      "impressions": 11,
-      "clicks": 0
-    },
-    {
-      "author": "吉本ばなな",
-      "impressions": 8,
       "clicks": 0
     },
     {
@@ -48,32 +43,12 @@
       "clicks": 0
     },
     {
-      "author": "坂井 希久子",
-      "impressions": 4,
-      "clicks": 0
-    },
-    {
       "author": "坂岡真",
       "impressions": 3,
       "clicks": 0
     },
     {
-      "author": "河崎 秋子",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "author": "砂原 浩太朗",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "author": "島田荘司",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "朝井 まかて",
+      "author": "生湯葉シホ",
       "impressions": 2,
       "clicks": 0
     },
@@ -83,12 +58,12 @@
       "clicks": 0
     },
     {
-      "author": "いぬじゅん",
-      "impressions": 1,
+      "author": "村山 由佳",
+      "impressions": 2,
       "clicks": 0
     },
     {
-      "author": "てるゆーぬ",
+      "author": "いぬじゅん",
       "impressions": 1,
       "clicks": 0
     },
@@ -108,12 +83,37 @@
       "clicks": 0
     },
     {
+      "author": "出雲大吉",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "千月さかき",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "南原詠",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
       "author": "夏目みや",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "楠谷　佑",
+      "author": "宇野千代",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "桜木桃子",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "梨木　香歩",
       "impressions": 1,
       "clicks": 0
     },
@@ -123,7 +123,17 @@
       "clicks": 0
     },
     {
+      "author": "河崎 秋子",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
       "author": "真山仁",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "砂原 浩太朗",
       "impressions": 1,
       "clicks": 0
     },
@@ -138,22 +148,7 @@
       "clicks": 0
     },
     {
-      "author": "八木詠美",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "くじら",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "詠井　晴佳",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "村山 由佳",
+      "author": "田中 壮泰",
       "impressions": 1,
       "clicks": 0
     }
@@ -162,18 +157,18 @@
     {
       "title": "ミステリーな北海道",
       "author": "渡辺 淳一",
-      "impressions": 29,
+      "impressions": 38,
       "clicks": 0
     },
     {
       "title": "放課後ミステリクラブ　1〜3巻　名探偵デビューセット",
       "author": "知念実希人",
-      "impressions": 5,
+      "impressions": 6,
       "clicks": 0
     },
     {
-      "title": "【POD】眼球の見る夢と現と",
-      "author": "飯野文彦",
+      "title": "鬱展開大好き主人公VS優しい世界 2　欲望のまま生きていたら聖人君子と崇拝されてました",
+      "author": "石蕗石",
       "impressions": 2,
       "clicks": 0
     },
@@ -186,24 +181,6 @@
     {
       "title": "新装版　デルフィニア戦記",
       "author": "茅田砂胡",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "両京十五日 1",
-      "author": "馬伯庸",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "両京十五日 2",
-      "author": "馬伯庸",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "鬱展開大好き主人公VS優しい世界 2　欲望のまま生きていたら聖人君子と崇拝されてました",
-      "author": "石蕗石",
       "impressions": 1,
       "clicks": 0
     }
