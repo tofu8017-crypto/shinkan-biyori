@@ -1,45 +1,55 @@
 {
-  "updated": "2026-08-24",
+  "updated": "2026-08-31",
   "window_days": 28,
   "authors": [
     {
       "author": "春山大樹",
-      "impressions": 24,
+      "impressions": 25,
       "clicks": 1
     },
     {
-      "author": "角田光代",
-      "impressions": 24,
+      "author": "藤井 邦夫",
+      "impressions": 67,
       "clicks": 0
     },
     {
       "author": "黒木亮",
-      "impressions": 21,
-      "clicks": 0
-    },
-    {
-      "author": "堂場　瞬一",
-      "impressions": 14,
-      "clicks": 0
-    },
-    {
-      "author": "岡崎琢磨",
-      "impressions": 14,
+      "impressions": 47,
       "clicks": 0
     },
     {
       "author": "山本巧次",
-      "impressions": 13,
+      "impressions": 24,
       "clicks": 0
     },
     {
-      "author": "竹村優希",
-      "impressions": 9,
+      "author": "角田光代",
+      "impressions": 21,
       "clicks": 0
     },
     {
-      "author": "大沢在昌",
-      "impressions": 8,
+      "author": "千野 隆司",
+      "impressions": 16,
+      "clicks": 0
+    },
+    {
+      "author": "有川　真由美",
+      "impressions": 12,
+      "clicks": 0
+    },
+    {
+      "author": "硝子町　玻璃",
+      "impressions": 12,
+      "clicks": 0
+    },
+    {
+      "author": "岡崎琢磨",
+      "impressions": 10,
+      "clicks": 0
+    },
+    {
+      "author": "堂場　瞬一",
+      "impressions": 7,
       "clicks": 0
     },
     {
@@ -53,17 +63,22 @@
       "clicks": 0
     },
     {
-      "author": "千野隆司",
+      "author": "小川 洋子",
+      "impressions": 6,
+      "clicks": 0
+    },
+    {
+      "author": "林真理子",
       "impressions": 5,
       "clicks": 0
     },
     {
-      "author": "坂岡真",
-      "impressions": 3,
+      "author": "竹村優希",
+      "impressions": 4,
       "clicks": 0
     },
     {
-      "author": "小川 洋子",
+      "author": "大沢在昌",
       "impressions": 3,
       "clicks": 0
     },
@@ -73,17 +88,17 @@
       "clicks": 0
     },
     {
+      "author": "井原忠政",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
       "author": "生湯葉シホ",
       "impressions": 2,
       "clicks": 0
     },
     {
-      "author": "硝子町　玻璃",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "村山 由佳",
+      "author": "有馬 美季子",
       "impressions": 2,
       "clicks": 0
     },
@@ -93,17 +108,12 @@
       "clicks": 0
     },
     {
-      "author": "井原 忠政",
+      "author": "今野敏",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "今野 敏",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "千月さかき",
+      "author": "坂岡真",
       "impressions": 1,
       "clicks": 0
     },
@@ -113,22 +123,12 @@
       "clicks": 0
     },
     {
-      "author": "宇野千代",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "桜木桃子",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
       "author": "楠谷　佑",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "江國 香織",
+      "author": "燃え殻",
       "impressions": 1,
       "clicks": 0
     },
@@ -138,17 +138,17 @@
       "clicks": 0
     },
     {
-      "author": "近藤 史恵",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "鈴木竜一",
+      "author": "五十嵐 貴久",
       "impressions": 1,
       "clicks": 0
     },
     {
       "author": "辻堂 ゆめ",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "三津田信三",
       "impressions": 1,
       "clicks": 0
     }
@@ -157,19 +157,25 @@
     {
       "title": "ミステリーな北海道",
       "author": "渡辺 淳一",
-      "impressions": 38,
+      "impressions": 31,
       "clicks": 0
     },
     {
-      "title": "放課後ミステリクラブ　1〜3巻　名探偵デビューセット",
-      "author": "知念実希人",
-      "impressions": 5,
+      "title": "2023　ザ・ベストミステリーズ",
+      "author": "日本推理作家協会",
+      "impressions": 31,
+      "clicks": 0
+    },
+    {
+      "title": "小さな故意の物語",
+      "author": "東野 圭吾",
+      "impressions": 8,
       "clicks": 0
     },
     {
       "title": "つむじ風食堂の夜",
       "author": "吉田篤弘",
-      "impressions": 3,
+      "impressions": 5,
       "clicks": 0
     },
     {
@@ -185,12 +191,6 @@
       "clicks": 0
     },
     {
-      "title": "ゲーム開始前に死ぬモブ悪役皇子に転生した俺　〜推しヒロインの妹と幸せになるために最弱魔法【闇刃】を過剰な努力で極め抜いたら、最強のぶっ壊れ性能と化していた件〜",
-      "author": "こはるんるん",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
       "title": "宙わたる教室",
       "author": "伊与原 新",
       "impressions": 1,
@@ -199,6 +199,12 @@
     {
       "title": "ソクラテスの遺言",
       "author": "イーシャ武彦",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "title": "公女様の義腕騎士 -元官僚、異世界でホームレスから成り上がるー",
+      "author": "笹木ハルカ",
       "impressions": 1,
       "clicks": 0
     },
