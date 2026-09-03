@@ -52,16 +52,27 @@ export async function generateMetadata({
     return { title: "ページが見つかりません", robots: { index: false, follow: false } };
   }
   const fmt = formatDateJP(date);
-  const description = `${fmt.full}に発売された文芸書の新刊一覧。楽天ブックス・Amazonのリンク付き。`;
+  // 検索結果で中身が見えるよう、実際の冊数と代表作を入れる（2026-09-03のGSC分析）。
+  // getBooksByDate は cache() 済みなのでページ本体と合わせて1クエリで済む。
+  const books = await getBooksByDate(date);
+  // 書名は合計60字までで打ち切る（長い書名でdescriptionが検索結果の表示上限を超えないように）
+  const titles = books
+    .slice(0, 3)
+    .map((b) => `『${b.title}』`)
+    .reduce((acc, t) => ((acc + t).length > 60 ? acc : acc + t), "");
+  const description = books.length
+    ? `${fmt.full}に発売された文芸書の新刊${books.length}冊を一覧でまとめました。${titles ? `${titles}ほか。` : ""}楽天ブックス・Amazonのリンク付き。`
+    : `${fmt.full}に発売された文芸書の新刊一覧。楽天ブックス・Amazonのリンク付き。`;
+  const title = books.length ? `${fmt.full}発売の新刊${books.length}冊` : `${fmt.full}の新刊`;
 
   return {
-    title: `${fmt.full}の新刊`,
+    title,
     description,
     alternates: {
       canonical: `/date/${date}`,
     },
     openGraph: {
-      title: `${fmt.full}の新刊｜新刊日和`,
+      title: `${title}｜新刊日和`,
       description,
       url: `https://shinkanbiyori.com/date/${date}`,
       images: ["/hero.jpg"],

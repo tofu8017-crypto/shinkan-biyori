@@ -6,7 +6,7 @@ import BookCard from "@/components/BookCard";
 import ComicHeader from "@/components/ComicHeader";
 import DateStrip from "@/components/DateStrip";
 import ComicCalendarSection from "@/components/ComicCalendarSection";
-import { getComicsByDate, getComicCountByDate } from "@/lib/supabase";
+import { getComicsByDate, getComicCountByDate, getLatestComics } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
 function formatDateJP(dateStr: string) {
@@ -33,9 +33,21 @@ export async function generateMetadata({ params }: { params: Promise<{ date: str
     return { title: "ページが見つかりません", robots: { index: false, follow: false } };
   }
   const fmt = formatDateJP(date);
+  // 検索結果で中身が見えるよう、実際の冊数と代表作をタイトル/説明に入れる。
+  // 上位表示なのにCTRがほぼ0だったため（2026-09-03のGSC分析）。
+  const books = await getComicsByDate(date); // cache()済みなので本体と合わせて1クエリ
+  // 書名は合計60字までで打ち切る（長い書名でdescriptionが検索結果の表示上限を超えないように）
+  const titles = books
+    .slice(0, 3)
+    .map((b) => `『${b.title}』`)
+    .reduce((acc, t) => ((acc + t).length > 60 ? acc : acc + t), "");
   return {
-    title: `${fmt.full}の新刊コミック`,
-    description: `${fmt.full}に発売されたコミック・マンガの新刊一覧。`,
+    title: books.length
+      ? `${fmt.full}発売の新刊コミック${books.length}冊`
+      : `${fmt.full}の新刊コミック`,
+    description: books.length
+      ? `${fmt.full}に発売されたコミック・マンガの新刊${books.length}冊を一覧でまとめました。${titles ? `${titles}ほか。` : ""}書影・楽天ブックス/Amazonのリンク付き。`
+      : `${fmt.full}に発売された新刊コミックはありません。直近に発売されたコミック・マンガの新刊をまとめています。書影・楽天ブックス/Amazonのリンク付き。`,
     alternates: { canonical: `/comics/date/${date}` },
   };
 }
@@ -53,6 +65,9 @@ export default async function ComicDatePage({ params }: { params: Promise<{ date
     getComicsByDate(date),
     getComicCountByDate(shiftDate(date, -5), shiftDate(date, 5)),
   ]);
+  // 発売0冊の日にも検索流入がある（2026-08-13は21クリック）。空ページで帰さず、
+  // その日以前の直近の新刊を代わりに出す。
+  const fallback = books.length === 0 ? await getLatestComics(date, 12) : [];
 
   return (
     <div className="comic-theme min-h-screen flex flex-col">
@@ -70,7 +85,19 @@ export default async function ComicDatePage({ params }: { params: Promise<{ date
         <DateStrip dates={stripDates} counts={stripCounts} activeDate={date} hrefBase="/comics/date" />
 
         {books.length === 0 ? (
-          <p className="py-8 text-sm" style={{ color: "var(--text-muted)" }}>この日の新刊コミックはありません。</p>
+          <>
+            <p className="py-8 text-sm" style={{ color: "var(--text-muted)" }}>
+              この日の新刊コミックはありません。
+              {fallback.length > 0 && "直近に発売された新刊コミックをご紹介します。"}
+            </p>
+            {fallback.length > 0 && (
+              <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+                {fallback.map((book) => (
+                  <BookCard key={book.id} book={book} />
+                ))}
+              </div>
+            )}
+          </>
         ) : (
           <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
             {books.map((book) => (

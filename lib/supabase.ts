@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Book } from "@/types/book";
 import type { Column } from "@/types/column";
 import { MOCK_BOOKS } from "./mock-data";
@@ -206,7 +207,9 @@ export async function searchBooks(
   }
 }
 
-export async function getBooksByDate(date: string): Promise<Book[]> {
+// generateMetadata とページ本体の両方から呼ぶため cache() で束ねる。
+// Supabaseはfetchのメモ化対象外なので、これが無いと1リクエストで同じクエリが2回走る。
+export const getBooksByDate = cache(async (date: string): Promise<Book[]> => {
   if (useMock) {
     return MOCK_BOOKS.filter(
       (b) =>
@@ -232,7 +235,7 @@ export async function getBooksByDate(date: string): Promise<Book[]> {
 
   if (error) throw new Error(error.message);
   return (data ?? []).filter((b) => !isAdultNovel(b));
-}
+});
 
 export async function getBooksByGenre(genreId: string): Promise<Book[]> {
   // ジャンルページは「最近の新刊＋近刊」を新しい順に表示する。
@@ -508,7 +511,9 @@ export async function getBookCountByDate(
 // ===== コミック版(/comics)用：ジャンル=コミック(001001)だけを扱う =====
 
 // 指定日に発売のコミック一覧（コミック版トップの「今日のコミック」用）
-export async function getComicsByDate(date: string): Promise<Book[]> {
+// generateMetadata とページ本体の両方から呼ぶため cache() で束ねる。
+// Supabaseはfetchのメモ化対象外なので、これが無いと1リクエストで同じクエリが2回走る。
+export const getComicsByDate = cache(async (date: string): Promise<Book[]> => {
   if (useMock) {
     return MOCK_BOOKS.filter(
       (b) => b.published_date === date && b.genre_id === COMIC_GENRE_ID
@@ -523,7 +528,7 @@ export async function getComicsByDate(date: string): Promise<Book[]> {
     .order("title");
   if (error) throw new Error(error.message);
   return data ?? [];
-}
+});
 
 // 直近に発売のコミック（今日が0冊のときのフォールバック用）
 export async function getLatestComics(
