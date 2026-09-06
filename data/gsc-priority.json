@@ -1,10 +1,10 @@
 {
-  "updated": "2026-08-31",
+  "updated": "2026-09-07",
   "window_days": 28,
   "authors": [
     {
       "author": "春山大樹",
-      "impressions": 25,
+      "impressions": 24,
       "clicks": 1
     },
     {
@@ -13,28 +13,18 @@
       "clicks": 0
     },
     {
-      "author": "黒木亮",
-      "impressions": 47,
-      "clicks": 0
-    },
-    {
       "author": "山本巧次",
       "impressions": 24,
       "clicks": 0
     },
     {
-      "author": "角田光代",
-      "impressions": 21,
-      "clicks": 0
-    },
-    {
       "author": "千野 隆司",
-      "impressions": 16,
+      "impressions": 17,
       "clicks": 0
     },
     {
       "author": "有川　真由美",
-      "impressions": 12,
+      "impressions": 13,
       "clicks": 0
     },
     {
@@ -43,23 +33,18 @@
       "clicks": 0
     },
     {
-      "author": "岡崎琢磨",
-      "impressions": 10,
+      "author": "室井滋",
+      "impressions": 9,
       "clicks": 0
     },
     {
-      "author": "堂場　瞬一",
-      "impressions": 7,
+      "author": "林真理子",
+      "impressions": 8,
       "clicks": 0
     },
     {
-      "author": "梨木　香歩",
-      "impressions": 7,
-      "clicks": 0
-    },
-    {
-      "author": "稲葉稔",
-      "impressions": 7,
+      "author": "角田光代",
+      "impressions": 8,
       "clicks": 0
     },
     {
@@ -68,13 +53,23 @@
       "clicks": 0
     },
     {
-      "author": "林真理子",
-      "impressions": 5,
+      "author": "坂岡真",
+      "impressions": 4,
       "clicks": 0
     },
     {
-      "author": "竹村優希",
+      "author": "有馬 美季子",
       "impressions": 4,
+      "clicks": 0
+    },
+    {
+      "author": "井原忠政",
+      "impressions": 3,
+      "clicks": 0
+    },
+    {
+      "author": "楠谷　佑",
+      "impressions": 3,
       "clicks": 0
     },
     {
@@ -88,42 +83,22 @@
       "clicks": 0
     },
     {
-      "author": "井原忠政",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
       "author": "生湯葉シホ",
       "impressions": 2,
       "clicks": 0
     },
     {
-      "author": "有馬 美季子",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "いぬじゅん",
+      "author": "中西モトオ",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "今野敏",
+      "author": "エノキスルメ",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "坂岡真",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "夏目みや",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "楠谷　佑",
+      "author": "新川 帆立",
       "impressions": 1,
       "clicks": 0
     },
@@ -148,22 +123,21 @@
       "clicks": 0
     },
     {
-      "author": "三津田信三",
+      "author": "赤神 諒",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "吉田篤弘",
       "impressions": 1,
       "clicks": 0
     }
   ],
   "titles": [
     {
-      "title": "ミステリーな北海道",
-      "author": "渡辺 淳一",
-      "impressions": 31,
-      "clicks": 0
-    },
-    {
       "title": "2023　ザ・ベストミステリーズ",
       "author": "日本推理作家協会",
-      "impressions": 31,
+      "impressions": 26,
       "clicks": 0
     },
     {
@@ -173,15 +147,33 @@
       "clicks": 0
     },
     {
+      "title": "けんぐゎい",
+      "author": "朝倉かすみ",
+      "impressions": 6,
+      "clicks": 0
+    },
+    {
       "title": "つむじ風食堂の夜",
       "author": "吉田篤弘",
       "impressions": 5,
       "clicks": 0
     },
     {
+      "title": "土人形と動死体",
+      "author": "円城　塔",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
+      "title": "【サイン本】鬼門の村",
+      "author": "櫛木 理宇",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
       "title": "鬱展開大好き主人公VS優しい世界 2　欲望のまま生きていたら聖人君子と崇拝されてました",
       "author": "石蕗石",
-      "impressions": 3,
+      "impressions": 2,
       "clicks": 0
     },
     {
@@ -191,14 +183,8 @@
       "clicks": 0
     },
     {
-      "title": "宙わたる教室",
-      "author": "伊与原 新",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "ソクラテスの遺言",
-      "author": "イーシャ武彦",
+      "title": "首なし晩餐 スローライフ警視の事件簿",
+      "author": "櫛木 理宇",
       "impressions": 1,
       "clicks": 0
     },
@@ -209,8 +195,8 @@
       "clicks": 0
     },
     {
-      "title": "【サイン本】鬼門の村",
-      "author": "櫛木 理宇",
+      "title": "精霊樹の落とし子と飾り紐2",
+      "author": "鈴埜",
       "impressions": 1,
       "clicks": 0
     }
