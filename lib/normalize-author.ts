@@ -48,6 +48,14 @@ export function decodeAuthorSlug(slug: string): string {
   }
 }
 
+// DBの author カラム検索用の LIKE パターンを作る。
+// DBには「伊坂幸太郎」「伊坂 幸太郎」「伊坂　幸太郎」が混在するため、
+// 空白を除いた名前の文字間に % を挟んで、どの表記でも拾えるようにする。
+// 緩い分だけ別人を拾いうるので、呼び出し側で必ず isSameAuthor 等で絞り込むこと。
+export function authorLikePattern(name: string): string {
+  return "%" + name.replace(/[\s　]/g, "").split("").join("%") + "%";
+}
+
 // 2つの著者名が（空白を無視して）同一人物を指すかを判定する。
 export function isSameAuthor(a: string, b: string): boolean {
   const strip = (s: string) => normalizeAuthorName(s).replace(/\s/g, "");

@@ -2,7 +2,7 @@ import { cache } from "react";
 import type { Book } from "@/types/book";
 import type { Column } from "@/types/column";
 import { MOCK_BOOKS } from "./mock-data";
-import { isSameAuthor, splitAuthors } from "./normalize-author";
+import { isSameAuthor, splitAuthors, authorLikePattern } from "./normalize-author";
 import { groupBySeries, seriesSlug } from "./detect-series";
 import { isLikelyLightNovel } from "./is-light-novel";
 import {
@@ -634,17 +634,20 @@ export async function getBooksBySameAuthor(
   const sb = await getClient();
   // 著者名は文字列カラムのため、代表著者名であいまい一致（部分一致）を取る。
   // 連名の最初の著者をキーにする（完全な正規化はバッチ側の責務）。
-  const pattern = `%${authors[0].replace(/\s/g, "%")}%`;
+  // パターンは空白の表記ゆれを吸収する分だけ緩いので、取得後に isSameAuthor で絞る。
+  // 絞り込みで減る前提で多めに取ってから limit 件に切る。
   const { data, error } = await sb!
     .from("books")
     .select("*")
-    .ilike("author", pattern)
+    .ilike("author", authorLikePattern(authors[0]))
     .neq("isbn13", book.isbn13)
     .order("published_date", { ascending: false })
-    .limit(limit);
+    .limit(limit * 4);
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? [])
+    .filter((b) => splitAuthors(b.author).some((a) => isSameAuthor(a, authors[0])))
+    .slice(0, limit);
 }
 
 // 指定著者名（正規化済み）の新刊を発売日降順で取得する。著者ページ用。
@@ -659,11 +662,12 @@ export async function getBooksByAuthor(
   }
 
   const sb = await getClient();
-  const pattern = `%${authorName.replace(/\s/g, "%")}%`;
+  // DBには「伊坂幸太郎」と「伊坂　幸太郎」が混在する。空白なしのパターンでは
+  // 後者を取り逃し、作家ページに古い本しか出なかった（2026-09-12修正）。
   const { data, error } = await sb!
     .from("books")
     .select("*")
-    .ilike("author", pattern)
+    .ilike("author", authorLikePattern(authorName))
     .order("published_date", { ascending: false })
     .limit(limit);
 

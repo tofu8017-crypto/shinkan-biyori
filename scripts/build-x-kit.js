@@ -574,15 +574,21 @@ async function main() {
       // 著者ページはslug正規化のズレが怖いので、確実に開ける /search?q= を使う。
       let work = "";
       try {
-        const nameNoSpace = bd.name.replace(/\s/g, "");
+        // DBの著者名はスペース有無が揺れるので文字間に%を挟んで拾い、
+        // 取得後に空白を無視した一致で別人の本を落とす（誤った書名を投稿しないため）。
+        const nameNoSpace = bd.name.replace(/[\s　]/g, "");
+        const pat = "%" + nameNoSpace.split("").join("%") + "%";
         const { data: bks } = await sb
           .from("books")
           .select("title,author")
-          .ilike("author", `%${nameNoSpace}%`)
+          .ilike("author", pat)
           .order("published_date", { ascending: false })
-          .limit(1);
-        if (bks && bks[0] && bks[0].title && !looksLikeJunk(bks[0].title)) {
-          work = bks[0].title;
+          .limit(20);
+        const mine = (bks || []).filter(
+          (b) => (b.author || "").replace(/[\s　]/g, "").includes(nameNoSpace)
+        );
+        if (mine[0] && mine[0].title && !looksLikeJunk(mine[0].title)) {
+          work = mine[0].title;
         }
       } catch (_) {}
       const url = `${SITE}/search?q=${encodeURIComponent(bd.name)}&${UTM}`;

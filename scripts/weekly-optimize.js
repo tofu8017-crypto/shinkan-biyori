@@ -218,13 +218,20 @@ async function fetchPageContext(sb, target) {
     };
   }
   if (target.type === "author") {
+    // DBの著者名はスペース有無が揺れる（「伊坂幸太郎」/「伊坂　幸太郎」）。
+    // 文字間に%を挟んで両方拾い、取得後に空白を無視した一致で別人を落とす。
+    const pat = "%" + target.key.replace(/[\s　]/g, "").split("").join("%") + "%";
+    const stripSp = (x) => (x || "").replace(/[\s　]/g, "");
     const { data } = await sb
       .from("books")
-      .select("title,published_date")
-      .ilike("author", `%${target.key}%`)
+      .select("title,author,published_date")
+      .ilike("author", pat)
       .order("published_date", { ascending: false })
-      .limit(5);
-    const books = (data || []).filter((b) => isCleanText(b.title));
+      .limit(20);
+    const books = (data || [])
+      .filter((b) => stripSp(b.author).includes(stripSp(target.key)))
+      .filter((b) => isCleanText(b.title))
+      .slice(0, 5);
     if (books.length === 0) return null;
     return {
       label: `作家ページ: ${target.key}の新刊一覧（掲載: ${books.map((b) => `『${b.title}』`).join("、")}）`,
