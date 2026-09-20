@@ -1,40 +1,50 @@
 {
-  "updated": "2026-09-14",
+  "updated": "2026-09-21",
   "window_days": 28,
   "authors": [
     {
-      "author": "藤井 邦夫",
-      "impressions": 60,
+      "author": "梶よう子",
+      "impressions": 26,
+      "clicks": 0
+    },
+    {
+      "author": "寺地はるな",
+      "impressions": 20,
+      "clicks": 0
+    },
+    {
+      "author": "赤川 次郎",
+      "impressions": 15,
       "clicks": 0
     },
     {
       "author": "千野 隆司",
-      "impressions": 19,
-      "clicks": 0
-    },
-    {
-      "author": "春山大樹",
       "impressions": 13,
       "clicks": 0
     },
     {
-      "author": "有川　真由美",
-      "impressions": 13,
-      "clicks": 0
-    },
-    {
-      "author": "硝子町　玻璃",
+      "author": "小池 真理子",
       "impressions": 12,
       "clicks": 0
     },
     {
       "author": "横山信義",
-      "impressions": 9,
+      "impressions": 12,
       "clicks": 0
     },
     {
-      "author": "室井滋",
-      "impressions": 8,
+      "author": "宇野 千代",
+      "impressions": 12,
+      "clicks": 0
+    },
+    {
+      "author": "福澤 徹三",
+      "impressions": 11,
+      "clicks": 0
+    },
+    {
+      "author": "坂岡真",
+      "impressions": 10,
       "clicks": 0
     },
     {
@@ -43,18 +53,13 @@
       "clicks": 0
     },
     {
-      "author": "小川 洋子",
-      "impressions": 7,
-      "clicks": 0
-    },
-    {
-      "author": "坂岡真",
-      "impressions": 6,
+      "author": "藤井 邦夫",
+      "impressions": 8,
       "clicks": 0
     },
     {
       "author": "群 ようこ",
-      "impressions": 6,
+      "impressions": 7,
       "clicks": 0
     },
     {
@@ -63,12 +68,12 @@
       "clicks": 0
     },
     {
-      "author": "宇野 千代",
-      "impressions": 5,
+      "author": "朝倉かすみ",
+      "impressions": 4,
       "clicks": 0
     },
     {
-      "author": "有馬 美季子",
+      "author": "椰月美智子",
       "impressions": 4,
       "clicks": 0
     },
@@ -83,7 +88,12 @@
       "clicks": 0
     },
     {
-      "author": "寺地はるな",
+      "author": "小川 洋子",
+      "impressions": 3,
+      "clicks": 0
+    },
+    {
+      "author": "有川　真由美",
       "impressions": 3,
       "clicks": 0
     },
@@ -93,22 +103,17 @@
       "clicks": 0
     },
     {
-      "author": "楠谷　佑",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
       "author": "砂村 かいり",
       "impressions": 3,
       "clicks": 0
     },
     {
-      "author": "佐藤賢一",
-      "impressions": 2,
+      "author": "赤野用介",
+      "impressions": 3,
       "clicks": 0
     },
     {
-      "author": "朝倉かすみ",
+      "author": "室井滋",
       "impressions": 2,
       "clicks": 0
     },
@@ -118,18 +123,28 @@
       "clicks": 0
     },
     {
-      "author": "椰月美智子",
+      "author": "楠谷　佑",
       "impressions": 2,
       "clicks": 0
     },
     {
-      "author": "赤野用介",
+      "author": "有馬 美季子",
       "impressions": 2,
       "clicks": 0
     },
     {
-      "author": "田中 壮泰",
-      "impressions": 2,
+      "author": "佐藤賢一",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "冲方　丁",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "川口さやか",
+      "impressions": 1,
       "clicks": 0
     },
     {
@@ -148,17 +163,12 @@
       "clicks": 0
     },
     {
-      "author": "砂原 浩太朗",
+      "author": "秋川滝美",
       "impressions": 1,
       "clicks": 0
     },
     {
       "author": "五十嵐 貴久",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "辻堂 ゆめ",
       "impressions": 1,
       "clicks": 0
     },
@@ -177,31 +187,25 @@
     {
       "title": "2023　ザ・ベストミステリーズ",
       "author": "日本推理作家協会",
-      "impressions": 24,
+      "impressions": 16,
       "clicks": 0
     },
     {
-      "title": "小さな故意の物語",
-      "author": "東野 圭吾",
-      "impressions": 8,
+      "title": "未だ解明されない世界の不思議ミステリー86",
+      "author": "鉄人ノンフィクション編集部",
+      "impressions": 16,
       "clicks": 0
     },
     {
       "title": "けんぐゎい",
       "author": "朝倉かすみ",
-      "impressions": 6,
-      "clicks": 0
-    },
-    {
-      "title": "つむじ風食堂の夜",
-      "author": "吉田篤弘",
-      "impressions": 5,
-      "clicks": 0
-    },
-    {
-      "title": "ぐうたら原始行",
-      "author": "関野吉晴",
       "impressions": 3,
+      "clicks": 0
+    },
+    {
+      "title": "小川洋子『薬指の標本』",
+      "author": "小川暢子",
+      "impressions": 2,
       "clicks": 0
     },
     {
@@ -211,8 +215,8 @@
       "clicks": 0
     },
     {
-      "title": "【サイン本】鬼門の村",
-      "author": "櫛木 理宇",
+      "title": "ぐうたら原始行",
+      "author": "関野吉晴",
       "impressions": 2,
       "clicks": 0
     },
@@ -235,6 +239,12 @@
       "clicks": 0
     },
     {
+      "title": "アラサーからのダンジョン探索 英雄は目指さない。マイペースに遊びながら稼ぎます。",
+      "author": "迷子",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
       "title": "三十路の逆立ち",
       "author": "くどう れいん",
       "impressions": 1,
@@ -247,14 +257,8 @@
       "clicks": 0
     },
     {
-      "title": "公女様の義腕騎士 -元官僚、異世界でホームレスから成り上がるー",
-      "author": "笹木ハルカ",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "鬱展開大好き主人公VS優しい世界 2　欲望のまま生きていたら聖人君子と崇拝されてました",
-      "author": "石蕗石",
+      "title": "【サイン本】鬼門の村",
+      "author": "櫛木 理宇",
       "impressions": 1,
       "clicks": 0
     }
