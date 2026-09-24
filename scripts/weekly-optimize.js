@@ -233,9 +233,15 @@ async function fetchPageContext(sb, target) {
       .filter((b) => isCleanText(b.title))
       .slice(0, 5);
     if (books.length === 0) return null;
+    // 発売日も渡す。書名だけ渡していたためAIが日付を書けず、「◯◯ 新刊 2026」で
+    // 上位表示されてもCTRが1%台に留まっていた（2026-09-24のGSC分析）。
+    const latest = books[0];
     return {
-      label: `作家ページ: ${target.key}の新刊一覧（掲載: ${books.map((b) => `『${b.title}』`).join("、")}）`,
-      currentTitle: `${target.key}の新刊一覧・最新刊【2026年最新】`,
+      label:
+        `作家ページ: ${target.key}の新刊一覧（発売日順）\n` +
+        `掲載: ${books.map((b) => `『${b.title}』(${b.published_date}発売)`).join("、")}\n` +
+        `最新刊: 『${latest.title}』(${latest.published_date}発売)`,
+      currentTitle: `${target.key}の新刊・最新刊一覧｜${latest.published_date}発売`,
     };
   }
   if (target.type === "column") {

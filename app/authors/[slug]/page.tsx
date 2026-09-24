@@ -32,15 +32,30 @@ export async function generateMetadata({
     return { title: "ページが見つかりません", robots: { index: false, follow: false } };
   }
 
-  const description = `${name}の新刊・最新刊の一覧。発売日順にまとめています。楽天ブックス・Amazonのリンク付き。｜新刊日和`;
+  // 「◯◯ 新刊」「◯◯ 新刊 2026」で来た人が知りたいのは「新刊はあるか・いつか」。
+  // book一覧は発売日降順なので books[0] が最新（未来日付なら近刊）。
+  // 5〜10位表示でもCTRが1%台だったため、書名と発売日を検索結果に出す（2026-09-24）。
+  const latest = books[0];
+  const isUpcoming = latest.published_date > jstToday();
+  const latestDate = formatDateJP(latest.published_date);
+  // 長い書名でdescriptionが検索結果の表示上限を超えないよう30字で打ち切る
+  const latestTitle =
+    latest.title.length > 30 ? `${latest.title.slice(0, 30)}…` : latest.title;
+
+  const title = `${name}の新刊・最新刊一覧｜${latestDate}発売${isUpcoming ? "予定" : ""}`;
+  const description =
+    `${name}の新刊・既刊を発売日順にまとめています。` +
+    `${isUpcoming ? "次の新刊" : "最新刊"}は『${latestTitle}』（${latestDate}発売${isUpcoming ? "予定" : ""}）。` +
+    `全${books.length}冊を掲載。発売日・書誌情報と楽天ブックス・Amazonのリンクを確認できます。`;
+
   // 週次自律改善ループの上書き（あれば優先）。キーはデコード済みslug＝正規化済み著者名
   const ov = await getSeoOverride("author", name);
   return {
-    title: ov?.title ?? `${name}の新刊一覧・最新刊【2026年最新】`,
+    title: ov?.title ?? title,
     description: ov?.description ?? description,
     alternates: { canonical: `/authors/${authorSlug(name)}` },
     openGraph: {
-      title: `${name}の新刊一覧｜新刊日和`,
+      title: `${title}｜新刊日和`,
       description,
       url: `${SITE_URL}/authors/${authorSlug(name)}`,
       images: ["/hero.jpg"],

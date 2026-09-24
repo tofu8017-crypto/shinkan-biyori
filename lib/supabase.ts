@@ -651,10 +651,12 @@ export async function getBooksBySameAuthor(
 }
 
 // 指定著者名（正規化済み）の新刊を発売日降順で取得する。著者ページ用。
-export async function getBooksByAuthor(
+// generateMetadata とページ本体の両方から呼ぶため cache() で束ねる
+// （Supabaseはfetchのメモ化対象外。無いと1リクエストで同じクエリが2回走る）。
+export const getBooksByAuthor = cache(async (
   authorName: string,
   limit = 100
-): Promise<Book[]> {
+): Promise<Book[]> => {
   if (useMock) {
     return MOCK_BOOKS.filter((b) =>
       splitAuthors(b.author).some((a) => isSameAuthor(a, authorName))
@@ -676,7 +678,7 @@ export async function getBooksByAuthor(
   return (data ?? []).filter((b) =>
     splitAuthors(b.author).some((a) => isSameAuthor(a, authorName))
   );
-}
+});
 
 // 同日発売の他の本（自身を除く）。内部リンク用。
 export async function getBooksSameDay(book: Book, limit = 8): Promise<Book[]> {
