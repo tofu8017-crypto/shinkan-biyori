@@ -1,30 +1,40 @@
 {
-  "updated": "2026-09-21",
+  "updated": "2026-09-28",
   "window_days": 28,
   "authors": [
     {
-      "author": "梶よう子",
-      "impressions": 26,
+      "author": "小杉健治",
+      "impressions": 15,
+      "clicks": 2
+    },
+    {
+      "author": "梶 よう子",
+      "impressions": 47,
       "clicks": 0
     },
     {
       "author": "寺地はるな",
-      "impressions": 20,
+      "impressions": 44,
       "clicks": 0
     },
     {
-      "author": "赤川 次郎",
-      "impressions": 15,
+      "author": "赤川次郎",
+      "impressions": 42,
       "clicks": 0
     },
     {
-      "author": "千野 隆司",
-      "impressions": 13,
+      "author": "石持 浅海",
+      "impressions": 31,
+      "clicks": 0
+    },
+    {
+      "author": "宇野 千代",
+      "impressions": 21,
       "clicks": 0
     },
     {
       "author": "小池 真理子",
-      "impressions": 12,
+      "impressions": 15,
       "clicks": 0
     },
     {
@@ -33,12 +43,7 @@
       "clicks": 0
     },
     {
-      "author": "宇野 千代",
-      "impressions": 12,
-      "clicks": 0
-    },
-    {
-      "author": "福澤 徹三",
+      "author": "カレヤタミエ",
       "impressions": 11,
       "clicks": 0
     },
@@ -48,13 +53,8 @@
       "clicks": 0
     },
     {
-      "author": "林真理子",
-      "impressions": 8,
-      "clicks": 0
-    },
-    {
-      "author": "藤井 邦夫",
-      "impressions": 8,
+      "author": "朝倉かすみ",
+      "impressions": 7,
       "clicks": 0
     },
     {
@@ -68,7 +68,12 @@
       "clicks": 0
     },
     {
-      "author": "朝倉かすみ",
+      "author": "原田 ひ香",
+      "impressions": 5,
+      "clicks": 0
+    },
+    {
+      "author": "植原翠",
       "impressions": 4,
       "clicks": 0
     },
@@ -78,22 +83,12 @@
       "clicks": 0
     },
     {
-      "author": "カレヤタミエ",
-      "impressions": 3,
+      "author": "福澤 徹三",
+      "impressions": 4,
       "clicks": 0
     },
     {
-      "author": "井原忠政",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "author": "小川 洋子",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "author": "有川　真由美",
+      "author": "千野 隆司",
       "impressions": 3,
       "clicks": 0
     },
@@ -103,7 +98,7 @@
       "clicks": 0
     },
     {
-      "author": "砂村 かいり",
+      "author": "河崎秋子",
       "impressions": 3,
       "clicks": 0
     },
@@ -113,17 +108,17 @@
       "clicks": 0
     },
     {
-      "author": "室井滋",
+      "author": "門田泰明",
+      "impressions": 3,
+      "clicks": 0
+    },
+    {
+      "author": "井原 忠政",
       "impressions": 2,
       "clicks": 0
     },
     {
-      "author": "植原翠",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "楠谷　佑",
+      "author": "林真理子",
       "impressions": 2,
       "clicks": 0
     },
@@ -138,17 +133,17 @@
       "clicks": 0
     },
     {
-      "author": "冲方　丁",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
       "author": "川口さやか",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "毒島リコリス",
+      "author": "有川　真由美",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "浜口　倫太郎",
       "impressions": 1,
       "clicks": 0
     },
@@ -158,22 +153,22 @@
       "clicks": 0
     },
     {
-      "author": "燃え殻",
+      "author": "空月そらら",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "秋川滝美",
+      "author": "小川 洋子",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "五十嵐 貴久",
+      "author": "フレドリック・ブラウン",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "赤神 諒",
+      "author": "道尾秀介",
       "impressions": 1,
       "clicks": 0
     },
@@ -187,37 +182,13 @@
     {
       "title": "2023　ザ・ベストミステリーズ",
       "author": "日本推理作家協会",
-      "impressions": 16,
+      "impressions": 11,
       "clicks": 0
     },
     {
       "title": "未だ解明されない世界の不思議ミステリー86",
       "author": "鉄人ノンフィクション編集部",
-      "impressions": 16,
-      "clicks": 0
-    },
-    {
-      "title": "けんぐゎい",
-      "author": "朝倉かすみ",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "title": "小川洋子『薬指の標本』",
-      "author": "小川暢子",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "title": "土人形と動死体",
-      "author": "円城　塔",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "title": "ぐうたら原始行",
-      "author": "関野吉晴",
-      "impressions": 2,
+      "impressions": 11,
       "clicks": 0
     },
     {
@@ -257,8 +228,26 @@
       "clicks": 0
     },
     {
+      "title": "けんぐゎい",
+      "author": "朝倉かすみ",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
       "title": "【サイン本】鬼門の村",
       "author": "櫛木 理宇",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "title": "フレドリック・ブラウンSF短編全集2　星ねずみ",
+      "author": "フレドリック・ブラウン",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "title": "ぐうたら原始行",
+      "author": "関野吉晴",
       "impressions": 1,
       "clicks": 0
     }
