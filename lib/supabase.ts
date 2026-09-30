@@ -699,14 +699,24 @@ export async function getAllBooksForSitemap(): Promise<
   }
 
   const sb = await getClient();
-  const { data, error } = await sb!
-    .from("books")
-    .select("isbn13, author, last_synced_at")
-    .order("published_date", { ascending: false })
-    .limit(50000);
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  // ⚠️ Supabase(PostgREST)は1リクエスト1000行が上限で、.limit(50000) を付けても超えられない。
+  // ここが1000件で静かに打ち切られていたため、サイトマップに全28,900冊のうち1000冊しか
+  // 載っておらず、残りはクロールが7週間に1回まで落ちていた（2026-09-30に判明）。
+  // range でページングして全件取る。著者ページのURLもこの一覧から作られるので影響は二重。
+  const PAGE = 1000;
+  const all: Pick<Book, "isbn13" | "author" | "last_synced_at">[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await sb!
+      .from("books")
+      .select("isbn13, author, last_synced_at")
+      .order("published_date", { ascending: false })
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    all.push(...rows);
+    if (rows.length < PAGE) break;
+  }
+  return all;
 }
 
 // 文芸ジャンルの新刊を広めに取得する内部ヘルパー。

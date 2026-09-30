@@ -3,10 +3,8 @@ import { GENRES } from "@/types/book";
 import {
   getBookCountByDate,
   getPublishedColumns,
-  getAllBooksForSitemap,
   getAllSeriesForSitemap,
 } from "@/lib/supabase";
-import { splitAuthors, authorSlug } from "@/lib/normalize-author";
 
 const BASE_URL = "https://shinkanbiyori.com";
 
@@ -65,31 +63,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 日付ページはスキップし、ホーム＋ジャンルだけ返す
   }
 
-  // 書籍詳細ページ + 著者ページ。全書籍を1回取得して両方を組み立てる。
-  // DB障害時はスキップ（try/catchで握りつぶす）。
-  try {
-    const books = await getAllBooksForSitemap();
-    const authorSlugs = new Set<string>();
-    for (const b of books) {
-      entries.push({
-        url: `${BASE_URL}/books/${b.isbn13}`,
-        lastModified: b.last_synced_at?.slice(0, 10) || today,
-        changeFrequency: "weekly",
-        priority: 0.5,
-      });
-      for (const a of splitAuthors(b.author)) authorSlugs.add(authorSlug(a));
-    }
-    for (const slug of authorSlugs) {
-      entries.push({
-        url: `${BASE_URL}/authors/${slug}`,
-        lastModified: today,
-        changeFrequency: "weekly",
-        priority: 0.5,
-      });
-    }
-  } catch {
-    // 書籍・著者ページはスキップ
-  }
+  // 書籍詳細ページと著者ページは件数が多く（書籍28,900・作家24,366）、
+  // ここに入れるとサイトマップ1ファイルの上限50,000URLを超える。
+  // それぞれ app/books/sitemap.ts（/books/sitemap.xml）と
+  // app/authors/sitemap.ts（/authors/sitemap.xml）に分離した。robots.txt で3本とも通知している。
 
   // シリーズページ
   try {
