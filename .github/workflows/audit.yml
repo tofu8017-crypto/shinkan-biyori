@@ -1,0 +1,69 @@
+name: 定期監査（静かに壊れていないかの確認）
+
+# 毎週月曜7:00 JST（週次SEO改善の1時間後）に scripts/audit.js を実行する。
+# 見るのは「エラーを出さずに静かに壊れる」型:
+#   ① サイトマップが在庫を網羅しているか（Supabaseの1000行上限の再発検知）
+#   ② 1000行上限に当たりうる .limit() が残っていないか
+#   ③ 作家ページが最新刊を出せているか（スペース表記ゆれの再発検知）
+#   ④ SEO上書きが古い本を宣伝していないか
+#   ⑤ 新刊収集・コラム公開が止まっていないか
+#   ⑥ 主要ページの5xx失敗率（Freeプラン既知のトレードオフは悪化のみ監視）
+#   ⑦ 代表URLのクロール頻度（GSC）
+#
+# 問題があるとジョブが赤くなり、DISCORD_WEBHOOK_URL があればDiscordにも通知する
+# （問題なしの週は通知しない。毎週の「異常なし」で見なくなるのを防ぐため）。
+on:
+  schedule:
+    - cron: "0 22 * * 0"   # 月曜7:00 JST = 日曜22:00 UTC
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write   # docs/audit-log.md の自動コミット用
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:  ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GSC_CREDENTIALS_JSON:      ${{ secrets.GSC_CREDENTIALS_JSON }}
+      DISCORD_WEBHOOK_URL:       ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 依存関係インストール
+        run: npm install --omit=dev --no-audit --no-fund
+
+      # 監査で問題が見つかると exit 1 になる。ログとコミットは残したいので
+      # ここでは失敗させず、結果を後段で判定する
+      - name: 監査を実行
+        id: audit
+        continue-on-error: true
+        run: node scripts/audit.js
+
+      - name: 監査ログをコミット
+        run: |
+          if [[ -n "$(git status --porcelain docs/audit-log.md)" ]]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add docs/audit-log.md
+            git commit -m "chore(audit): 定期監査の結果を記録 [skip ci]"
+            git push
+          else
+            echo "監査ログに変更なし。"
+          fi
+
+      - name: 問題があればジョブを失敗させる
+        if: steps.audit.outcome == 'failure'
+        run: |
+          echo "監査で FAIL または WARN が出ています。上の「監査を実行」のログを確認してください。"
+          exit 1
