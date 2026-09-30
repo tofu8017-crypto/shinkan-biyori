@@ -39,7 +39,8 @@ const REQ_INTERVAL = 700; // 楽天APIへの間隔(ms)。レート制限に配�
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// 楽天ブックスAPIで1冊をISBN検索し itemCaption を返す（無ければ ""）
+// 楽天ブックスAPIで1冊をISBN検索し、あらすじと価格を返す。
+// 同じ1回の呼び出しで両方取れるので、価格用に別途叩かない（楽天は1秒1リクエスト制限）。
 async function fetchCaption(isbn) {
   const p = new URLSearchParams({
     applicationId: RAKUTEN_APP_ID,
@@ -55,28 +56,50 @@ async function fetchCaption(isbn) {
       if (res.status === 429) { await sleep(2000 * attempt); continue; } // レート制限
       if (!res.ok) throw new Error(`Rakuten ${res.status}`);
       const data = await res.json();
-      return (data.Items?.[0]?.itemCaption || "").trim();
+      const it = data.Items?.[0] || {};
+      return {
+        caption: (it.itemCaption || "").trim(),
+        price: Number(it.itemPrice) > 0 ? Number(it.itemPrice) : null,
+      };
     } catch (e) {
-      if (attempt === 3) { console.error(`  取得失敗 ${isbn}: ${e.message}`); return ""; }
+      if (attempt === 3) { console.error(`  取得失敗 ${isbn}: ${e.message}`); return { caption: "", price: null }; }
       await sleep(1000 * attempt);
     }
   }
-  return "";
+  return { caption: "", price: null };
 }
 
-// description が空(null)の isbn13 を発売日の新しい順にMAX_BOOKS件まで集める
+// あらすじ未設定 or 価格未設定の isbn13 を発売日の新しい順にMAX_BOOKS件まで集める。
+// 価格は Product構造化データ（商品スニペット）用。どちらも同じ1回のAPI呼び出しで埋まる。
+const byIsbn = new Map(); // isbn13 → 現在のdescription/price（既存値を上書きしないため）
+
+// price カラムがまだ無い環境（add-price-column.sql の未実行）でも、
+// 従来のあらすじ補充だけは動き続けるようにする。日次で回っているスクリプトなので
+// カラム追加の順序に依存して止まらせない。
+let hasPrice = null;
+async function checkPriceColumn(supabase) {
+  if (hasPrice !== null) return hasPrice;
+  const { error } = await supabase.from("books").select("price").limit(1);
+  hasPrice = !error;
+  if (!hasPrice) {
+    console.warn("⚠️ books.price が無いため価格はスキップします（scripts/add-price-column.sql を未実行）");
+  }
+  return hasPrice;
+}
+
 async function fetchTargets(supabase) {
   const targets = [];
+  const withPrice = await checkPriceColumn(supabase);
   for (let from = 0; targets.length < MAX_BOOKS; from += SELECT_PAGE) {
     const { data, error } = await supabase
       .from("books")
-      .select("isbn13")
-      .is("description", null)
+      .select(withPrice ? "isbn13,description,price" : "isbn13,description")
+      .or(withPrice ? "description.is.null,price.is.null" : "description.is.null")
       .order("published_date", { ascending: false })
       .range(from, from + SELECT_PAGE - 1);
     if (error) throw new Error(`select error: ${error.message}`);
     if (!data || data.length === 0) break;
-    for (const r of data) if (r.isbn13) targets.push(r.isbn13);
+    for (const r of data) if (r.isbn13) { targets.push(r.isbn13); byIsbn.set(r.isbn13, r); }
     if (data.length < SELECT_PAGE) break;
   }
   return targets.slice(0, MAX_BOOKS);
@@ -89,26 +112,36 @@ async function main() {
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const targets = await fetchTargets(supabase);
-  console.log(`あらすじ未設定: ${targets.length}件を処理（新しい順・上限${MAX_BOOKS}）${DRY_RUN ? " [dry-run]" : ""}`);
+  console.log(`あらすじ/価格が未設定: ${targets.length}件を処理（新しい順・上限${MAX_BOOKS}）${DRY_RUN ? " [dry-run]" : ""}`);
   if (targets.length === 0) return;
 
-  let filled = 0, notFound = 0, sampleShown = 0;
+  let filled = 0, priced = 0, notFound = 0, sampleShown = 0;
   for (const isbn of targets) {
-    const cap = await fetchCaption(isbn);
+    const { caption, price } = await fetchCaption(isbn);
     await sleep(REQ_INTERVAL);
-    const desc = cleanDescription(cap);
-    if (!desc) { notFound++; continue; }
+    const desc = cleanDescription(caption);
+    // 既に入っている項目は上書きしない（足りないものだけ埋める）
+    const cur = byIsbn.get(isbn) || {};
+    const patch = {};
+    if (desc && !cur.description) patch.description = desc;
+    if (hasPrice && price && !cur.price) patch.price = price;
+    if (Object.keys(patch).length === 0) { notFound++; continue; }
     if (DRY_RUN) {
-      if (sampleShown < 3) { console.log(`  [sample] ${isbn}: ${desc.slice(0, 60)}…`); sampleShown++; }
-      filled++;
+      if (sampleShown < 3) {
+        console.log(`  [sample] ${isbn}: ${patch.price ? `${patch.price}円 ` : ""}${(patch.description || "").slice(0, 50)}…`);
+        sampleShown++;
+      }
+      if (patch.description) filled++;
+      if (patch.price) priced++;
       continue;
     }
-    const { error } = await supabase.from("books").update({ description: desc }).eq("isbn13", isbn);
+    const { error } = await supabase.from("books").update(patch).eq("isbn13", isbn);
     if (error) { console.error(`  update失敗 ${isbn}: ${error.message}`); continue; }
-    filled++;
-    if (filled % 50 === 0) console.log(`  ...${filled}件埋めた / 楽天に説明なし ${notFound}件`);
+    if (patch.description) filled++;
+    if (patch.price) priced++;
+    if ((filled + priced) % 50 === 0) console.log(`  ...あらすじ${filled}件・価格${priced}件 / 楽天にデータなし ${notFound}件`);
   }
-  console.log(`✅ 完了: ${DRY_RUN ? "（dry-run・書き込みなし）" : ""}あらすじを ${filled}件埋めた / 楽天に説明なし ${notFound}件`);
+  console.log(`✅ 完了: ${DRY_RUN ? "（dry-run・書き込みなし）" : ""}あらすじ ${filled}件・価格 ${priced}件を埋めた / 楽天にデータなし ${notFound}件`);
   if (targets.length >= MAX_BOOKS) {
     console.log(`⚠️ 上限${MAX_BOOKS}件で打ち切り。残りは次回実行で処理される。`);
   }

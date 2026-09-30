@@ -192,6 +192,9 @@ async function fetchAllBooksForGenre(queryGenreId, label, win, storeGenreId = qu
           // 楽天itemCaption（あらすじ/商品説明）を格納。約7割の本に付く（openBDは約4%と手薄）。
           // HTMLタグ除去・500字整形。窓内の本は毎日再収集されるので順次埋まる。
           description:    cleanDescription(Item.itemCaption) || null,
+          // 楽天itemPrice（税込・円）。書籍ページの価格表示とProduct構造化データに使う。
+          // 日本の書籍は再販制度でほぼ定価なので、毎日の再収集で十分に新しさを保てる。
+          price:          Number(Item.itemPrice) > 0 ? Number(Item.itemPrice) : null,
           last_synced_at: new Date().toISOString(),
         });
       }
@@ -221,8 +224,26 @@ async function fetchAllBooksForGenre(queryGenreId, label, win, storeGenreId = qu
 
 // ===== Supabase upsert =====
 
+// price カラムが実際に存在するか一度だけ調べる。
+// add-price-column.sql の適用前にこのコードが動くと、未知のカラムでupsert全体が
+// 失敗して収集が止まる。過去にパイプラインが静かに止まった事例があるので予防する。
+let hasPriceColumn = null;
+async function checkPriceColumn(supabase) {
+  if (hasPriceColumn !== null) return hasPriceColumn;
+  const { error } = await supabase.from("books").select("price").limit(1);
+  hasPriceColumn = !error;
+  if (!hasPriceColumn) {
+    console.warn("⚠️ books.price が無いため価格は保存しません（scripts/add-price-column.sql を未実行）");
+  }
+  return hasPriceColumn;
+}
+
 async function upsertBooks(supabase, books) {
   if (books.length === 0) return 0;
+
+  if (!(await checkPriceColumn(supabase))) {
+    books = books.map(({ price, ...rest }) => rest);
+  }
 
   // isbn13 で重複除去（ジャンルをまたいで同じ本が来る場合がある）
   const seen = new Set();

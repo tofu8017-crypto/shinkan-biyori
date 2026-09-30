@@ -20,6 +20,11 @@ import {
   getSeoOverride,
 } from "@/lib/supabase";
 
+// 今日（JST）。発売前＝予約商品の判定に使う（作家ページと同じ実装）。
+function jstToday(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
+}
+
 function isValidIsbn(s: string): boolean {
   return /^\d{13}$/.test(s);
 }
@@ -99,6 +104,37 @@ export default async function BookDetailPage({
     ...(book.description ? { description: book.description } : {}),
     url: `${SITE_URL}/books/${book.isbn13}`,
   };
+  // 商品スニペット用のProduct。Googleは「ユーザーが商品を直接購入できない商品ページ」に
+  // 商品スニペットを使うと明記しており、当サイト（楽天/Amazonへ送客）はこちらが正規の道。
+  // 販売者リスティング／ショッピングタブはアフィリエイトサイトのため対象外。
+  // 必須は name ＋（review / aggregateRating / offers のいずれか1つ）。当サイトはレビューを
+  // 持たないため offers で満たす（リッチリザルトテストで警告は出るがエラーではない）。
+  // 価格は画面にも表示している値と同じものだけを出す（可視内容と一致させる）。
+  const productJsonLd = book.price
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: book.title,
+        ...(book.image_url ? { image: book.image_url } : {}),
+        ...(book.description ? { description: book.description } : {}),
+        sku: book.isbn13,
+        gtin13: book.isbn13, // ISBN-13はGTIN-13と同一体系
+        url: `${SITE_URL}/books/${book.isbn13}`,
+        offers: {
+          "@type": "Offer",
+          price: book.price,
+          priceCurrency: "JPY",
+          // 発売前の本だけ予約として明示する。発売済みの在庫は楽天側で日々変わり、
+          // こちらでは保証できないので availability は付けない（推奨項目で必須ではない）。
+          ...(book.published_date > jstToday()
+            ? { availability: "https://schema.org/PreOrder" }
+            : {}),
+          ...(book.rakuten_url ? { url: book.rakuten_url } : {}),
+          seller: { "@type": "Organization", name: "楽天ブックス" },
+        },
+      }
+    : null;
+
   const crumbs = breadcrumbJsonLd([
     { name: "ホーム", path: "" },
     { name: `${pub}の新刊`, path: `/date/${book.published_date}` },
@@ -107,7 +143,7 @@ export default async function BookDetailPage({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <JsonLd data={[bookJsonLd, crumbs]} />
+      <JsonLd data={productJsonLd ? [bookJsonLd, productJsonLd, crumbs] : [bookJsonLd, crumbs]} />
       <SiteHeader />
 
       <main className="max-w-5xl mx-auto w-full px-4 py-12">
@@ -244,6 +280,17 @@ export default async function BookDetailPage({
                   {book.description}
                 </p>
               </div>
+            )}
+
+            {/* 価格（構造化データと同じ値を必ず画面にも出す） */}
+            {book.price && (
+              <p className="text-sm mb-3" style={{ color: "var(--text-main)" }}>
+                楽天ブックス{" "}
+                <span className="font-bold" style={{ fontSize: "20px" }}>
+                  {book.price.toLocaleString("ja-JP")}円
+                </span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>（税込）</span>
+              </p>
             )}
 
             {/* 購入ボタン */}

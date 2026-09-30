@@ -48,5 +48,8 @@ export type Book = {
   rakuten_url: string | null
   amazon_url: string | null
   description: string | null  // openBDの内容紹介を要約したもの
+  // 楽天itemPrice（税込・円）。収集済みの本にだけ入る。
+  // 任意にしているのはモックや楽天フォールバック経由のBookが価格を持たないため
+  price?: number | null
   last_synced_at: string
 }
