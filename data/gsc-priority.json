@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05",
+  "updated": "2026-10-12",
   "window_days": 28,
   "authors": [
     {
@@ -9,27 +9,22 @@
     },
     {
       "author": "梶 よう子",
-      "impressions": 47,
-      "clicks": 0
-    },
-    {
-      "author": "寺地はるな",
-      "impressions": 43,
-      "clicks": 0
-    },
-    {
-      "author": "赤川次郎",
       "impressions": 42,
       "clicks": 0
     },
     {
-      "author": "宇野 千代",
-      "impressions": 21,
+      "author": "赤川　次郎",
+      "impressions": 42,
       "clicks": 0
     },
     {
-      "author": "石持 浅海",
-      "impressions": 12,
+      "author": "寺地　はるな",
+      "impressions": 39,
+      "clicks": 0
+    },
+    {
+      "author": "宇野 千代",
+      "impressions": 15,
       "clicks": 0
     },
     {
@@ -38,23 +33,8 @@
       "clicks": 0
     },
     {
-      "author": "横山信義",
-      "impressions": 8,
-      "clicks": 0
-    },
-    {
       "author": "朝倉かすみ",
-      "impressions": 7,
-      "clicks": 0
-    },
-    {
-      "author": "群 ようこ",
-      "impressions": 7,
-      "clicks": 0
-    },
-    {
-      "author": "坂岡真",
-      "impressions": 6,
+      "impressions": 5,
       "clicks": 0
     },
     {
@@ -63,22 +43,12 @@
       "clicks": 0
     },
     {
-      "author": "植原翠",
-      "impressions": 4,
-      "clicks": 0
-    },
-    {
-      "author": "椰月美智子",
-      "impressions": 4,
-      "clicks": 0
-    },
-    {
-      "author": "河崎秋子",
+      "author": "坂岡真",
       "impressions": 3,
       "clicks": 0
     },
     {
-      "author": "赤野用介",
+      "author": "河崎秋子",
       "impressions": 3,
       "clicks": 0
     },
@@ -93,7 +63,12 @@
       "clicks": 0
     },
     {
-      "author": "宮下 奈都",
+      "author": "植原翠",
+      "impressions": 2,
+      "clicks": 0
+    },
+    {
+      "author": "横山信義",
       "impressions": 2,
       "clicks": 0
     },
@@ -103,7 +78,7 @@
       "clicks": 0
     },
     {
-      "author": "大沢 在昌",
+      "author": "風野　真知雄",
       "impressions": 2,
       "clicks": 0
     },
@@ -118,22 +93,17 @@
       "clicks": 0
     },
     {
-      "author": "千野 隆司",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
       "author": "大石　恵美",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "小川糸",
+      "author": "小野寺 史宜",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "深町秋生",
+      "author": "椰月美智子",
       "impressions": 1,
       "clicks": 0
     },
@@ -148,49 +118,53 @@
       "clicks": 0
     },
     {
-      "author": "風野　真知雄",
+      "author": "赤野用介",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "小川 洋子",
+      "author": "吉川 永青",
       "impressions": 1,
       "clicks": 0
     },
     {
       "author": "フレドリック・ブラウン",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "スズキナオ",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "群 ようこ",
       "impressions": 1,
       "clicks": 0
     }
   ],
   "titles": [
     {
-      "title": "2023　ザ・ベストミステリーズ",
-      "author": "日本推理作家協会",
-      "impressions": 7,
-      "clicks": 0
-    },
-    {
-      "title": "未だ解明されない世界の不思議ミステリー86",
-      "author": "鉄人ノンフィクション編集部",
-      "impressions": 7,
-      "clicks": 0
-    },
-    {
-      "title": "三十路の逆立ち",
-      "author": "くどう れいん",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "ノーライフキングダム〜不死王喰らいの少年奴隷、最強最悪の国家を創る〜",
-      "author": "秋堂カオル",
+      "title": "七人怪談",
+      "author": "加門　七海",
       "impressions": 1,
       "clicks": 0
     },
     {
       "title": "フレドリック・ブラウンSF短編全集2　星ねずみ",
       "author": "フレドリック・ブラウン",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "title": "2023　ザ・ベストミステリーズ",
+      "author": "日本推理作家協会",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "title": "未だ解明されない世界の不思議ミステリー86",
+      "author": "鉄人ノンフィクション編集部",
       "impressions": 1,
       "clicks": 0
     }
