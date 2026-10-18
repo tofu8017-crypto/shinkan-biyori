@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-12",
+  "updated": "2026-10-19",
   "window_days": 28,
   "authors": [
     {
@@ -8,47 +8,32 @@
       "clicks": 2
     },
     {
-      "author": "梶 よう子",
-      "impressions": 42,
+      "author": "赤川　次郎",
+      "impressions": 22,
       "clicks": 0
     },
     {
-      "author": "赤川　次郎",
-      "impressions": 42,
+      "author": "梶 よう子",
+      "impressions": 21,
       "clicks": 0
     },
     {
       "author": "寺地　はるな",
-      "impressions": 39,
-      "clicks": 0
-    },
-    {
-      "author": "宇野 千代",
-      "impressions": 15,
+      "impressions": 20,
       "clicks": 0
     },
     {
       "author": "カレヤタミエ",
-      "impressions": 8,
+      "impressions": 7,
       "clicks": 0
     },
     {
-      "author": "朝倉かすみ",
-      "impressions": 5,
+      "author": "有馬　美季子",
+      "impressions": 4,
       "clicks": 0
     },
     {
       "author": "原田 ひ香",
-      "impressions": 5,
-      "clicks": 0
-    },
-    {
-      "author": "坂岡真",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "author": "河崎秋子",
       "impressions": 3,
       "clicks": 0
     },
@@ -58,17 +43,7 @@
       "clicks": 0
     },
     {
-      "author": "冲方　丁",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "植原翠",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "横山信義",
+      "author": "朝倉かすみ",
       "impressions": 2,
       "clicks": 0
     },
@@ -88,7 +63,7 @@
       "clicks": 0
     },
     {
-      "author": "中山 七里",
+      "author": "冲方　丁",
       "impressions": 1,
       "clicks": 0
     },
@@ -103,32 +78,7 @@
       "clicks": 0
     },
     {
-      "author": "椰月美智子",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "秋川 滝美",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
       "author": "空月そらら",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "赤野用介",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "吉川 永青",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "フレドリック・ブラウン",
       "impressions": 1,
       "clicks": 0
     },
@@ -136,30 +86,13 @@
       "author": "スズキナオ",
       "impressions": 1,
       "clicks": 0
-    },
-    {
-      "author": "群 ようこ",
-      "impressions": 1,
-      "clicks": 0
     }
   ],
   "titles": [
     {
-      "title": "七人怪談",
-      "author": "加門　七海",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "フレドリック・ブラウンSF短編全集2　星ねずみ",
-      "author": "フレドリック・ブラウン",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "title": "2023　ザ・ベストミステリーズ",
-      "author": "日本推理作家協会",
-      "impressions": 1,
+      "title": "つたえたい想い〜13のエッセイ〜",
+      "author": "川田芳子",
+      "impressions": 2,
       "clicks": 0
     },
     {
