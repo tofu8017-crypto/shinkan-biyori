@@ -1,74 +1,19 @@
 {
-  "updated": "2026-10-19",
+  "updated": "2026-10-26",
   "window_days": 28,
   "authors": [
     {
-      "author": "小杉 健治",
-      "impressions": 20,
-      "clicks": 2
-    },
-    {
-      "author": "赤川　次郎",
-      "impressions": 22,
-      "clicks": 0
-    },
-    {
-      "author": "梶 よう子",
-      "impressions": 21,
-      "clicks": 0
-    },
-    {
-      "author": "寺地　はるな",
-      "impressions": 20,
-      "clicks": 0
-    },
-    {
-      "author": "カレヤタミエ",
-      "impressions": 7,
-      "clicks": 0
-    },
-    {
       "author": "有馬　美季子",
-      "impressions": 4,
+      "impressions": 16,
       "clicks": 0
     },
     {
-      "author": "原田 ひ香",
+      "author": "小杉 健治",
       "impressions": 3,
       "clicks": 0
     },
     {
-      "author": "門田泰明",
-      "impressions": 3,
-      "clicks": 0
-    },
-    {
-      "author": "朝倉かすみ",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "白川 尚史",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "風野　真知雄",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "あさの あつこ",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "author": "冲方　丁",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
-      "author": "大石　恵美",
+      "author": "南　英男",
       "impressions": 1,
       "clicks": 0
     },
@@ -78,12 +23,17 @@
       "clicks": 0
     },
     {
-      "author": "空月そらら",
+      "author": "柊サナカ",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "スズキナオ",
+      "author": "梶 よう子",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "風野真知雄",
       "impressions": 1,
       "clicks": 0
     }
@@ -98,6 +48,12 @@
     {
       "title": "未だ解明されない世界の不思議ミステリー86",
       "author": "鉄人ノンフィクション編集部",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "title": "放課後はミステリーとともに 新装版",
+      "author": "東川　篤哉",
       "impressions": 1,
       "clicks": 0
     }
