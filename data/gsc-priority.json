@@ -1,15 +1,10 @@
 {
-  "updated": "2026-10-26",
+  "updated": "2026-11-02",
   "window_days": 28,
   "authors": [
     {
       "author": "有馬　美季子",
-      "impressions": 16,
-      "clicks": 0
-    },
-    {
-      "author": "小杉 健治",
-      "impressions": 3,
+      "impressions": 24,
       "clicks": 0
     },
     {
@@ -18,7 +13,7 @@
       "clicks": 0
     },
     {
-      "author": "小野寺 史宜",
+      "author": "岩倉　文也",
       "impressions": 1,
       "clicks": 0
     },
@@ -28,32 +23,31 @@
       "clicks": 0
     },
     {
-      "author": "梶 よう子",
+      "author": "梶よう子",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "author": "風野真知雄",
+      "author": "風野 真知雄",
+      "impressions": 1,
+      "clicks": 0
+    },
+    {
+      "author": "馳月　基矢",
       "impressions": 1,
       "clicks": 0
     }
   ],
   "titles": [
     {
-      "title": "つたえたい想い〜13のエッセイ〜",
-      "author": "川田芳子",
-      "impressions": 2,
-      "clicks": 0
-    },
-    {
-      "title": "未だ解明されない世界の不思議ミステリー86",
-      "author": "鉄人ノンフィクション編集部",
+      "title": "放課後はミステリーとともに 新装版",
+      "author": "東川　篤哉",
       "impressions": 1,
       "clicks": 0
     },
     {
-      "title": "放課後はミステリーとともに 新装版",
-      "author": "東川　篤哉",
+      "title": "つたえたい想い〜13のエッセイ〜",
+      "author": "川田芳子",
       "impressions": 1,
       "clicks": 0
     }
