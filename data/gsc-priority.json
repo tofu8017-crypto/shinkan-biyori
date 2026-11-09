@@ -1,10 +1,10 @@
 {
-  "updated": "2026-11-02",
+  "updated": "2026-11-09",
   "window_days": 28,
   "authors": [
     {
       "author": "有馬　美季子",
-      "impressions": 24,
+      "impressions": 35,
       "clicks": 0
     },
     {
@@ -28,23 +28,12 @@
       "clicks": 0
     },
     {
-      "author": "風野 真知雄",
-      "impressions": 1,
-      "clicks": 0
-    },
-    {
       "author": "馳月　基矢",
       "impressions": 1,
       "clicks": 0
     }
   ],
   "titles": [
-    {
-      "title": "放課後はミステリーとともに 新装版",
-      "author": "東川　篤哉",
-      "impressions": 1,
-      "clicks": 0
-    },
     {
       "title": "つたえたい想い〜13のエッセイ〜",
       "author": "川田芳子",
