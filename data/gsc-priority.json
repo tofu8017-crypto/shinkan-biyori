@@ -1,14 +1,14 @@
 {
-  "updated": "2026-11-09",
+  "updated": "2026-11-16",
   "window_days": 28,
   "authors": [
     {
       "author": "有馬　美季子",
-      "impressions": 35,
+      "impressions": 30,
       "clicks": 0
     },
     {
-      "author": "南　英男",
+      "author": "北山 猛邦",
       "impressions": 1,
       "clicks": 0
     },
@@ -33,12 +33,5 @@
       "clicks": 0
     }
   ],
-  "titles": [
-    {
-      "title": "つたえたい想い〜13のエッセイ〜",
-      "author": "川田芳子",
-      "impressions": 1,
-      "clicks": 0
-    }
-  ]
+  "titles": []
 }
